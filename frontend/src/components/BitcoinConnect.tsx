@@ -12,12 +12,12 @@ import { storageHelper } from "@/lib/storageHelper.ts";
 import { BitcoinApi } from "@/api/bitcoin.ts";
 
 function BitcoinConnect() {
-  const { btcAddress, processConnectBtc, processConnectBtcLeather } = useApp();
+  const { btcAddressInfo, processConnectBtc, processConnectBtcLeather } = useApp();
 
   const connectWalletLeather = async () => {
     await connect();
 
-    processConnectBtcLeather();
+    await processConnectBtcLeather();
   };
   const connectWalletOther = async () => {
     const res = await Wallet.request("wallet_connect", {
@@ -44,11 +44,11 @@ function BitcoinConnect() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (btcAddress) {
+    if (btcAddressInfo) {
       const getBalance = async () => {
         setLoading(true);
 
-        const balance = await BitcoinApi.getAddressBalance(btcAddress);
+        const balance = await BitcoinApi.getAddressBalance(btcAddressInfo.address);
 
         setBtcBalance(balance);
         setLoading(false);
@@ -56,7 +56,7 @@ function BitcoinConnect() {
 
       getBalance();
     }
-  }, [btcAddress]);
+  }, [btcAddressInfo]);
 
   return (
     <Card className="gap-3">
@@ -66,15 +66,14 @@ function BitcoinConnect() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {!btcAddress ? (
+        {!btcAddressInfo ? (
           <div className={"flex flex-col gap-2 w-50 mx-auto"}>
             <Button onClick={connectWalletLeather} variant="default">
               <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
-              {btcAddress === undefined && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
+              {btcAddressInfo === undefined && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </Button>
             <Button onClick={connectWalletOther} variant="default">
               Other Wallet (Mainnet only)
-              {btcAddress === undefined && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </Button>
           </div>
         ) : (
@@ -82,12 +81,12 @@ function BitcoinConnect() {
             <p className="mb-2">
               <strong>Connected:</strong>
               <br />
-              <a href={getExplorerUrl("BITCOIN", btcAddress)} target={"_blank"} className={"underline"}>
-                {formatAddress(btcAddress)}
+              <a href={getExplorerUrl("BITCOIN", btcAddressInfo.address)} target={"_blank"} className={"underline"}>
+                {formatAddress(btcAddressInfo.address)}
               </a>
             </p>
             <p className="mb-2 flex items-center">
-              <strong className='mr-1'>Balance:</strong> {formatBalance(btcBalance, 8)} BTC
+              <strong className="mr-1">Balance:</strong> {formatBalance(btcBalance, 8)} BTC
               <img src={bitcoinLogo} alt={"Bitcoin Logo"} className="ml-1 h-4 w-4" />
               {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </p>

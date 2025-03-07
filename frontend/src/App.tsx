@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import StacksConnect from "./components/StacksConnect";
 import SuiConnect from "./components/SuiConnect";
 import BitcoinConnect from "@/components/BitcoinConnect";
+import SendBTCForm from "@/components/SendBTCForm.tsx";
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
             <SuiConnect />
           </div>
         </div>
+
+        <SendBTCForm />
       </div>
     </div>
   );

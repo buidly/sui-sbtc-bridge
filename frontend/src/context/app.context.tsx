@@ -1,12 +1,12 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { AddressPurpose, request, RpcResult } from "sats-connect";
-import { getLocalStorage, isConnected, StorageData } from "@stacks/connect";
+import { getLocalStorage, isConnected, StorageData, request as stacksRequest } from "@stacks/connect";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { privateKeyToAddress } from "@stacks/transactions";
 
 interface AppContextType {
-  btcAddress: string | undefined | null;
+  btcAddressInfo: { address: string, publicKey: string } | undefined | null;
   stacksAddress: string | null;
   suiAddress: string | null;
   processConnectBtc: (res?: RpcResult<"wallet_getAccount">) => void;
@@ -18,33 +18,33 @@ interface AppContextType {
 const AppContext = createContext<AppContextType>(undefined as AppContextType);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [btcAddress, setBtcAddress] = useState<string | undefined | null>(undefined);
+  const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string, publicKey: string } | undefined | null>(undefined);
   const [stacksAddress, setStacksAddress] = useState<string | null>(null);
   const { address: suiAddress } = useCurrentAccount() || {};
 
   const processConnectBtc = (res?: RpcResult<"wallet_getAccount">) => {
     if (!res || res.status === "error") {
-      setBtcAddress(null);
+      setBtcAddressInfo(null);
       storageHelper.removeBtcWallet();
       return;
     }
 
     const btcAddresses = res.result.addresses.filter((a) => [AddressPurpose.Payment].includes(a.purpose as any));
-    setBtcAddress(btcAddresses[0].address);
+    setBtcAddressInfo(btcAddresses[0]);
     storageHelper.setBtcWallet('OTHER');
   };
-  const processConnectBtcLeather = () => {
+  const processConnectBtcLeather = async () => {
     const userData = getLocalStorage();
 
     if (!userData) {
-      setBtcAddress(null);
+      setBtcAddressInfo(null);
       storageHelper.removeBtcWallet();
       return;
     }
 
-    const btcAddress = userData.addresses.btc[0].address;
+    const accounts = await stacksRequest('getAddresses');
 
-    setBtcAddress(btcAddress);
+    setBtcAddressInfo(accounts.addresses[0]);
     storageHelper.setBtcWallet('LEATHER');
   };
 
@@ -83,13 +83,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Handle Btc
       const reconnectBtc = async () => {
         try {
-          setBtcAddress(undefined);
+          setBtcAddressInfo(undefined);
 
           const res = await request("wallet_getAccount", null);
 
           processConnectBtc(res);
         } catch (e) {
-          setBtcAddress(null);
+          setBtcAddressInfo(null);
         }
       };
       reconnectBtc();
@@ -115,7 +115,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider
       value={{
-        btcAddress,
+        btcAddressInfo,
         stacksAddress,
         suiAddress,
         processConnectBtc,
