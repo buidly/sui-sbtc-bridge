@@ -1,3 +1,4 @@
+import React from "react";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import StacksConnect from "./components/StacksConnect";
