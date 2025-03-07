@@ -5,8 +5,12 @@ import StacksConnect from "./components/StacksConnect";
 import SuiConnect from "./components/SuiConnect";
 import BitcoinConnect from "@/components/BitcoinConnect";
 import SendBTCForm from "@/components/bridge/SendBTCForm.tsx";
+import { useApp } from "@/context/app.context.tsx";
+import BTCTxStatus from "@/components/bridge/BTCTxStatus.tsx";
 
 function App() {
+  const { btcAddressInfo, stacksAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Navbar />
@@ -24,6 +28,7 @@ function App() {
         </div>
 
         <SendBTCForm />
+        {bridgeStepInfo?.step === "BTC_SENT_PENDING" && <BTCTxStatus />}
       </div>
     </div>
   );

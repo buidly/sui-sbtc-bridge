@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -157,7 +157,7 @@ export default function SendBTCForm() {
     );
   }
 
-  if (bridgeStepInfo?.step && bridgeStepInfo.step !== "BTC_SENT_PENDING") {
+  if (bridgeStepInfo?.step) {
     return undefined;
   }
 
