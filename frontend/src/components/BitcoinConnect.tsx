@@ -1,71 +1,46 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import Wallet, { AddressPurpose, request } from 'sats-connect';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Wallet, { AddressPurpose } from "sats-connect";
+import { useApp } from "@/context/app.context";
+import { Loader2 } from "lucide-react";
+import { formatAddress } from "@/lib/helpers";
 
 function BitcoinConnect() {
-  const [btcAddress, setBtcAddress] = useState<string | null>(null);
-
-  const processConnect = (res) => {
-    if (res.status === 'error') {
-      console.error('Error connecting to wallet, details in terminal.');
-      console.error(res);
-      return;
-    }
-    const btcAddresses = res.result.addresses.filter((a) =>
-      [AddressPurpose.Payment].includes(a.purpose),
-    );
-    setBtcAddress(btcAddresses[0].address);
-  }
-
-  useEffect(() => {
-    const reconnect = async () => {
-      const res = await request('wallet_getAccount', null);
-
-      processConnect(res);
-    };
-
-    reconnect();
-  }, []);
+  const { btcAddress, processConnectBtc } = useApp();
 
   const connectWallet = async () => {
-    const res = await Wallet.request('wallet_connect', {
-      message: 'Cool app wants to know your addresses!',
+    const res = await Wallet.request("wallet_connect", {
+      message: "Cool app wants to know your addresses!",
       addresses: [AddressPurpose.Payment],
     });
 
-    processConnect(res);
+    processConnectBtc(res);
   };
 
   const disconnectWallet = async () => {
     await Wallet.disconnect();
-    setBtcAddress(null);
+    processConnectBtc(null);
   };
 
   return (
-    <Card>
+    <Card className="gap-3">
       <CardHeader>
-        <CardTitle>Bitcoin Integration</CardTitle>
+        <CardTitle>Connect Bitcoin Wallet</CardTitle>
       </CardHeader>
       <CardContent>
         {!btcAddress ? (
-          <Button
-            onClick={connectWallet}
-            variant='default'
-          >
+          <Button onClick={connectWallet} variant="default">
             Connect Bitcoin Wallet
+            {btcAddress === undefined && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
           </Button>
         ) : (
           <div>
-              <p className='mb-2'>
-                <strong>Connected:</strong> {btcAddress?.substring(0, 10)}...
-                {btcAddress.substring(btcAddress.length - 10)}
-              </p>
-            <div className='flex gap-2 mt-4'>
-              <Button
-                onClick={disconnectWallet}
-                variant='destructive'
-              >
+            <p className="mb-2">
+              <strong>Connected:</strong>
+              <p>{formatAddress(btcAddress)}</p>
+            </p>
+            <div className="flex gap-2 mt-4">
+              <Button onClick={disconnectWallet} variant="destructive">
                 Disconnect
               </Button>
             </div>

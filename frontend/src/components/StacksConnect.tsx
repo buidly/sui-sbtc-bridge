@@ -1,52 +1,46 @@
-import { useEffect, useState } from 'react';
-import { connect, disconnect, getLocalStorage, isConnected, StorageData } from '@stacks/connect';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { connect, disconnect } from "@stacks/connect";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useApp } from "@/context/app.context";
+import { formatAddress } from "@/lib/helpers";
 
 function StacksConnect() {
-  const [userData, setUserData] = useState<StorageData | null>(null);
-
-  useEffect(() => {
-    if (isConnected()) {
-      setUserData(getLocalStorage());
-    }
-  }, []);
+  const { stacksAddress, processConnectStacks } = useApp();
 
   const connectWallet = async () => {
     await connect();
 
-    setUserData(getLocalStorage());
+    processConnectStacks();
   };
 
   const disconnectWallet = () => {
     disconnect();
-    setUserData(null);
+
+    processConnectStacks();
   };
 
+  // TODO: To send transaction
+  // openContractCall()
+
   return (
-    <Card>
+    <Card className="gap-3">
       <CardHeader>
         <CardTitle>Stacks Integration</CardTitle>
       </CardHeader>
       <CardContent>
-        {!userData ? (
-          <Button
-            onClick={connectWallet}
-            variant='secondary'
-          >
+        {!stacksAddress ? (
+          <Button onClick={connectWallet} variant="secondary">
             Connect Stacks Wallet
           </Button>
         ) : (
           <div>
-            <p className='mb-2'>
-              <strong>Connected:</strong> {userData.addresses.stx[0].address?.substring(0, 10)}...
-              {userData.addresses.stx[0].address.substring(userData.addresses.stx[0].address.length - 10)}
+            <p className="mb-2">
+              <strong>Connected:</strong>
+
+              <p>{formatAddress(stacksAddress)}</p>
             </p>
-            <div className='flex gap-2 mt-4'>
-              <Button
-                onClick={disconnectWallet}
-                variant='destructive'
-              >
+            <div className="flex gap-2 mt-4">
+              <Button onClick={disconnectWallet} variant="destructive">
                 Disconnect
               </Button>
             </div>
