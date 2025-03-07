@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import StacksConnect from "./components/StacksConnect";
 import SuiConnect from "./components/SuiConnect";
 import BitcoinConnect from "@/components/BitcoinConnect";
-import SendBTCForm from "@/components/SendBTCForm.tsx";
+import SendBTCForm from "@/components/bridge/SendBTCForm.tsx";
 
 function App() {
   return (
