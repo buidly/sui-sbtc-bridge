@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { connect, disconnect } from "@stacks/connect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/context/app.context";
-import { formatAddress, getExplorerUrl } from "@/lib/helpers";
-import stacksLogo from "@/assets/images/stacks_logo.svg";
+import { formatAddress, formatBalance, getExplorerUrl } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { randomPrivateKey } from "@stacks/transactions";
+import { StacksApi } from "@/api/stacks.ts";
+import { Loader2 } from "lucide-react";
+
+import stacksLogo from "@/assets/images/stacks_logo.svg";
+import sbtcLogo from "@/assets/images/sbtc_logo.png";
 
 function StacksConnect() {
   const { stacksAddress, processConnectStacksUser, processConnectStacksGenerated } = useApp();
@@ -43,6 +47,24 @@ function StacksConnect() {
 
   // TODO: To send transaction
   // openContractCall()
+
+  const [stacksBalances, setStacksBalances] = useState(undefined);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (stacksAddress) {
+      const getBalance = async () => {
+        setLoading(true);
+
+        const balances = await StacksApi.getAddressBalances(stacksAddress);
+
+        setStacksBalances(balances);
+        setLoading(false);
+      };
+
+      getBalance();
+    }
+  }, [stacksAddress]);
 
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -116,6 +138,15 @@ function StacksConnect() {
               <a href={getExplorerUrl("STACKS", stacksAddress)} target={"_blank"} className={"underline"}>
                 {formatAddress(stacksAddress)}
               </a>
+            </p>
+            <p className="flex items-center">
+              <strong className='mr-1'>Balance:</strong> {formatBalance(stacksBalances?.stxBalance, 6)} STX
+              <img src={stacksLogo} alt={"STX Logo"} className="ml-1 h-4 w-4" />
+              {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
+            </p>
+            <p className="mb-2 flex items-center">
+              <strong className='mr-1'>sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 6)} sBTC
+              <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
             </p>
             <div className="flex gap-2 mt-4">
               <Button onClick={disconnectUserWallet} variant="destructive">

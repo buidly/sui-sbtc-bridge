@@ -55,7 +55,7 @@ export const storageHelper = {
 
     const { timestamp, expirationTime, ...rest } = JSON.parse(storedData);
     // Generated wallet does not expire
-    if (rest?.type !== 'GENERATED' || Date.now() > timestamp + expirationTime) {
+    if (rest?.type !== 'GENERATED' && Date.now() > timestamp + expirationTime) {
       localStorage.removeItem(STACKS_WALLET_KEY);
 
       return undefined;
