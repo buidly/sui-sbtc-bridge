@@ -23,6 +23,10 @@ export default function SendBTCForm() {
 
   const { notifyEmily } = useEmilyDeposit();
 
+  if (!btcAddressInfo || !stacksAddress) {
+    return undefined;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);

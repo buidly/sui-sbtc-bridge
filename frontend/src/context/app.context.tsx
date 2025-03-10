@@ -15,7 +15,7 @@ type BridgeStep =
   | null;
 
 interface AppContextType {
-  btcAddressInfo: { address: string; publicKey: string } | undefined | null;
+  btcAddressInfo: { address: string; publicKey: string } | null;
   stacksAddress: string | null;
   suiAddress: string | null;
   processConnectBtc: (res?: RpcResult<"wallet_getAccount">) => void;
@@ -25,16 +25,15 @@ interface AppContextType {
   bridgeStepInfo?: {
     step: BridgeStep;
     btcTxId: string;
+    stacksTxId?: string;
   };
-  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string) => void;
+  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => void;
 }
 
 const AppContext = createContext<AppContextType>(undefined as AppContextType);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string; publicKey: string } | undefined | null>(
-    undefined,
-  );
+  const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string; publicKey: string } | null>(null);
   const [stacksAddress, setStacksAddress] = useState<string | null>(null);
   const { address: suiAddress } = useCurrentAccount() || {};
 
@@ -99,8 +98,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       // Handle Btc
       const reconnectBtc = async () => {
         try {
-          setBtcAddressInfo(undefined);
-
           const res = await request("wallet_getAccount", null);
 
           processConnectBtc(res);
@@ -128,7 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const [bridgeStepInfo, setBridgeStepInfo] = useState<{ step: BridgeStep; btcTxId: string } | null>(null);
+  const [bridgeStepInfo, setBridgeStepInfo] = useState<{ step: BridgeStep; btcTxId: string; stacksTxId?: string } | null>(null);
 
   useEffect(() => {
     // Handle bridge step
@@ -136,14 +133,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const btcTxId = params.get("btcTxId");
 
     if (btcTxId) {
+      if (!params.has("stacksTxId")) {
+        setBridgeStepInfo({
+          step: "BTC_SENT_PENDING",
+          btcTxId,
+        });
+
+        return;
+      }
+
       setBridgeStepInfo({
-        step: "BTC_SENT_PENDING", // TODO: How to handle advanced steps?
+        step: "SBTC_SENT",
         btcTxId,
+        stacksTxId: params.get("stacksTxId"),
       });
     }
   }, []);
 
-  const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string) => {
+  const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => {
     if (!step || !btcTxId) {
       setBridgeStepInfo(null);
 
@@ -151,17 +158,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       params.delete("btcTxId");
 
       // Update URL without page reload
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      const newUrl = `${window.location.pathname}${params.size !== 0 ? "?" + params.toString() : ""}`;
       window.history.pushState({ path: newUrl }, "", newUrl);
+
+      return;
     }
 
     setBridgeStepInfo({
       step,
       btcTxId,
+      stacksTxId
     });
 
     const params = new URLSearchParams(window.location.search);
     params.set("btcTxId", btcTxId);
+
+    if (stacksTxId) {
+      params.set("stacksTxId", stacksTxId);
+    }
 
     // Update URL without page reload
     const newUrl = `${window.location.pathname}?${params.toString()}`;

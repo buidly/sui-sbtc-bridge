@@ -27,10 +27,13 @@ export default function BTCTxStatus() {
             <Bitcoin className="h-10 w-10 text-orange-500" />
           </div>
           <CardTitle className="text-2xl font-bold text-center">
-            Step 2 - sBTC Tx Status{" "}
-            {loading && <Loader2 className="inline-flex h-6 w-6 animate-spin text-orange-500" />}
+            Step 2 - sBTC Tx Status
+            {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-orange-500" />}
           </CardTitle>
-          <CardDescription className="text-center">Waiting for sBTC to arrive on Stacks</CardDescription>
+          {bridgeStepInfo.step === "BTC_SENT_PENDING" ||
+            (bridgeStepInfo.step === "BTC_SENT_MINTING" && (
+              <CardDescription className="text-center">Waiting for sBTC to arrive on Stacks</CardDescription>
+            ))}
         </CardHeader>
         <CardContent>
           <div className="grid gap-3">

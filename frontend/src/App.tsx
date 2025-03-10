@@ -8,6 +8,7 @@ import SendBTCForm from "@/components/bridge/SendBTCForm.tsx";
 import { useApp } from "@/context/app.context.tsx";
 import BTCTxStatus from "@/components/bridge/BTCTxStatus.tsx";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import BridgeSBTCForm from "@/components/bridge/BridgeSBTCForm.tsx";
 
 function App() {
   const { stacksAddress, btcAddressInfo, bridgeStepInfo } = useApp();
@@ -28,7 +29,8 @@ function App() {
           </div>
         </div>
 
-        {(!btcAddressInfo || !stacksAddress) && (
+        {/*TODO: Allow Step 3 to bridge sBTC from Stacks -> Sui without Bitcoin wallet connected*/}
+        {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
           <div className="flex items-center justify-center bg-gray-50 p-4">
             <Card className="w-full max-w-lg shadow-lg">
               <CardHeader className="space-y-1">
@@ -40,7 +42,15 @@ function App() {
           </div>
         )}
 
-        {btcAddressInfo && stacksAddress && (!bridgeStepInfo?.step ? <SendBTCForm /> : <BTCTxStatus />)}
+        {!bridgeStepInfo?.step ? (
+          <SendBTCForm />
+        ) : (
+          (bridgeStepInfo.step === "BTC_SENT_PENDING" ||
+            bridgeStepInfo.step === "BTC_SENT_MINTING" ||
+            bridgeStepInfo.step === "BTC_FAILED") && <BTCTxStatus />
+        )}
+
+        {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
       </div>
     </div>
   );

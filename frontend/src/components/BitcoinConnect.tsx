@@ -70,7 +70,6 @@ function BitcoinConnect() {
           <div className={"flex flex-col gap-2 w-50 mx-auto"}>
             <Button onClick={connectWalletLeather} variant="default">
               <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
-              {btcAddressInfo === undefined && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </Button>
             <Button onClick={connectWalletOther} variant="default">
               Other Wallet (Mainnet only)

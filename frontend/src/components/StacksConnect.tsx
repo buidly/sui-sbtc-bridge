@@ -13,7 +13,7 @@ import stacksLogo from "@/assets/images/stacks_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
 
 function StacksConnect() {
-  const { stacksAddress, processConnectStacksUser, processConnectStacksGenerated } = useApp();
+  const { stacksAddress, processConnectStacksUser, processConnectStacksGenerated, updateBridgeStepInfo } = useApp();
 
   // TODO: Add support for generating user wallet
   const connectUserWallet = async () => {
@@ -37,6 +37,8 @@ function StacksConnect() {
         processConnectStacksGenerated(null);
       }
     }
+
+    updateBridgeStepInfo(null, null);
   };
   const connectGenerateWallet = async () => {
     const privateKey = randomPrivateKey();
@@ -44,9 +46,6 @@ function StacksConnect() {
     // TODO: Fund wallet win a min STX balance from API
     processConnectStacksGenerated(privateKey);
   };
-
-  // TODO: To send transaction
-  // openContractCall()
 
   const [stacksBalances, setStacksBalances] = useState(undefined);
   const [loading, setLoading] = useState(false);
@@ -145,7 +144,7 @@ function StacksConnect() {
               {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </p>
             <p className="mb-2 flex items-center">
-              <strong className='mr-1'>sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 6)} sBTC
+              <strong className='mr-1'>sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 8)} sBTC
               <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
             </p>
             <div className="flex gap-2 mt-4">

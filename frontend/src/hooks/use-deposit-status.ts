@@ -57,16 +57,18 @@ export function useDepositStatus(txId: string) {
         if (!info) {
           // TODO: Handle this better in the future
           console.error("Could not retrieve bitcoin transaction");
-          clearInterval(interval);
           updateBridgeStepInfo(null, null);
+          clearInterval(interval);
           setLoading(false);
 
           return;
         }
         setStatusResponse(info);
 
+        // TODO: Check if connected Bitcoin & Stacks wallets belong to the correct address for this transaction
         if (info.status.confirmed) {
           if (txInfo.status === DepositStatus.Completed) {
+            // TODO: Update address sBTC balance
             updateBridgeStepInfo("BTC_COMPLETED", txId);
             clearInterval(interval);
             setLoading(false);

@@ -65,7 +65,7 @@ function SuiConnect() {
               {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </p>
             <p className="mb-2 flex items-center">
-              <strong className="mr-1">sBTC Balance:</strong> {formatBalance(suiBalances?.sbtcBalance, 6)} sBTC
+              <strong className="mr-1">sBTC Balance:</strong> {formatBalance(suiBalances?.sbtcBalance, 8)} sBTC
               <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
             </p>
             <div className="flex gap-2 mt-4">

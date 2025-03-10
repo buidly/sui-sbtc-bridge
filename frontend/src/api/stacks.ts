@@ -4,6 +4,7 @@ import { BufferCV, fetchCallReadOnlyFunction } from "@stacks/transactions";
 const STACKS_NETWORK = 'testnet'; // TODO: Update for mainnet
 
 const SBTC_TOKEN = 'SN1Z0WW5SMN4J99A1G1725PAB8H24CWNA7Z8H7214.sbtc-token::sbtc-token'; // TODO: Support mainnet
+export const SBTC_TOKEN_CONTRACT = SBTC_TOKEN.split('::')[0] as `${string}.${string}`;
 const SBTC_CONTRACT_DEPLOYER = 'SN1Z0WW5SMN4J99A1G1725PAB8H24CWNA7Z8H7214';
 
 const client = axios.create({
