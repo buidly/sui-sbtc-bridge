@@ -7,9 +7,10 @@ import BitcoinConnect from "@/components/BitcoinConnect";
 import SendBTCForm from "@/components/bridge/SendBTCForm.tsx";
 import { useApp } from "@/context/app.context.tsx";
 import BTCTxStatus from "@/components/bridge/BTCTxStatus.tsx";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 
 function App() {
-  const { btcAddressInfo, stacksAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
+  const { stacksAddress, btcAddressInfo, bridgeStepInfo } = useApp();
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -27,8 +28,19 @@ function App() {
           </div>
         </div>
 
-        <SendBTCForm />
-        {bridgeStepInfo?.step === "BTC_SENT_PENDING" && <BTCTxStatus />}
+        {(!btcAddressInfo || !stacksAddress) && (
+          <div className="flex items-center justify-center bg-gray-50 p-4">
+            <Card className="w-full max-w-lg shadow-lg">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold text-center">
+                  Connect a Bitcoin wallet & Stacks wallet first
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        )}
+
+        {btcAddressInfo && stacksAddress && (!bridgeStepInfo?.step ? <SendBTCForm /> : <BTCTxStatus />)}
       </div>
     </div>
   );

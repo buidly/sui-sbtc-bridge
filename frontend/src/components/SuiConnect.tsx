@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/context/app.context";
 import { Loader2 } from "lucide-react";
-import { formatAddress, formatBalance, getExplorerUrl } from "@/lib/helpers";
+import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
 import { SuiApi } from "@/api/sui.ts";
 
 import suiLogo from "@/assets/images/sui_logo.svg";
@@ -55,8 +55,8 @@ function SuiConnect() {
           <div>
             <p className="mb-2">
               <strong>Connected:</strong> <br />
-              <a href={getExplorerUrl("SUI", suiAddress)} target={"_blank"} className={"underline"}>
-                {formatAddress(suiAddress)}
+              <a href={getExplorerUrlAddress("SUI", suiAddress)} target={"_blank"} className={"underline"}>
+                {formatTrimmed(suiAddress)}
               </a>
             </p>
             <p className="flex items-center">

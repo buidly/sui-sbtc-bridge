@@ -16,7 +16,7 @@ import { sendBTCLeather, sendBTCOther } from "@/lib/sendBTC.ts";
 import { useEmilyDeposit } from "@/hooks/use-emily-deposit.ts";
 
 export default function SendBTCForm() {
-  const { btcAddressInfo, stacksAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
+  const { btcAddressInfo, stacksAddress, updateBridgeStepInfo } = useApp();
 
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,10 +125,6 @@ export default function SendBTCForm() {
 
       alert("Successful Deposit request");
 
-      // TODO: Modify query params
-      console.log("transaction");
-      console.log(txHex, txId);
-
       updateBridgeStepInfo("BTC_SENT_PENDING", txId);
     } catch (error) {
       console.error(error);
@@ -143,27 +139,9 @@ export default function SendBTCForm() {
     }
   };
 
-  if (!btcAddressInfo || !stacksAddress) {
-    return (
-      <div className="flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Connect a Bitcoin wallet & Stacks wallet first
-            </CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  if (bridgeStepInfo?.step) {
-    return undefined;
-  }
-
   return (
     <div className="flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md shadow-lg gap-4">
+      <Card className="w-full max-w-lg shadow-lg gap-4">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-2">
             <Bitcoin className="h-10 w-10 text-orange-500" />
@@ -172,68 +150,55 @@ export default function SendBTCForm() {
           <CardDescription className="text-center">Convert BTC tokens to sBTC</CardDescription>
         </CardHeader>
         <CardContent>
-          {bridgeStepInfo?.step === "BTC_SENT_PENDING" ? (
-            <>
-              <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Waiting for BTC transaction {bridgeStepInfo.btcTxId} to be confirmed
-                </AlertDescription>
-              </Alert>
-            </>
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <div className="grid gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
-                  <div className="relative">
-                    <Input
-                      id="amount"
-                      type="number"
-                      placeholder="0.00"
-                      step="0.00000001"
-                      min="0.001"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      className="pr-12"
-                      required
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <span className="text-gray-500">BTC</span>
-                    </div>
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <div className="relative">
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="0.00"
+                    step="0.00000001"
+                    min="0.001"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="pr-12"
+                    required
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <span className="text-gray-500">BTC</span>
                   </div>
                 </div>
-
-                {/* TODO: Add check for max amount */}
-
-                {parseFloat(amount) < 0.001 && (
-                  <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>Minimum deposit amount is 0.001 BTC</AlertDescription>
-                  </Alert>
-                )}
-                {parseFloat(amount) > 0.002 && (
-                  <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      You're about to send a large amount. Please double-check the wallets.
-                    </AlertDescription>
-                  </Alert>
-                )}
               </div>
-            </form>
-          )}
+
+              {/* TODO: Add check for max amount */}
+
+              {parseFloat(amount) < 0.001 && (
+                <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>Minimum deposit amount is 0.001 BTC</AlertDescription>
+                </Alert>
+              )}
+              {parseFloat(amount) > 0.002 && (
+                <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    You're about to send a large amount. Please double-check the wallets.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </form>
         </CardContent>
         <CardFooter>
           <Button
             className="w-full"
             type="submit"
             onClick={handleSubmit}
-            disabled={
-              isSubmitting || bridgeStepInfo?.step === "BTC_SENT_PENDING" || !amount || parseFloat(amount) < 0.001
-            }
+            disabled={isSubmitting || !amount || parseFloat(amount) < 0.001}
           >
-            {isSubmitting || bridgeStepInfo?.step === "BTC_SENT_PENDING" ? (
+            {isSubmitting ? (
               <div className="flex items-center justify-center">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 Processing...

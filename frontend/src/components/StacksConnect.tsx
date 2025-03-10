@@ -3,7 +3,7 @@ import { connect, disconnect } from "@stacks/connect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/context/app.context";
-import { formatAddress, formatBalance, getExplorerUrl } from "@/lib/helpers";
+import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { randomPrivateKey } from "@stacks/transactions";
 import { StacksApi } from "@/api/stacks.ts";
@@ -135,8 +135,8 @@ function StacksConnect() {
               <strong>Connected:</strong>
               <br />
 
-              <a href={getExplorerUrl("STACKS", stacksAddress)} target={"_blank"} className={"underline"}>
-                {formatAddress(stacksAddress)}
+              <a href={getExplorerUrlAddress("STACKS", stacksAddress)} target={"_blank"} className={"underline"}>
+                {formatTrimmed(stacksAddress)}
               </a>
             </p>
             <p className="flex items-center">

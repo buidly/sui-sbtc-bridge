@@ -1,8 +1,8 @@
-export const formatAddress = (address: string, size: number = 10) => {
+export const formatTrimmed = (address: string, size: number = 10) => {
   return address.slice(0, size) + "..." + address.slice(-size);
 };
 
-export const getExplorerUrl = (type: "BITCOIN" | "STACKS" | "SUI", address: string) => {
+export const getExplorerUrlAddress = (type: "BITCOIN" | "STACKS" | "SUI", address: string) => {
   // TODO: Add support for mainnet
   switch (type) {
     case "BITCOIN":
@@ -11,6 +11,18 @@ export const getExplorerUrl = (type: "BITCOIN" | "STACKS" | "SUI", address: stri
       return `https://explorer.hiro.so/address/${address}?chain=testnet`;
     case "SUI":
       return `https://testnet.suivision.xyz/address/${address}`;
+  }
+};
+
+export const getExplorerUrlTransaction = (type: "BITCOIN" | "STACKS" | "SUI", transaction: string) => {
+  // TODO: Add support for mainnet
+  switch (type) {
+    case "BITCOIN":
+      return `https://beta.sbtc-mempool.tech/api/proxy/tx/${transaction}`;
+    case "STACKS":
+      return `https://explorer.hiro.so/txid/${transaction}?chain=testnet`;
+    case "SUI":
+      return `https://testnet.suivision.xyz/tx/${transaction}`;
   }
 };
 

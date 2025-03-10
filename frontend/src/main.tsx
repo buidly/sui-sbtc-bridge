@@ -17,7 +17,7 @@ const { networkConfig: suiNetworkConfig } = createNetworkConfig({
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  // <StrictMode>
     <QueryClientProvider client={queryClient}>
       {/*TODO: Change Sui network when going to mainnet*/}
       <SuiClientProvider networks={suiNetworkConfig} defaultNetwork="testnet">
@@ -28,5 +28,5 @@ createRoot(document.getElementById("root")).render(
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
-  </StrictMode>,
+  // </StrictMode>,
 );

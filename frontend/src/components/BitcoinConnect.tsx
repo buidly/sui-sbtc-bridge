@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Wallet, { AddressPurpose } from "sats-connect";
 import { useApp } from "@/context/app.context";
 import { Loader2 } from "lucide-react";
-import { formatAddress, formatBalance, getExplorerUrl } from "@/lib/helpers";
+import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
 import leatherLogo from "@/assets/images/leather_logo.svg";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { connect, disconnect } from "@stacks/connect";
@@ -81,8 +81,8 @@ function BitcoinConnect() {
             <p className="mb-2">
               <strong>Connected:</strong>
               <br />
-              <a href={getExplorerUrl("BITCOIN", btcAddressInfo.address)} target={"_blank"} className={"underline"}>
-                {formatAddress(btcAddressInfo.address)}
+              <a href={getExplorerUrlAddress("BITCOIN", btcAddressInfo.address)} target={"_blank"} className={"underline"}>
+                {formatTrimmed(btcAddressInfo.address)}
               </a>
             </p>
             <p className="mb-2 flex items-center">

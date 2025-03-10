@@ -5,7 +5,14 @@ import { getLocalStorage, isConnected, StorageData, request as stacksRequest } f
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { privateKeyToAddress } from "@stacks/transactions";
 
-type BridgeStep = "BTC_SENT_PENDING" | "BTC_SENT_MINTING" | "BTC_COMPLETED" | "SBTC_SENT" | "SBTC_COMPLETED" | null;
+type BridgeStep =
+  | "BTC_SENT_PENDING"
+  | "BTC_SENT_MINTING"
+  | "BTC_FAILED"
+  | "BTC_COMPLETED"
+  | "SBTC_SENT"
+  | "SBTC_COMPLETED"
+  | null;
 
 interface AppContextType {
   btcAddressInfo: { address: string; publicKey: string } | undefined | null;
@@ -19,7 +26,7 @@ interface AppContextType {
     step: BridgeStep;
     btcTxId: string;
   };
-  updateBridgeStepInfo: (step: BridgeStep, btcTxId: string) => void;
+  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string) => void;
 }
 
 const AppContext = createContext<AppContextType>(undefined as AppContextType);
@@ -136,18 +143,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updateBridgeStepInfo = (step: BridgeStep, btcTxId: string) => {
+  const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string) => {
+    if (!step || !btcTxId) {
+      setBridgeStepInfo(null);
+
+      const params = new URLSearchParams(window.location.search);
+      params.delete("btcTxId");
+
+      // Update URL without page reload
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.pushState({ path: newUrl }, "", newUrl);
+    }
+
     setBridgeStepInfo({
       step,
       btcTxId,
     });
 
     const params = new URLSearchParams(window.location.search);
-    params.set('btcTxId', btcTxId);
+    params.set("btcTxId", btcTxId);
 
     // Update URL without page reload
     const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
+    window.history.pushState({ path: newUrl }, "", newUrl);
   };
 
   return (
