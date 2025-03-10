@@ -2,22 +2,29 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Wallet, { AddressPurpose } from "sats-connect";
-import { useApp } from "@/context/app.context";
+import { useApp, userSession } from "@/context/app.context";
 import { Loader2 } from "lucide-react";
 import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
 import leatherLogo from "@/assets/images/leather_logo.svg";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
-import { connect, disconnect } from "@stacks/connect";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { BitcoinApi } from "@/api/bitcoin.ts";
+import { showConnect } from "@stacks/connect";
 
 function BitcoinConnect() {
   const { btcAddressInfo, processConnectBtc, processConnectBtcLeather } = useApp();
 
   const connectWalletLeather = async () => {
-    await connect();
-
-    await processConnectBtcLeather();
+    showConnect({
+      userSession,
+      appDetails: {
+        name: 'Sui sBTC Bridge',
+        icon: window.location.origin + '/vite.svg',
+      },
+      onFinish: () => {
+        processConnectBtcLeather();
+      }
+    });
   };
   const connectWalletOther = async () => {
     const res = await Wallet.request("wallet_connect", {
@@ -30,7 +37,7 @@ function BitcoinConnect() {
 
   const disconnectWallet = async () => {
     if (storageHelper.getBtcWallet()?.type === "LEATHER" && storageHelper.getStacksWallet()?.type !== "USER") {
-      disconnect();
+      userSession.signUserOut();
     }
 
     if (storageHelper.getBtcWallet()?.type === "OTHER") {

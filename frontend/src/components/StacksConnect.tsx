@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { connect, disconnect } from "@stacks/connect";
+import { showConnect } from "@stacks/connect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useApp } from "@/context/app.context";
+import { useApp, userSession } from "@/context/app.context";
 import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { randomPrivateKey } from "@stacks/transactions";
@@ -17,13 +17,20 @@ function StacksConnect() {
 
   // TODO: Add support for generating user wallet
   const connectUserWallet = async () => {
-    await connect();
-
-    processConnectStacksUser();
+    showConnect({
+      userSession,
+      appDetails: {
+        name: 'Sui sBTC Bridge',
+        icon: window.location.origin + '/vite.svg',
+      },
+      onFinish: () => {
+        processConnectStacksUser();
+      }
+    });
   };
   const disconnectUserWallet = () => {
     if (storageHelper.getStacksWallet()?.type === "USER" && storageHelper.getBtcWallet()?.type !== "LEATHER") {
-      disconnect();
+      userSession.signUserOut();
     }
 
     if (storageHelper.getStacksWallet()?.type === "USER") {

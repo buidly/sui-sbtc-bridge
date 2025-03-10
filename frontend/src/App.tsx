@@ -9,6 +9,7 @@ import { useApp } from "@/context/app.context.tsx";
 import BTCTxStatus from "@/components/bridge/BTCTxStatus.tsx";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import BridgeSBTCForm from "@/components/bridge/BridgeSBTCForm.tsx";
+import BridgeTxStatus from "@/components/bridge/BridgeTxStatus.tsx";
 
 function App() {
   const { stacksAddress, btcAddressInfo, bridgeStepInfo } = useApp();
@@ -51,6 +52,9 @@ function App() {
         )}
 
         {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
+        {bridgeStepInfo && (bridgeStepInfo.step === "SBTC_SENT" || bridgeStepInfo.step === "SBTC_COMPLETED") && (
+          <BridgeTxStatus />
+        )}
       </div>
     </div>
   );

@@ -1,7 +1,10 @@
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { AddressPurpose, request, RpcResult } from "sats-connect";
-import { getLocalStorage, isConnected, StorageData, request as stacksRequest } from "@stacks/connect";
+import {
+  AppConfig, UserData,
+  UserSession
+} from "@stacks/connect";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { privateKeyToAddress } from "@stacks/transactions";
 
@@ -20,7 +23,7 @@ interface AppContextType {
   suiAddress: string | null;
   processConnectBtc: (res?: RpcResult<"wallet_getAccount">) => void;
   processConnectBtcLeather: () => void;
-  processConnectStacksUser: (userData?: StorageData | null) => void;
+  processConnectStacksUser: (userData?: UserData | null) => void;
   processConnectStacksGenerated: (privateKey: string) => void;
   bridgeStepInfo?: {
     step: BridgeStep;
@@ -29,6 +32,9 @@ interface AppContextType {
   };
   updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => void;
 }
+
+const appConfig = new AppConfig(['store_write', 'publish_data']);
+export const userSession = new UserSession({ appConfig });
 
 const AppContext = createContext<AppContextType>(undefined as AppContextType);
 
@@ -49,7 +55,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     storageHelper.setBtcWallet("OTHER");
   };
   const processConnectBtcLeather = async () => {
-    const userData = getLocalStorage();
+    const userData = userSession.loadUserData();
 
     if (!userData) {
       setBtcAddressInfo(null);
@@ -57,15 +63,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const accounts = await stacksRequest("getAddresses");
+    const btcAddress = userData.profile.btcAddress["p2wpkh"]["regtest"]; // TODO:
 
-    setBtcAddressInfo(accounts.addresses[0]);
+    setBtcAddressInfo({
+      address: btcAddress,
+      publicKey: userData.profile.btcPublicKeyTestnet["p2wpkh"], // TODO: Is this right?
+    });
     storageHelper.setBtcWallet("LEATHER");
   };
 
-  const processConnectStacksUser = (userData?: StorageData | null) => {
+  const processConnectStacksUser = (userData?: UserData | null) => {
     if (userData === undefined) {
-      userData = getLocalStorage();
+      userData = userSession.loadUserData();
     }
 
     if (!userData) {
@@ -74,7 +83,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const stacksAddress = userData.addresses.stx[0].address;
+    // TODO:
+    const stacksAddress = userData.profile.stxAddress["testnet"]; // TODO:
 
     setStacksAddress(stacksAddress);
     storageHelper.setStacksWallet("USER", stacksAddress);
@@ -114,7 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     // Handle Stacks
-    if (isConnected()) {
+    if (userSession.isUserSignedIn()) {
       if (storageStacksWallet?.type === "USER") {
         processConnectStacksUser();
       }

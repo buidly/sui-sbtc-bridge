@@ -10,9 +10,9 @@ import stacksLogo from "@/assets/images/stacks_logo.svg";
 import { SBTC_TOKEN_CONTRACT, StacksApi } from "@/api/stacks.ts";
 import { formatBalance } from "@/lib/helpers.ts";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
-import { request } from "@stacks/connect";
 import { Pc, principalCV, stringAsciiCV, tupleCV, uintCV } from "@stacks/transactions";
 import { bufferFromHex } from "@stacks/transactions/dist/cl";
+import { openContractCall } from "@stacks/connect";
 
 const AXELAR_ITS_DEPLOYER = "ST237BAVWHZ124P5XWDRJEB40WNRGM9C8A9CK02Q6";
 
@@ -36,8 +36,9 @@ export default function BridgeSBTCForm() {
     console.log('denominated amount', denominatedAmount);
 
     try {
-      const response = await request("stx_callContract", {
-        contract: `${AXELAR_ITS_DEPLOYER}.interchain-token-service`, // Axelar ITS contract // TODO: Move to env var
+      openContractCall({
+        contractAddress: `${AXELAR_ITS_DEPLOYER}`, // Axelar ITS contract // TODO: Move to env var
+        contractName: 'interchain-token-service',
         functionName: "interchain-transfer",
         functionArgs: [
           principalCV(`${AXELAR_ITS_DEPLOYER}.gateway-impl`),
@@ -54,30 +55,35 @@ export default function BridgeSBTCForm() {
           uintCV(1_000_000), // 1 STX for paying cross chain fee
         ],
         postConditions: [
-          // Pc.origin().willSendEq(1_000_000).ustx(),
-          // Pc.origin()
-          //   .willSendEq(denominatedAmount)
-          //   .ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
+          Pc.origin().willSendEq(1_000_000).ustx(),
+          Pc.origin()
+            .willSendEq(denominatedAmount)
+            .ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
         ],
         network: "testnet", // TODO:
+        onFinish: (response) => {
+          console.log('response', response);
+
+          if (!response?.txId) {
+            alert("Failed to send Stacks transaction");
+            setIsSubmitting(false);
+
+            return;
+          }
+
+          console.log("Respoinse", response);
+
+          updateBridgeStepInfo("SBTC_SENT", bridgeStepInfo.btcTxId, response.txId);
+        },
+        onCancel: () => {
+          setIsSubmitting(false);
+        }
       });
-
-      if (!response?.txid) {
-        alert("Failed to send Stacks transaction");
-        setIsSubmitting(false);
-
-        return;
-      }
-
-      console.log("Respoinse", response);
-
-      updateBridgeStepInfo("BTC_SENT_PENDING", bridgeStepInfo.btcTxId, response.txid);
     } catch (e) {
       console.error(e);
 
       setIsSubmitting(false);
     }
-    // TODO: Handle submit
   };
 
   const [stacksBalances, setStacksBalances] = useState(undefined);
@@ -122,7 +128,7 @@ export default function BridgeSBTCForm() {
           </div>
           <CardTitle className="text-2xl font-bold text-center">
             Step 3 - Bridge sBTC
-            {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-500" />}
+            {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
           </CardTitle>
           <CardDescription className="text-center">Send sBTC from Stacks to Sui</CardDescription>
         </CardHeader>
@@ -161,7 +167,7 @@ export default function BridgeSBTCForm() {
         </CardContent>
         <CardFooter>
           <Button
-            className="w-full bg-sky-400 hover:bg-sky-500/90"
+            className="w-full bg-sky-400 hover:bg-sky-400/90"
             type="submit"
             onClick={handleSubmit}
             disabled={

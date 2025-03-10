@@ -1,4 +1,8 @@
 export const formatTrimmed = (address: string, size: number = 10) => {
+  if (!address) {
+    return '';
+  }
+
   return address.slice(0, size) + "..." + address.slice(-size);
 };
 

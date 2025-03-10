@@ -1,4 +1,3 @@
-import { request as stacksRequest } from "@stacks/connect";
 import { request } from "sats-connect";
 
 type Payload = {
@@ -8,7 +7,7 @@ type Payload = {
 };
 
 export async function sendBTCLeather({ amountInSats, recipient, network }: Payload) {
-  const response = await stacksRequest("sendTransfer", {
+  const response = await window.LeatherProvider.request("sendTransfer", {
     recipients: [
       {
         address: recipient,

@@ -59,7 +59,7 @@ export default function BTCTxStatus() {
                 <AlertDescription>
                   Waiting for BTC transaction to be confirmed
                   <p>
-                    <strong>Tx Hash:</strong>{" "}
+                    <strong>Bitcoin Tx Hash:</strong>{" "}
                     <a
                       href={getExplorerUrlTransaction("BITCOIN", bridgeStepInfo.btcTxId)}
                       target="_blank"
