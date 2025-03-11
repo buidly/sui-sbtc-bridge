@@ -1,13 +1,8 @@
-import { LendingPool, LendingPools, LendingProtocol } from "./LendingPools";
+import { LendingPool, LendingProtocol } from "./LendingPools";
 
-export abstract class LendingPoolProvider implements LendingPools {
-  pools: LendingPool[] = [];
-  protected protocol: LendingProtocol;
+export abstract class LendingPoolProvider {
+  constructor(readonly protocol: LendingProtocol) {}
 
-  constructor(protocol: LendingProtocol) {
-    this.protocol = protocol;
-  }
-
-  abstract fetchAllPools(): Promise<void>;
-  abstract getPool(id: string): LendingPool | undefined;
+  abstract getPools(): Promise<LendingPool[]>;
+  abstract getPool(id: string): Promise<LendingPool | undefined>;
 }

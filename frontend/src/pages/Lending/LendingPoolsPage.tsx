@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
-import { LendingPoolFactory } from "./LendingMarkets/LendingPoolProvider";
-import { LendingPool, LendingProtocol } from "./LendingMarkets/LendingPools";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { useEffect, useState } from "react";
+import { LendingPool } from "./LendingMarkets/LendingPools";
+import { NaviPoolProvider } from "./LendingMarkets/Navi/NaviPools";
+import { ScallopPoolProvider } from "./LendingMarkets/Scallop/ScallopPools";
+import { SuilendPoolProvider } from "./LendingMarkets/Suilend/SuilendPools";
 
 export function LendingPoolsPage() {
   const [pools, setPools] = useState<LendingPool[]>([]);
@@ -10,9 +12,10 @@ export function LendingPoolsPage() {
   useEffect(() => {
     async function fetchPools() {
       try {
-        const naviProvider = LendingPoolFactory.createProvider(LendingProtocol.NAVI);
-        await naviProvider.fetchAllPools();
-        setPools(naviProvider.pools);
+        const providers = [new NaviPoolProvider(), new ScallopPoolProvider(), new SuilendPoolProvider()];
+        const poolsArrays = await Promise.all(providers.map((provider) => provider.getPools()));
+        const allPools = poolsArrays.flat();
+        setPools(allPools);
       } catch (error) {
         console.error("Error fetching pools:", error);
       } finally {
@@ -36,9 +39,15 @@ export function LendingPoolsPage() {
       <h1 className="text-3xl font-bold mb-8">Lending Markets</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {pools.map((pool) => (
-          <div key={pool.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+          <div
+            key={`${pool.protocol}-${pool.coinType}`}
+            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">{pool.name}</h3>
+              <div>
+                <h3 className="text-xl font-semibold">{pool.name}</h3>
+                <span className="text-xs text-gray-500 capitalize">{pool.protocol}</span>
+              </div>
               <span className="text-gray-500 text-sm">
                 ${pool.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>

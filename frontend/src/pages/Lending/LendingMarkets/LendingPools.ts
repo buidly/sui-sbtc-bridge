@@ -3,9 +3,8 @@ export interface LendingPools {
 }
 
 export interface LendingPool {
-  id: string;
   name: string;
-  symbol: string;
+  coinType: string;
   totalSupply: number;
   totalBorrow: number;
   supplyApy: number;
