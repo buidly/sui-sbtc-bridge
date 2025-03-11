@@ -54,10 +54,15 @@ export class ScallopPoolProvider extends LendingPoolProvider {
   async getPools(): Promise<LendingPool[]> {
     try {
       const response = await axios.get<ScallopResponse>("https://sdk.api.scallop.io/api/market/migrate");
+      console.log(response.data);
       if (!response.data) return [];
 
+      const btcPoolsArray = Object.values(btcPools);
+
       return response.data.pools
-        .filter((pool) => Object.values(btcPools).includes(pool.coinType.toLowerCase().replace("0x", "")))
+        .filter((pool) =>
+          btcPoolsArray.some((type) => pool.coinType.toLowerCase().replace("0x", "") === type.toLowerCase()),
+        )
         .map((data) => this.transformToLendingPool(data));
     } catch (error) {
       console.error("Error fetching Scallop pools:", error);

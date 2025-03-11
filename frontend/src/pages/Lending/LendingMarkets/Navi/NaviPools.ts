@@ -41,7 +41,9 @@ export class NaviPoolProvider extends LendingPoolProvider {
       if (!response.data || response.data.code !== 0) return [];
 
       return response.data.data
-        .filter((pool) => Object.values(btcPools).includes(pool.coinType.toLowerCase().replace("0x", "")))
+        .filter((pool) =>
+          Object.values(btcPools).some((type) => pool.coinType.toLowerCase().replace("0x", "") === type.toLowerCase()),
+        )
         .map((data) => {
           const name = Object.entries(btcPools).find(([_, type]) => type === data.coinType)?.[0];
           return this.transformToLendingPool(data, name);
