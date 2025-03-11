@@ -8,6 +8,7 @@ import SendBTCForm from "@/components/bridge/SendBTCForm.tsx";
 import { useApp } from "@/context/app.context.tsx";
 import BTCTxStatus from "@/components/bridge/BTCTxStatus.tsx";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import { LendingPoolsPage } from "./pages/Lending/LendingPoolsPage";
 
 function App() {
   const { stacksAddress, btcAddressInfo, bridgeStepInfo } = useApp();
@@ -41,6 +42,7 @@ function App() {
         )}
 
         {btcAddressInfo && stacksAddress && (!bridgeStepInfo?.step ? <SendBTCForm /> : <BTCTxStatus />)}
+        <LendingPoolsPage />
       </div>
     </div>
   );
