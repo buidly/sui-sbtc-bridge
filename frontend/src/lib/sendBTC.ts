@@ -17,7 +17,7 @@ export async function sendBTCLeather({ amountInSats, recipient, network }: Paylo
     network,
   });
 
-  return response.txid.replace(/"|'/g, "");
+  return response.result.txid;
 }
 
 export async function sendBTCOther({ amountInSats, recipient }: Payload) {

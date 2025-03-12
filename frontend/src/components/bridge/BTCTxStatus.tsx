@@ -52,8 +52,8 @@ export default function BTCTxStatus() {
             </div>
           </div>
 
-          {bridgeStepInfo.step === "BTC_SENT_PENDING" ||
-            (bridgeStepInfo.step === "BTC_SENT_MINTING" && (
+          {(bridgeStepInfo.step === "BTC_SENT_PENDING" ||
+            bridgeStepInfo.step === "BTC_SENT_MINTING") && (
               <Alert variant="default" className="bg-amber-50 border-amber-200 mt-3">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
@@ -71,7 +71,7 @@ export default function BTCTxStatus() {
                   <p className="text-red-500">To avoid losing your progress, please keep this page open.</p>
                 </AlertDescription>
               </Alert>
-            ))}
+            )}
 
           {bridgeStepInfo.step === "BTC_FAILED" && (
             <Alert variant="destructive" className="bg-red-50 border-red-200 mt-3">

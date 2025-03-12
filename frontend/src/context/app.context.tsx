@@ -166,6 +166,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const params = new URLSearchParams(window.location.search);
       params.delete("btcTxId");
+      params.delete("stacksTxId");
 
       // Update URL without page reload
       const newUrl = `${window.location.pathname}${params.size !== 0 ? "?" + params.toString() : ""}`;
