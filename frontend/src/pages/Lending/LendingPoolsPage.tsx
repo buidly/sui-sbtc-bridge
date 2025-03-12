@@ -102,28 +102,6 @@ export function LendingPoolsPage() {
                     ${pool.tvl.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm items-center">
-                  <span className="text-gray-600 flex items-center gap-1">
-                    LTV
-                    <Tooltip content="Loan-to-Value ratio: The maximum percentage of your collateral's value that you can borrow. For example, an LTV of 75% means you can borrow up to 0.75 SUI for every 1 SUI of collateral.">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-4 h-4 text-gray-400 hover:text-gray-600"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-                        />
-                      </svg>
-                    </Tooltip>
-                  </span>
-                  <span className="font-medium">{(pool.ltv * 100).toFixed(0)}%</span>
-                </div>
               </div>
             </div>
           </div>

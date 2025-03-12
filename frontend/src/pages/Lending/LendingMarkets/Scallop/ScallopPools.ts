@@ -54,7 +54,6 @@ export class ScallopPoolProvider extends LendingPoolProvider {
   async getPools(): Promise<LendingPool[]> {
     try {
       const response = await axios.get<ScallopResponse>("https://sdk.api.scallop.io/api/market/migrate");
-      console.log(response.data);
       if (!response.data) return [];
 
       const btcPoolsArray = Object.values(btcPools);
