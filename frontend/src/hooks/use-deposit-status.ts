@@ -5,6 +5,7 @@ import { Cl, PrincipalCV } from "@stacks/transactions";
 import { EMILY_WRAPPER_URL } from "@/hooks/use-emily-deposit.ts";
 import { BitcoinApi } from "@/api/bitcoin.ts";
 import { useApp } from "@/context/app.context.tsx";
+import { useBalances } from "@/context/balances.context.tsx";
 
 export enum DepositStatus {
   PendingConfirmation = "pending",
@@ -44,6 +45,8 @@ export function useDepositStatus(txId: string) {
     return (emilyResponse?.status === DepositStatus.Completed && emilyResponse.fulfillment.StacksTxid) || "";
   }, [emilyResponse]);
 
+  const { getStacksBalances } = useBalances();
+
   useEffect(() => {
     if (txId && bridgeStepInfo?.step !== "BTC_COMPLETED" && bridgeStepInfo?.step !== "BTC_FAILED") {
       const check = async () => {
@@ -68,9 +71,11 @@ export function useDepositStatus(txId: string) {
         // TODO: Check if connected Bitcoin & Stacks wallets belong to the correct address for this transaction
         if (info.status.confirmed) {
           if (txInfo.status === DepositStatus.Completed) {
-            // TODO: Update address sBTC balance
             updateBridgeStepInfo("BTC_COMPLETED", txId);
             clearInterval(interval);
+            // This works here for Stacks because stacksAddress is set before the setInterval
+            // However a useEffect doesn't work because the updateBridgeStepInfo doesn't update the object just a property
+            getStacksBalances();
             setLoading(false);
 
             return;

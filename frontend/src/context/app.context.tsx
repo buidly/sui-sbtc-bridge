@@ -1,12 +1,10 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import React, { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useCurrentAccount } from "@mysten/dapp-kit";
 import { AddressPurpose, request, RpcResult } from "sats-connect";
-import {
-  AppConfig, UserData,
-  UserSession
-} from "@stacks/connect";
+import { AppConfig, UserData, UserSession } from "@stacks/connect";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { privateKeyToAddress } from "@stacks/transactions";
+import { STACKS_NETWORK } from "@/api/stacks.ts";
 
 type BridgeStep =
   | "BTC_SENT_PENDING"
@@ -33,7 +31,7 @@ interface AppContextType {
   updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => void;
 }
 
-const appConfig = new AppConfig(['store_write', 'publish_data']);
+const appConfig = new AppConfig(["store_write", "publish_data"]);
 export const userSession = new UserSession({ appConfig });
 
 const AppContext = createContext<AppContextType>(undefined as AppContextType);
@@ -41,7 +39,8 @@ const AppContext = createContext<AppContextType>(undefined as AppContextType);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string; publicKey: string } | null>(null);
   const [stacksAddress, setStacksAddress] = useState<string | null>(null);
-  const { address: suiAddress } = useCurrentAccount() || {};
+  const suiWallet = useCurrentAccount();
+  const suiAddress = useMemo(() => suiWallet?.address, [suiWallet]);
 
   const processConnectBtc = (res?: RpcResult<"wallet_getAccount">) => {
     if (!res || res.status === "error") {
@@ -63,11 +62,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const btcAddress = userData.profile.btcAddress["p2wpkh"]["regtest"]; // TODO:
+    const btcAddress = userData.profile.btcAddress["p2wpkh"][STACKS_NETWORK === "testnet" ? "regtest" : "mainnet"];
 
     setBtcAddressInfo({
       address: btcAddress,
-      publicKey: userData.profile.btcPublicKeyTestnet["p2wpkh"], // TODO: Is this right?
+      publicKey: (STACKS_NETWORK === "testnet" ? userData.profile.btcPublicKeyTestnet : userData.profile.btcPublicKey)[
+        "p2wpkh"
+      ],
     });
     storageHelper.setBtcWallet("LEATHER");
   };
@@ -83,8 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // TODO:
-    const stacksAddress = userData.profile.stxAddress["testnet"]; // TODO:
+    const stacksAddress = userData.profile.stxAddress[STACKS_NETWORK];
 
     setStacksAddress(stacksAddress);
     storageHelper.setStacksWallet("USER", stacksAddress);
@@ -96,9 +96,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const stacksAddress = privateKeyToAddress(privateKey, "testnet");
+    const stacksAddress = privateKeyToAddress(privateKey, STACKS_NETWORK);
 
-    setStacksAddress(stacksAddress); // TODO: Support other networks in the future
+    setStacksAddress(stacksAddress);
     storageHelper.setStacksWallet("GENERATED", stacksAddress, privateKey);
   };
 
@@ -135,7 +135,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const [bridgeStepInfo, setBridgeStepInfo] = useState<{ step: BridgeStep; btcTxId: string; stacksTxId?: string } | null>(null);
+  const [bridgeStepInfo, setBridgeStepInfo] = useState<{
+    step: BridgeStep;
+    btcTxId: string;
+    stacksTxId?: string;
+  } | null>(null);
 
   useEffect(() => {
     // Handle bridge step
@@ -178,7 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setBridgeStepInfo({
       step,
       btcTxId,
-      stacksTxId
+      stacksTxId,
     });
 
     const params = new URLSearchParams(window.location.search);

@@ -25,29 +25,30 @@ function App() {
         </div>
 
         <div className="flex items-center justify-center p-4">
-          {/*TODO: Allow Step 3 to bridge sBTC from Stacks -> Sui without Bitcoin wallet connected*/}
-          {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
-            <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold text-center text-white">
-                  Connect a Bitcoin & Stacks wallet first
-                </CardTitle>
-              </CardHeader>
-            </Card>
-          )}
+          <div class="w-full max-w-lg">
+            {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
+              <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl font-bold text-center text-white">
+                    Connect a Bitcoin & Stacks wallet first
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            )}
 
-          {!bridgeStepInfo?.step ? (
-            <SendBTCForm />
-          ) : (
-            (bridgeStepInfo.step === "BTC_SENT_PENDING" ||
-              bridgeStepInfo.step === "BTC_SENT_MINTING" ||
-              bridgeStepInfo.step === "BTC_FAILED") && <BTCTxStatus />
-          )}
+            {!bridgeStepInfo?.step ? (
+              <SendBTCForm />
+            ) : (
+              (bridgeStepInfo.step === "BTC_SENT_PENDING" ||
+                bridgeStepInfo.step === "BTC_SENT_MINTING" ||
+                bridgeStepInfo.step === "BTC_FAILED") && <BTCTxStatus />
+            )}
 
-          {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
-          {bridgeStepInfo && (bridgeStepInfo.step === "SBTC_SENT" || bridgeStepInfo.step === "SBTC_COMPLETED") && (
-            <BridgeTxStatus />
-          )}
+            {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
+            {bridgeStepInfo && (bridgeStepInfo.step === "SBTC_SENT" || bridgeStepInfo.step === "SBTC_COMPLETED") && (
+              <BridgeTxStatus />
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,8 @@
 import axios from "axios";
+import { ENV } from "@/lib/env.ts";
 
 const client = axios.create({
-  baseURL: "https://devnet-amplifier.api.axelarscan.io/gmp/searchGMP", // TODO: Support mainnet
+  baseURL: `${ENV.AXELAR_AMPLIFIER_API}/gmp/searchGMP`,
   timeout: 30_000,
 });
 

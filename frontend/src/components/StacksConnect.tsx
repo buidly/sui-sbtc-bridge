@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { showConnect } from "@stacks/connect";
 import { Button } from "@/components/ui/button";
 import { useApp, userSession } from "@/context/app.context";
 import { formatBalance } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { randomPrivateKey } from "@stacks/transactions";
-import { StacksApi } from "@/api/stacks.ts";
 import { WalletCard } from "@/components/base/WalletCard.tsx";
 
 import stacksLogo from "@/assets/images/stacks_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
+import { useBalances } from "@/context/balances.context.tsx";
 
 function StacksConnect() {
   const { stacksAddress, processConnectStacksUser, processConnectStacksGenerated, updateBridgeStepInfo } = useApp();
 
-  // TODO: Add support for generating user wallet
   const connectUserWallet = async () => {
     showConnect({
       userSession,
@@ -50,27 +49,11 @@ function StacksConnect() {
   const connectGenerateWallet = async () => {
     const privateKey = randomPrivateKey();
 
-    // TODO: Fund wallet win a min STX balance from API
+    // TODO: Fund wallet win a min STX balance from API? He has to pay with SUI?
     processConnectStacksGenerated(privateKey);
   };
 
-  const [stacksBalances, setStacksBalances] = useState(undefined);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (stacksAddress) {
-      const getBalance = async () => {
-        setLoading(true);
-
-        const balances = await StacksApi.getAddressBalances(stacksAddress);
-
-        setStacksBalances(balances);
-        setLoading(false);
-      };
-
-      getBalance();
-    }
-  }, [stacksAddress]);
+  const { stacksBalances, loading } = useBalances();
 
   const [selectedOption, setSelectedOption] = useState(null);
 
@@ -126,7 +109,6 @@ function StacksConnect() {
               Connect Stacks Wallet
             </Button>
           ) : selectedOption === "no-wallet" ? (
-            // TODO: Implement wallet generation and funding from a backend
             <Button onClick={connectGenerateWallet} variant="default" className="flex mx-auto">
               Generate Wallet
             </Button>

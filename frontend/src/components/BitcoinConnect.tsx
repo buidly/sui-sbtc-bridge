@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import Wallet, { AddressPurpose } from "sats-connect";
 import { useApp, userSession } from "@/context/app.context";
@@ -6,9 +6,9 @@ import { formatBalance } from "@/lib/helpers";
 import leatherLogo from "@/assets/images/leather_logo.svg";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { storageHelper } from "@/lib/storageHelper.ts";
-import { BitcoinApi } from "@/api/bitcoin.ts";
 import { showConnect } from "@stacks/connect";
 import { WalletCard } from "@/components/base/WalletCard.tsx";
+import { useBalances } from "@/context/balances.context.tsx";
 
 function BitcoinConnect() {
   const { btcAddressInfo, processConnectBtc, processConnectBtcLeather } = useApp();
@@ -46,23 +46,7 @@ function BitcoinConnect() {
     processConnectBtc(null);
   };
 
-  const [btcBalance, setBtcBalance] = useState<bigint>(0n);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (btcAddressInfo) {
-      const getBalance = async () => {
-        setLoading(true);
-
-        const balance = await BitcoinApi.getAddressBalance(btcAddressInfo.address);
-
-        setBtcBalance(balance);
-        setLoading(false);
-      };
-
-      getBalance();
-    }
-  }, [btcAddressInfo]);
+  const { btcBalance, loading } = useBalances();
 
   return (
     <WalletCard

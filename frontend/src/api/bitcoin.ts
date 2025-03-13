@@ -1,7 +1,8 @@
 import axios from "axios";
+import { ENV } from "@/lib/env.ts";
 
 const client = axios.create({
-  baseURL: "https://beta.sbtc-mempool.tech/api/proxy", // TODO: Support mainnet
+  baseURL: `${ENV.BITCOIN_API}/api/proxy`,
   timeout: 30_000,
 });
 

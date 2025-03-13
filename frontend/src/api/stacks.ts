@@ -1,14 +1,14 @@
 import axios from "axios";
 import { BufferCV, fetchCallReadOnlyFunction } from "@stacks/transactions";
+import { ENV } from "@/lib/env.ts";
 
-const STACKS_NETWORK = 'testnet'; // TODO: Update for mainnet
+export const STACKS_NETWORK = ENV.STACKS_API.includes("testnet") ? "testnet" : "mainnet";
 
-const SBTC_TOKEN = 'SN1Z0WW5SMN4J99A1G1725PAB8H24CWNA7Z8H7214.sbtc-token::sbtc-token'; // TODO: Support mainnet
-export const SBTC_TOKEN_CONTRACT = SBTC_TOKEN.split('::')[0] as `${string}.${string}`;
-const SBTC_CONTRACT_DEPLOYER = 'SN1Z0WW5SMN4J99A1G1725PAB8H24CWNA7Z8H7214';
+export const SBTC_TOKEN_CONTRACT = `${ENV.STACKS_SBTC_CONTRACT_DEPLOYER}.sbtc-token` as `${string}.${string}`;
+const SBTC_TOKEN = `${SBTC_TOKEN_CONTRACT}::sbtc-token`;
 
 const client = axios.create({
-  baseURL: 'https://api.testnet.hiro.so', // TODO: Support mainnet
+  baseURL: ENV.STACKS_API,
   timeout: 30_000,
 });
 
@@ -20,7 +20,7 @@ export const StacksApi = {
       return {
         stxBalance: BigInt(result.data?.stx?.balance || 0),
         sbtcBalance: BigInt(result.data?.fungible_tokens?.[SBTC_TOKEN]?.balance || 0),
-      }
+      };
     } catch {
       return undefined;
     }
@@ -29,16 +29,16 @@ export const StacksApi = {
   async getAggregateKey() {
     const result = (await fetchCallReadOnlyFunction({
       contractName: "sbtc-registry",
-      contractAddress: SBTC_CONTRACT_DEPLOYER!,
+      contractAddress: ENV.STACKS_SBTC_CONTRACT_DEPLOYER,
       functionName: "get-current-aggregate-pubkey",
       functionArgs: [],
       network: STACKS_NETWORK,
-      senderAddress: SBTC_CONTRACT_DEPLOYER!,
+      senderAddress: ENV.STACKS_SBTC_CONTRACT_DEPLOYER,
       client: {
         baseUrl: client.defaults.baseURL,
       },
     })) as BufferCV;
 
     return result.value;
-  }
+  },
 };

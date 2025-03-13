@@ -5,7 +5,6 @@ import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import { formatTrimmed, getExplorerUrlAddress, getExplorerUrlTransaction } from "@/lib/helpers.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { cn } from "@/lib/utils.ts";
 import suiLogo from "@/assets/images/sui_logo.svg";
 import { useCrossChainStatus } from "@/hooks/use-cross-chain-status.ts";
 
@@ -82,7 +81,9 @@ export default function BridgeTxStatus() {
 
           {bridgeStepInfo.step === "SBTC_COMPLETED" && (
             <Button
-              className={"cursor-pointer bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"}
+              className={
+                "cursor-pointer bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+              }
               onClick={() => updateBridgeStepInfo()}
             >
               Bridge again

@@ -7,19 +7,15 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useApp } from "@/context/app.context.tsx";
 import suiLogo from "@/assets/images/sui_logo.svg";
 import stacksLogo from "@/assets/images/stacks_logo.svg";
-import { SBTC_TOKEN_CONTRACT, StacksApi } from "@/api/stacks.ts";
+import { SBTC_TOKEN_CONTRACT, STACKS_NETWORK, StacksApi } from "@/api/stacks.ts";
 import { formatBalance } from "@/lib/helpers.ts";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
 import { Pc, principalCV, stringAsciiCV, tupleCV, uintCV } from "@stacks/transactions";
 import { bufferFromHex } from "@stacks/transactions/dist/cl";
 import { openContractCall } from "@stacks/connect";
-
-const AXELAR_ITS_DEPLOYER = "ST237BAVWHZ124P5XWDRJEB40WNRGM9C8A9CK02Q6";
-
-const SBTC_TOKEN_MANAGER = "ST1SCVNT9406763532TGDC5BWXZWTA2Z51GYENQ83.sbtc-token-manager";
-const SBTC_ITS_TOKEN_ID = "0xb4239bb6e1af9cb2df851f76d0bd297a6d1feee6db4dc8318d6ba463132886cf";
-// const SUI_AXELAR_CHAIN = "sui-2"; // TODO: Change to `sui-2` after that works properly
-const AVALANCHE_AXELAR_CHAIN = "avalanche-fuji"; // TODO: Temporary send to Fuji until sui-2 token deployment is working
+import { ENV } from "@/lib/env.ts";
+import { CONSTANTS } from "@/lib/constants.ts";
+import { useBalances } from "@/context/balances.context.tsx";
 
 export default function BridgeSBTCForm() {
   const { stacksAddress, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
@@ -37,17 +33,17 @@ export default function BridgeSBTCForm() {
 
     try {
       openContractCall({
-        contractAddress: `${AXELAR_ITS_DEPLOYER}`, // Axelar ITS contract // TODO: Move to env var
+        contractAddress: ENV.STACKS_AXELAR_CONTRACT_DEPLOYER, // Axelar ITS contract
         contractName: "interchain-token-service",
         functionName: "interchain-transfer",
         functionArgs: [
-          principalCV(`${AXELAR_ITS_DEPLOYER}.gateway-impl`),
-          principalCV(`${AXELAR_ITS_DEPLOYER}.gas-impl`),
-          principalCV(`${AXELAR_ITS_DEPLOYER}.interchain-token-service-impl`),
-          principalCV(SBTC_TOKEN_MANAGER),
+          principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gateway-impl`),
+          principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gas-impl`),
+          principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.interchain-token-service-impl`),
+          principalCV(ENV.STACKS_SBTC_TOKEN_MANAGER),
           principalCV(SBTC_TOKEN_CONTRACT),
-          bufferFromHex(SBTC_ITS_TOKEN_ID),
-          stringAsciiCV(AVALANCHE_AXELAR_CHAIN), // TODO: Update to correct chain
+          bufferFromHex(ENV.ITS_SBTC_TOKEN_ID),
+          stringAsciiCV(CONSTANTS.SUI_AXELAR_CHAIN),
           // bufferFromHex(suiAddress.slice(2)), // remove 0x prefix // TODO: Set correct address
           bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
           uintCV(denominatedAmount), // sBTC has 8 decimals
@@ -58,7 +54,7 @@ export default function BridgeSBTCForm() {
           Pc.origin().willSendEq(1_000_000).ustx(),
           Pc.origin().willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
         ],
-        network: "testnet", // TODO:
+        network: STACKS_NETWORK,
         onFinish: (response) => {
           console.log("response", response);
 
@@ -84,24 +80,7 @@ export default function BridgeSBTCForm() {
     }
   };
 
-  const [stacksBalances, setStacksBalances] = useState(undefined);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (stacksAddress) {
-      const getBalance = async () => {
-        setLoading(true);
-
-        // TODO: Move this to a hook/context to be used globally
-        const balances = await StacksApi.getAddressBalances(stacksAddress);
-
-        setStacksBalances(balances);
-        setLoading(false);
-      };
-
-      getBalance();
-    }
-  }, [stacksAddress]);
+  const { stacksBalances, loading } = useBalances();
 
   // TODO: Check if Stacks address is the correct one
   if (!stacksAddress || !suiAddress) {

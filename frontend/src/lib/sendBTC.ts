@@ -3,7 +3,7 @@ import { request } from "sats-connect";
 type Payload = {
   recipient: string;
   amountInSats: number;
-  network?: "sbtcTestnet"; // TODO:
+  network?: "sbtcTestnet" | "mainnet";
 };
 
 export async function sendBTCLeather({ amountInSats, recipient, network }: Payload) {

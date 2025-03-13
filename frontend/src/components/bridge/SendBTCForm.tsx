@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label.tsx";
 import { AlertCircle, Bitcoin, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import { useApp } from "@/context/app.context.tsx";
-import { StacksApi } from "@/api/stacks.ts";
+import { STACKS_NETWORK, StacksApi } from "@/api/stacks.ts";
 import { principalCV, serializeCVBytes } from "@stacks/transactions";
 import { createDepositAddress, createDepositScript, createReclaimScript } from "@/lib/sbtcHelpers.ts";
 import { bytesToHex as uint8ArrayToHexString, hexToBytes as hexToUint8Array } from "@stacks/common";
@@ -63,7 +63,7 @@ export default function SendBTCForm() {
         signersAggregatePubKey!,
         maxFee,
         parsedLockTime,
-        networks.regtest, // TODO: Update for mainnet
+        STACKS_NETWORK === 'testnet' ? networks.regtest : networks.bitcoin,
         reclaimPublicKeys,
         signatureThreshold,
       );
@@ -74,13 +74,11 @@ export default function SendBTCForm() {
 
       console.log("amountInSats", amountInSats);
 
-      const walletNetwork: "sbtcTestnet" = "sbtcTestnet"; // TODO: Update
-
       try {
         const params = {
           recipient: p2trAddress,
           amountInSats,
-          network: walletNetwork,
+          network: STACKS_NETWORK === "testnet" ? "sbtcTestnet" : "mainnet",
         };
         console.log({
           preSendParams: {

@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ConnectModal, useAutoConnectWallet, useDisconnectWallet } from "@mysten/dapp-kit";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/context/app.context";
 import { Loader2 } from "lucide-react";
 import { formatBalance } from "@/lib/helpers";
-import { SuiApi } from "@/api/sui.ts";
 
 import suiLogo from "@/assets/images/sui_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
 import { WalletCard } from "@/components/base/WalletCard.tsx";
+import { useBalances } from "@/context/balances.context.tsx";
 
 function SuiConnect() {
   const { suiAddress } = useApp();
@@ -16,23 +16,7 @@ function SuiConnect() {
   const suiAutoConnectionStatus = useAutoConnectWallet();
   const { mutate: disconnectWallet } = useDisconnectWallet();
 
-  const [suiBalances, setSuiBalances] = useState(undefined);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (suiAddress) {
-      const getBalance = async () => {
-        setLoading(true);
-
-        const balances = await SuiApi.getAddressBalances(suiAddress);
-
-        setSuiBalances(balances);
-        setLoading(false);
-      };
-
-      getBalance();
-    }
-  }, [suiAddress]);
+  const { suiBalances, loading } = useBalances();
 
   return (
     <WalletCard
