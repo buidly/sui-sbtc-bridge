@@ -1,8 +1,17 @@
 import { client } from "@/api/sui";
-import { initializeSuilend, SuilendClient } from "@suilend/sdk";
+import {
+  initializeSuilend,
+  SuilendClient,
+  Side,
+  getTotalAprPercent,
+  getFilteredRewards,
+  formatRewards,
+  initializeSuilendRewards,
+} from "@suilend/sdk";
 import { LendingPoolProvider } from "../BaseLendingProvider";
 import { LendingPool, LendingProtocol } from "../LendingPools";
 import { btcPools } from "../config";
+import BigNumber from "bignumber.js";
 
 const mainLendingMarket = {
   name: "Main market",
@@ -19,23 +28,46 @@ export class SuilendPoolProvider extends LendingPoolProvider {
 
   async getPools(): Promise<LendingPool[]> {
     const suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, client);
-    const { lendingMarket } = await initializeSuilend(client, suilendClient);
+    const { lendingMarket, reserveMap, activeRewardCoinTypes, rewardCoinMetadataMap } = await initializeSuilend(
+      client,
+      suilendClient,
+    );
+    const { rewardPriceMap } = await initializeSuilendRewards(reserveMap, activeRewardCoinTypes);
 
+    const rewardMap = formatRewards(reserveMap, rewardCoinMetadataMap, rewardPriceMap, []);
     return lendingMarket.reserves
       .filter((reserve: any) => Object.values(btcPools).includes(reserve.coinType.slice(2)))
-      .map((reserve: any) => ({
-        name: reserve.token.symbol,
-        coinType: reserve.coinType,
-        totalSupply: reserve.depositedAmount.toNumber(),
-        totalBorrow: reserve.borrowedAmount.toNumber(),
-        supplyApy: reserve.depositAprPercent.toNumber(),
-        borrowApy: reserve.borrowAprPercent.toNumber(),
-        price: reserve.price.toNumber(),
-        tvl: reserve.depositedAmountUsd.toNumber(),
-        ltv: reserve.config.openLtvPct / 100,
-        liquidationThreshold: reserve.config.closeLtvPct / 100,
-        protocol: this.protocol,
-      }));
+      .map((reserve: any) => {
+        // Get supply rewards from formatted rewards
+        const supplyRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.DEPOSIT] ?? []);
+        const stakingYieldAprPercent = new BigNumber(0);
+
+        // Calculate total supply APY including rewards
+        const totalSupplyApy = getTotalAprPercent(
+          Side.DEPOSIT,
+          reserve.depositAprPercent,
+          supplyRewards,
+          stakingYieldAprPercent,
+        );
+
+        // Get borrow rewards and calculate total borrow APY
+        const borrowRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.BORROW] ?? []);
+        const totalBorrowApy = getTotalAprPercent(Side.BORROW, reserve.borrowAprPercent, borrowRewards, undefined);
+
+        return {
+          name: reserve.token.symbol,
+          coinType: reserve.coinType,
+          totalSupply: reserve.depositedAmount.toNumber(),
+          totalBorrow: reserve.borrowedAmount.toNumber(),
+          supplyApy: totalSupplyApy.toNumber(),
+          borrowApy: totalBorrowApy.toNumber(),
+          price: reserve.price.toNumber(),
+          tvl: reserve.depositedAmountUsd.toNumber(),
+          ltv: reserve.config.openLtvPct / 100,
+          liquidationThreshold: reserve.config.closeLtvPct / 100,
+          protocol: this.protocol,
+        };
+      });
   }
 
   async getPool(id: string): Promise<LendingPool | undefined> {
