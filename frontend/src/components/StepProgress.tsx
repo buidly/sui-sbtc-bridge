@@ -2,7 +2,7 @@ import React from "react";
 
 const StepProgress = ({ currentStep = 1, steps = ["Pending", "Minting", "Completed"] }) => {
   return (
-    <div className="w-full py-3">
+    <div className="w-full py-5">
       <div className="flex items-center justify-center">
         <div className="relative flex w-full max-w-3xl items-center justify-between">
           {/* Steps */}
@@ -17,14 +17,14 @@ const StepProgress = ({ currentStep = 1, steps = ["Pending", "Minting", "Complet
                     className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors duration-300 ${
                       index + 1 <= currentStep
                         ? "border-orange-500 bg-orange-500 text-white"
-                        : "border-gray-300 bg-white text-gray-500"
+                        : "border-gray-300 bg-slate-300 text-slate-500"
                     }`}
                   >
                     {index + 1}
                   </div>
                   <span
                     className={`mt-2 text-sm font-medium ${
-                      index + 1 <= currentStep ? "text-orange-500" : "text-gray-500"
+                      index + 1 <= currentStep ? "text-orange-500" : "text-slate-300"
                     }`}
                   >
                     {step}
@@ -35,7 +35,7 @@ const StepProgress = ({ currentStep = 1, steps = ["Pending", "Minting", "Complet
                 {showLineToNext && (
                   <div className="flex-1 relative h-1">
                     {/* Background line */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-gray-200"></div>
+                    <div className="absolute top-0 left-0 w-full h-full bg-slate-300"></div>
 
                     {/* Filled line */}
                     <div

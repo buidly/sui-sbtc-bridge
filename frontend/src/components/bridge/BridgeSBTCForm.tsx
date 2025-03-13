@@ -19,7 +19,7 @@ const AXELAR_ITS_DEPLOYER = "ST237BAVWHZ124P5XWDRJEB40WNRGM9C8A9CK02Q6";
 const SBTC_TOKEN_MANAGER = "ST1SCVNT9406763532TGDC5BWXZWTA2Z51GYENQ83.sbtc-token-manager";
 const SBTC_ITS_TOKEN_ID = "0xb4239bb6e1af9cb2df851f76d0bd297a6d1feee6db4dc8318d6ba463132886cf";
 // const SUI_AXELAR_CHAIN = "sui-2"; // TODO: Change to `sui-2` after that works properly
-const AVALANCHE_AXELAR_CHAIN = 'avalanche-fuji'; // TODO: Temporary send to Fuji until sui-2 token deployment is working
+const AVALANCHE_AXELAR_CHAIN = "avalanche-fuji"; // TODO: Temporary send to Fuji until sui-2 token deployment is working
 
 export default function BridgeSBTCForm() {
   const { stacksAddress, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
@@ -33,12 +33,12 @@ export default function BridgeSBTCForm() {
 
     const denominatedAmount = Math.round(parseFloat(amount) * 10 ** 8);
 
-    console.log('denominated amount', denominatedAmount);
+    console.log("denominated amount", denominatedAmount);
 
     try {
       openContractCall({
         contractAddress: `${AXELAR_ITS_DEPLOYER}`, // Axelar ITS contract // TODO: Move to env var
-        contractName: 'interchain-token-service',
+        contractName: "interchain-token-service",
         functionName: "interchain-transfer",
         functionArgs: [
           principalCV(`${AXELAR_ITS_DEPLOYER}.gateway-impl`),
@@ -49,20 +49,18 @@ export default function BridgeSBTCForm() {
           bufferFromHex(SBTC_ITS_TOKEN_ID),
           stringAsciiCV(AVALANCHE_AXELAR_CHAIN), // TODO: Update to correct chain
           // bufferFromHex(suiAddress.slice(2)), // remove 0x prefix // TODO: Set correct address
-          bufferFromHex('0xF12372616f9c986355414BA06b3Ca954c0a7b0dC'),
+          bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
           uintCV(denominatedAmount), // sBTC has 8 decimals
-          tupleCV({ data: bufferFromHex(''), version: uintCV(0) }),
+          tupleCV({ data: bufferFromHex(""), version: uintCV(0) }),
           uintCV(1_000_000), // 1 STX for paying cross chain fee
         ],
         postConditions: [
           Pc.origin().willSendEq(1_000_000).ustx(),
-          Pc.origin()
-            .willSendEq(denominatedAmount)
-            .ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
+          Pc.origin().willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
         ],
         network: "testnet", // TODO:
         onFinish: (response) => {
-          console.log('response', response);
+          console.log("response", response);
 
           if (!response?.txId) {
             alert("Failed to send Stacks transaction");
@@ -77,7 +75,7 @@ export default function BridgeSBTCForm() {
         },
         onCancel: () => {
           setIsSubmitting(false);
-        }
+        },
       });
     } catch (e) {
       console.error(e);
@@ -108,85 +106,82 @@ export default function BridgeSBTCForm() {
   // TODO: Check if Stacks address is the correct one
   if (!stacksAddress || !suiAddress) {
     return (
-      <div className="flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-lg shadow-lg">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Connect a Stacks and Sui wallet first</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+      <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center text-white">
+            Connect a Stacks and Sui wallet first
+          </CardTitle>
+        </CardHeader>
+      </Card>
     );
   }
 
   return (
-    <div className="flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-lg shadow-lg gap-4">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-2">
-            <img src={stacksLogo} alt={"Stacks Logo"} className="h-8 w-8" /> <ArrowRight className="h-5 w-5 mx-1" />
-            <img src={suiLogo} alt={"Sui Logo"} className="h-8 w-8" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-center">
-            Step 3 - Bridge sBTC
-            {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
-          </CardTitle>
-          <CardDescription className="text-center">Send sBTC from Stacks to Sui</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <p className="mb-2 flex items-center">
-              <strong className="mr-1">sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 8)} sBTC
-              <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-            </p>
-          </div>
+    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm text-white">
+      <CardHeader className="space-y-1">
+        <div className="flex items-center justify-center mb-2">
+          <img src={stacksLogo} alt={"Stacks Logo"} className="h-8 w-8" /> <ArrowRight className="h-5 w-5 mx-1" />
+          <img src={suiLogo} alt={"Sui Logo"} className="h-8 w-8" />
+        </div>
+        <CardTitle className="text-2xl font-bold text-center">
+          Step 3 - Bridge sBTC
+          {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
+        </CardTitle>
+        <CardDescription className="text-center text-slate-300">Send sBTC from Stacks to Sui</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-3 text-slate-300">
+          <p className="mb-2 flex items-center">
+            <strong className="mr-1">sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 8)}
+            <span className="text-orange-400 ml-1">sBTC</span>
+            <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
+          </p>
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
-                <div className="relative">
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="0.00"
-                    step="0.00000001"
-                    min="0.00000001"
-                    max={formatBalance(stacksBalances?.sbtcBalance, 8)}
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pr-12"
-                    required
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <span className="text-gray-500">sBTC</span>
-                  </div>
-                </div>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-3 text-slate-300">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount</Label>
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="0.00"
+                  step="0.00000001"
+                  min="0.00000001"
+                  max={formatBalance(stacksBalances?.sbtcBalance, 8)}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="pr-12 text-slate-300"
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">sBTC</div>
               </div>
             </div>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <Button
-            className="w-full bg-sky-400 hover:bg-sky-400/90"
-            type="submit"
-            onClick={handleSubmit}
-            disabled={
-              isSubmitting || !amount || parseFloat(amount) > parseFloat(formatBalance(stacksBalances?.sbtcBalance, 8))
-            }
-          >
-            {isSubmitting ? (
-              <div className="flex items-center justify-center">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Bridging...
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                Bridge <ArrowRight className="ml-2 h-4 w-4" />
-              </div>
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+          </div>
+        </form>
+      </CardContent>
+      <CardFooter>
+        <Button
+          className="cursor-pointer w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90"
+          type="submit"
+          onClick={handleSubmit}
+          disabled={
+            isSubmitting || !amount || parseFloat(amount) > parseFloat(formatBalance(stacksBalances?.sbtcBalance, 8))
+          }
+        >
+          {isSubmitting ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Bridging...
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              Bridge <ArrowRight className="ml-2 h-4 w-4" />
+            </div>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

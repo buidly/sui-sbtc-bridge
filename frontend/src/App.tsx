@@ -15,46 +15,40 @@ function App() {
   const { stacksAddress, btcAddressInfo, bridgeStepInfo } = useApp();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <Navbar />
-      <div className="container mx-auto p-4">
-        <div className="max-w-5xl mx-auto px-0 grid md:grid-cols-3 gap-5">
-          <div>
-            <BitcoinConnect />
-          </div>
-          <div>
-            <StacksConnect />
-          </div>
-          <div>
-            <SuiConnect />
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
+      <div className="max-w-6xl mx-auto">
+        <Navbar />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <BitcoinConnect />
+          <StacksConnect />
+          <SuiConnect />
         </div>
 
-        {/*TODO: Allow Step 3 to bridge sBTC from Stacks -> Sui without Bitcoin wallet connected*/}
-        {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
-          <div className="flex items-center justify-center bg-gray-50 p-4">
-            <Card className="w-full max-w-lg shadow-lg">
+        <div className="flex items-center justify-center p-4">
+          {/*TODO: Allow Step 3 to bridge sBTC from Stacks -> Sui without Bitcoin wallet connected*/}
+          {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
+            <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
               <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold text-center">
-                  Connect a Bitcoin wallet & Stacks wallet first
+                <CardTitle className="text-2xl font-bold text-center text-white">
+                  Connect a Bitcoin & Stacks wallet first
                 </CardTitle>
               </CardHeader>
             </Card>
-          </div>
-        )}
+          )}
 
-        {!bridgeStepInfo?.step ? (
-          <SendBTCForm />
-        ) : (
-          (bridgeStepInfo.step === "BTC_SENT_PENDING" ||
-            bridgeStepInfo.step === "BTC_SENT_MINTING" ||
-            bridgeStepInfo.step === "BTC_FAILED") && <BTCTxStatus />
-        )}
+          {!bridgeStepInfo?.step ? (
+            <SendBTCForm />
+          ) : (
+            (bridgeStepInfo.step === "BTC_SENT_PENDING" ||
+              bridgeStepInfo.step === "BTC_SENT_MINTING" ||
+              bridgeStepInfo.step === "BTC_FAILED") && <BTCTxStatus />
+          )}
 
-        {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
-        {bridgeStepInfo && (bridgeStepInfo.step === "SBTC_SENT" || bridgeStepInfo.step === "SBTC_COMPLETED") && (
-          <BridgeTxStatus />
-        )}
+          {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
+          {bridgeStepInfo && (bridgeStepInfo.step === "SBTC_SENT" || bridgeStepInfo.step === "SBTC_COMPLETED") && (
+            <BridgeTxStatus />
+          )}
+        </div>
       </div>
     </div>
   );

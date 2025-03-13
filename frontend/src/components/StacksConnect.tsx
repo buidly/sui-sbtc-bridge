@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { showConnect } from "@stacks/connect";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp, userSession } from "@/context/app.context";
-import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
+import { formatBalance } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { randomPrivateKey } from "@stacks/transactions";
 import { StacksApi } from "@/api/stacks.ts";
-import { Loader2 } from "lucide-react";
+import { WalletCard } from "@/components/base/WalletCard.tsx";
 
 import stacksLogo from "@/assets/images/stacks_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
@@ -20,15 +19,15 @@ function StacksConnect() {
     showConnect({
       userSession,
       appDetails: {
-        name: 'Sui sBTC Bridge',
-        icon: window.location.origin + '/vite.svg',
+        name: "Sui sBTC Bridge",
+        icon: window.location.origin + "/vite.svg",
       },
       onFinish: () => {
         processConnectStacksUser();
-      }
+      },
     });
   };
-  const disconnectUserWallet = () => {
+  const disconnectWallet = () => {
     if (storageHelper.getStacksWallet()?.type === "USER" && storageHelper.getBtcWallet()?.type !== "LEATHER") {
       userSession.signUserOut();
     }
@@ -46,6 +45,7 @@ function StacksConnect() {
     }
 
     updateBridgeStepInfo(null, null);
+    setSelectedOption(null);
   };
   const connectGenerateWallet = async () => {
     const privateKey = randomPrivateKey();
@@ -75,94 +75,89 @@ function StacksConnect() {
   const [selectedOption, setSelectedOption] = useState(null);
 
   return (
-    <Card className="gap-3">
-      <CardHeader>
-        <CardTitle className={"flex"}>
-          <img src={stacksLogo} alt={"Stacks Logo"} className="mr-1 h-4 w-4" /> Connect Stacks Wallet
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!stacksAddress ? (
-          <>
-            <div className="grid grid-cols-2 gap-4 mb-3">
-              <div className="relative">
-                <input
-                  type="radio"
-                  id="no-wallet"
-                  name="walletOption"
-                  value="no-wallet"
-                  className="absolute opacity-0 w-0 h-0 peer"
-                  onChange={(e) => setSelectedOption(e.target.value)}
-                />
-                <label
-                  htmlFor="no-wallet"
-                  className="flex text-center p-4 bg-red-50 border rounded-lg cursor-pointer hover:bg-red-100 peer-checked:border-blue-500 peer-checked:bg-red-200 transition-all duration-200"
-                >
-                  <span>
-                    I don't have a <strong>Stacks</strong> Wallet
-                  </span>
-                </label>
-              </div>
-
-              <div className="relative">
-                <input
-                  type="radio"
-                  id="have-wallet"
-                  name="walletOption"
-                  value="have-wallet"
-                  className="absolute opacity-0 w-0 h-0 peer"
-                  onChange={(e) => setSelectedOption(e.target.value)}
-                />
-                <label
-                  htmlFor="have-wallet"
-                  className="flex text-center p-4 bg-green-50 border rounded-lg cursor-pointer hover:bg-green-100 peer-checked:border-blue-500 peer-checked:bg-green-200 transition-all duration-200"
-                >
-                  <span>
-                    I have a <strong>Stacks</strong> Wallet
-                  </span>
-                </label>
-              </div>
+    <WalletCard
+      title="Connect Stacks Wallet"
+      icon={<img src={stacksLogo} alt={"Stacks Logo"} className="h-6 w-6" />}
+      isConnected={!!stacksAddress}
+      notConnectedElement={
+        <>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div className="relative">
+              <input
+                type="radio"
+                id="no-wallet"
+                name="walletOption"
+                value="no-wallet"
+                className="absolute opacity-0 w-0 h-0 peer"
+                onChange={(e) => setSelectedOption(e.target.value)}
+              />
+              <label
+                htmlFor="no-wallet"
+                className="flex text-center p-4 bg-red-200 border rounded-lg cursor-pointer hover:bg-red-100 peer-checked:border-blue-500 peer-checked:bg-red-300 transition-all duration-200 peer-checked:border-3"
+              >
+                <span>
+                  I don't have a <strong>Stacks</strong> Wallet
+                </span>
+              </label>
             </div>
 
-            {selectedOption === "have-wallet" ? (
-              <Button onClick={connectUserWallet} variant="secondary" className="flex mx-auto">
-                Connect Stacks Wallet
-              </Button>
-            ) : selectedOption === "no-wallet" ? (
-              // TODO: Implement wallet generation and funding from a backend
-              <Button onClick={connectGenerateWallet} variant="outline" className="flex mx-auto">
-                Generate Wallet
-              </Button>
-            ) : undefined}
-          </>
-        ) : (
-          <div>
-            <p className="mb-2">
-              <strong>Connected:</strong>
-              <br />
-
-              <a href={getExplorerUrlAddress("STACKS", stacksAddress)} target={"_blank"} className={"underline"}>
-                {formatTrimmed(stacksAddress)}
-              </a>
-            </p>
-            <p className="flex items-center">
-              <strong className='mr-1'>Balance:</strong> {formatBalance(stacksBalances?.stxBalance, 6)} STX
-              <img src={stacksLogo} alt={"STX Logo"} className="ml-1 h-4 w-4" />
-              {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
-            </p>
-            <p className="mb-2 flex items-center">
-              <strong className='mr-1'>sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 8)} sBTC
-              <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-            </p>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={disconnectUserWallet} variant="destructive">
-                Disconnect
-              </Button>
+            <div className="relative">
+              <input
+                type="radio"
+                id="have-wallet"
+                name="walletOption"
+                value="have-wallet"
+                className="absolute opacity-0 w-0 h-0 peer"
+                onChange={(e) => setSelectedOption(e.target.value)}
+              />
+              <label
+                htmlFor="have-wallet"
+                className="flex text-center p-4 bg-green-200 border rounded-lg cursor-pointer hover:bg-green-100 peer-checked:border-blue-500 peer-checked:bg-green-300 transition-all duration-200  peer-checked:border-3"
+              >
+                <span>
+                  I have a <strong>Stacks</strong> Wallet
+                </span>
+              </label>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {selectedOption === "have-wallet" ? (
+            <Button onClick={connectUserWallet} variant="default" className="flex mx-auto">
+              Connect Stacks Wallet
+            </Button>
+          ) : selectedOption === "no-wallet" ? (
+            // TODO: Implement wallet generation and funding from a backend
+            <Button onClick={connectGenerateWallet} variant="default" className="flex mx-auto">
+              Generate Wallet
+            </Button>
+          ) : undefined}
+        </>
+      }
+      address={stacksAddress}
+      addressType="STACKS"
+      balance={formatBalance(stacksBalances?.stxBalance, 6)}
+      currency="STX"
+      currencyColor="text-orange-400"
+      currencyIcon={<img src={stacksLogo} alt={"STX Logo"} className="ml-1 h-4 w-4" />}
+      disconnectWallet={disconnectWallet}
+      loading={loading}
+    >
+      <div className="flex items-end justify-between">
+        <div>
+          <div className="text-xs text-slate-400 mb-1">sBTC Balance:</div>
+          <div className="flex items-center gap-2">
+            <span className="text-white text-lg font-medium">{formatBalance(stacksBalances?.sbtcBalance, 8)}</span>
+            <span className="text-orange-400">sBTC</span>
+          </div>
+        </div>
+
+        <div className={`w-8 h-8 flex items-center justify-center`}>
+          <span className="text-lg">
+            <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
+          </span>
+        </div>
+      </div>
+    </WalletCard>
   );
 }
 

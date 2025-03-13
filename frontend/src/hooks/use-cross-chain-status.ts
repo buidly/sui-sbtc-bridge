@@ -16,11 +16,12 @@ export function useCrossChainStatus(txId: string) {
         const info = await AxelarApi.getTransactionData(txId);
 
         if (!info) {
+          // TODO: For now allow non-existent transactions because it takes a bit for the cross chain transaction to be relayed
           // TODO: Handle this better in the future
-          console.error("Could not retrieve Axelar transaction");
-          updateBridgeStepInfo(null, null);
-          clearInterval(interval);
-          setLoading(false);
+          // console.error("Could not retrieve Axelar transaction");
+          // updateBridgeStepInfo(null, null);
+          // clearInterval(interval);
+          // setLoading(false);
 
           return;
         }

@@ -1,18 +1,14 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge.tsx";
 
 function Navbar() {
   return (
-    <nav className='bg-gray-400 text-white p-4'>
-      <div className='container mx-auto flex justify-between items-center'>
-        <h1 className='text-xl font-bold text-cyan-100'>Sui sBTC Bridge</h1>
-        <div className='flex gap-4'>
-          <Button variant='link' className='text-cyan-100'>
-            TBD
-          </Button>
-        </div>
-      </div>
-    </nav>
+    <div className="flex justify-between items-center mb-8">
+      <h1 className="text-3xl font-bold text-sky-400">Sui sBTC Bridge</h1>
+      <Badge variant="outline" className="bg-slate-700 text-cyan-100 border-slate-600 px-4 py-1 text-sm">
+        TBD
+      </Badge>
+    </div>
   );
 }
 

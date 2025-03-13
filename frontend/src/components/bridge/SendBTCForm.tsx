@@ -69,7 +69,6 @@ export default function SendBTCForm() {
       );
 
       let txId = "";
-      let txHex = "";
 
       const amountInSats = Number(parseFloat(amount) * 10 ** 8);
 
@@ -144,77 +143,80 @@ export default function SendBTCForm() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-lg shadow-lg gap-4">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-2">
+    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
+      <CardHeader className="space-y-1">
+        <div className="flex justify-center mb-6">
+          <div className="bg-amber-500/20 rounded-full p-4">
             <Bitcoin className="h-10 w-10 text-orange-500" />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Step 1 - Bridge Bitcoin</CardTitle>
-          <CardDescription className="text-center">Convert BTC tokens to sBTC</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
-                <div className="relative">
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="0.00"
-                    step="0.00000001"
-                    min="0.001"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pr-12"
-                    required
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <span className="text-gray-500">BTC</span>
-                  </div>
+        </div>
+
+        <CardTitle className="text-2xl font-bold text-center text-white">Step 1 - Bridge Bitcoin</CardTitle>
+        <CardDescription className="text-center text-slate-400">Convert BTC tokens to sBTC</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-slate-300">
+                Amount
+              </Label>
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="0.00"
+                  step="0.00000001"
+                  min="0.001"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="pr-12 text-slate-300"
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <span className="text-slate-400 font-medium">BTC</span>
                 </div>
               </div>
-
-              {/* TODO: Add check for max amount */}
-
-              {parseFloat(amount) < 0.001 && (
-                <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>Minimum deposit amount is 0.001 BTC</AlertDescription>
-                </Alert>
-              )}
-              {parseFloat(amount) > 0.002 && (
-                <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    You're about to send a large amount. Please double-check the wallets.
-                  </AlertDescription>
-                </Alert>
-              )}
             </div>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <Button
-            className="w-full"
-            type="submit"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !amount || parseFloat(amount) < 0.001}
-          >
-            {isSubmitting ? (
-              <div className="flex items-center justify-center">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Processing...
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                Send <ArrowRight className="ml-2 h-4 w-4" />
-              </div>
+
+            {/* TODO: Add check for max amount */}
+
+            {parseFloat(amount) < 0.001 && (
+              <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>Minimum deposit amount is 0.001 BTC</AlertDescription>
+              </Alert>
             )}
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
+            {parseFloat(amount) > 0.002 && (
+              <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You're about to send a large amount. Please double-check the wallets.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </form>
+      </CardContent>
+      <CardFooter>
+        <Button
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+          type="submit"
+          onClick={handleSubmit}
+          disabled={isSubmitting || !amount || parseFloat(amount) < 0.001}
+        >
+          {isSubmitting ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            <div className="flex items-center justify-center">
+              Send <ArrowRight className="ml-2 h-4 w-4" />
+            </div>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

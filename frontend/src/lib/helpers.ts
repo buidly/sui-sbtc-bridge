@@ -3,6 +3,10 @@ export const formatTrimmed = (address: string, size: number = 10) => {
     return '';
   }
 
+  if (address.length <= size) {
+    return address;
+  }
+
   return address.slice(0, size) + "..." + address.slice(-size);
 };
 

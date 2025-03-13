@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Wallet, { AddressPurpose } from "sats-connect";
 import { useApp, userSession } from "@/context/app.context";
-import { Loader2 } from "lucide-react";
-import { formatTrimmed, formatBalance, getExplorerUrlAddress } from "@/lib/helpers";
+import { formatBalance } from "@/lib/helpers";
 import leatherLogo from "@/assets/images/leather_logo.svg";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { BitcoinApi } from "@/api/bitcoin.ts";
 import { showConnect } from "@stacks/connect";
+import { WalletCard } from "@/components/base/WalletCard.tsx";
 
 function BitcoinConnect() {
   const { btcAddressInfo, processConnectBtc, processConnectBtcLeather } = useApp();
@@ -18,12 +17,12 @@ function BitcoinConnect() {
     showConnect({
       userSession,
       appDetails: {
-        name: 'Sui sBTC Bridge',
-        icon: window.location.origin + '/vite.svg',
+        name: "Sui sBTC Bridge",
+        icon: window.location.origin + "/vite.svg",
       },
       onFinish: () => {
         processConnectBtcLeather();
-      }
+      },
     });
   };
   const connectWalletOther = async () => {
@@ -66,45 +65,29 @@ function BitcoinConnect() {
   }, [btcAddressInfo]);
 
   return (
-    <Card className="gap-3">
-      <CardHeader>
-        <CardTitle className={"flex"}>
-          <img src={bitcoinLogo} alt={"Bitcoin Logo"} className="mr-1 h-4 w-4" /> Connect Bitcoin Wallet
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!btcAddressInfo ? (
-          <div className={"flex flex-col gap-2 w-50 mx-auto"}>
-            <Button onClick={connectWalletLeather} variant="default">
-              <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
-            </Button>
-            <Button onClick={connectWalletOther} variant="default">
-              Other Wallet (Mainnet only)
-            </Button>
-          </div>
-        ) : (
-          <div>
-            <p className="mb-2">
-              <strong>Connected:</strong>
-              <br />
-              <a href={getExplorerUrlAddress("BITCOIN", btcAddressInfo.address)} target={"_blank"} className={"underline"}>
-                {formatTrimmed(btcAddressInfo.address)}
-              </a>
-            </p>
-            <p className="mb-2 flex items-center">
-              <strong className="mr-1">Balance:</strong> {formatBalance(btcBalance, 8)} BTC
-              <img src={bitcoinLogo} alt={"Bitcoin Logo"} className="ml-1 h-4 w-4" />
-              {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
-            </p>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={disconnectWallet} variant="destructive">
-                Disconnect
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <WalletCard
+      title="Connect Bitcoin Wallet"
+      icon={<img src={bitcoinLogo} alt={"Bitcoin Logo"} className="h-6 w-6" />}
+      isConnected={!!btcAddressInfo}
+      notConnectedElement={
+        <div className={"flex flex-col gap-2 w-50 mx-auto"}>
+          <Button onClick={connectWalletLeather} variant="default">
+            <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
+          </Button>
+          <Button onClick={connectWalletOther} variant="default">
+            Other Wallet (Mainnet only)
+          </Button>
+        </div>
+      }
+      address={btcAddressInfo?.address}
+      addressType="BITCOIN"
+      balance={formatBalance(btcBalance, 8)}
+      currency="BTC"
+      currencyColor="text-amber-500"
+      currencyIcon={<img src={bitcoinLogo} alt={"Bitcoin Logo"} className="ml-1 h-4 w-4" />}
+      disconnectWallet={disconnectWallet}
+      loading={loading}
+    />
   );
 }
 
