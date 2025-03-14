@@ -1,17 +1,26 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useApp } from "@/context/app.context.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
-import { formatTrimmed, getExplorerUrlAddress, getExplorerUrlTransaction } from "@/lib/helpers.ts";
+import { formatBalance, formatTrimmed, getExplorerUrlAddress, getExplorerUrlTransaction } from "@/lib/helpers.ts";
 import { Button } from "@/components/ui/button.tsx";
-import suiLogo from "@/assets/images/sui_logo.svg";
 import { useCrossChainStatus } from "@/hooks/use-cross-chain-status.ts";
 
-export default function BridgeTxStatus() {
-  const { suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
+import suiLogo from "@/assets/images/sui_logo.svg";
+import sbtcLogo from "@/assets/images/sbtc_logo.png";
+import StepProgress from "@/components/StepProgress.tsx";
 
-  const { statusResponse, loading } = useCrossChainStatus(bridgeStepInfo.stacksTxId);
+export default function BridgeTxStatus() {
+  const { bridgeStepInfo, updateBridgeStepInfo } = useApp();
+
+  const { suiRecipientAddress, suiTxHash, stacksResponse, loading } = useCrossChainStatus(bridgeStepInfo.stacksTxId);
+
+  const sbtcAmount = useMemo(() => {
+    const sbtcCondition = (stacksResponse?.post_conditions || []).find((condition) => condition.type === "fungible");
+
+    return BigInt(sbtcCondition?.amount || 0);
+  }, [stacksResponse?.post_conditions]);
 
   return (
     <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm gap-4">
@@ -23,28 +32,31 @@ export default function BridgeTxStatus() {
           Step 4 - Bridge sBTC Tx Status
           {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
         </CardTitle>
-        {bridgeStepInfo.step === "SBTC_SENT" && (
+        {(bridgeStepInfo.step === "SBTC_SENT_PENDING" || bridgeStepInfo.step === "SBTC_SENT_BRIDGING") && (
           <CardDescription className="text-center text-slate-400">Waiting for sBTC to arrive on Sui</CardDescription>
         )}
       </CardHeader>
       <CardContent>
         <div className="grid gap-3 text-slate-300">
           <div className="space-y-2">
-            {/*<p className="mb-0 flex items-center">*/}
-            {/*  <strong className="mr-1">Amount:</strong> {formatBalance(btcAmount, 8)} BTC{" "}*/}
-            {/*  <img src={bitcoinLogo} alt={"Bitcoin Logo"} className="ml-1 h-4 w-4" />*/}
-            {/*</p>*/}
-
-            <p>
-              <strong>Sui Address:</strong>{" "}
-              <a href={getExplorerUrlAddress("STACKS", suiAddress)} target="_blank" className="underline">
-                {formatTrimmed(suiAddress)}
-              </a>
+            <p className="mb-0 flex items-center">
+              <strong className="mr-1">Amount:</strong> {formatBalance(sbtcAmount, 8)}
+              <span className="text-orange-400 ml-1">sBTC</span>
+              <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
             </p>
+
+            {suiRecipientAddress && (
+              <p>
+                <strong>Sui Address:</strong>{" "}
+                <a href={getExplorerUrlAddress("SUI", suiRecipientAddress)} target="_blank" className="underline">
+                  {formatTrimmed(suiRecipientAddress)}
+                </a>
+              </p>
+            )}
           </div>
         </div>
 
-        {bridgeStepInfo.step === "SBTC_SENT" && (
+        {(bridgeStepInfo.step === "SBTC_SENT_PENDING" || bridgeStepInfo.step === "SBTC_SENT_BRIDGING") && (
           <Alert variant="default" className="bg-amber-50 border-amber-200 mt-3">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
@@ -72,14 +84,34 @@ export default function BridgeTxStatus() {
         )}
       </CardContent>
       <CardFooter className="flex-col">
-        <div className="w-full flex-row flex justify-between items-center">
-          <a href={`https://devnet-amplifier.axelarscan.io/gmp/${bridgeStepInfo.stacksTxId}`} target="_blank">
-            <Button className="cursor-pointer w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90">
-              View on Axelar Explorer
-            </Button>
-          </a>
+        {bridgeStepInfo.step !== "SBTC_SENT_PENDING" && (
+          <div className="w-full flex-row flex justify-between items-center">
+            <a href={`https://devnet-amplifier.axelarscan.io/gmp/${bridgeStepInfo.stacksTxId}`} target="_blank">
+              <Button className="cursor-pointer w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90">
+                View on Axelar Explorer
+              </Button>
+            </a>
+          </div>
+        )}
 
-          {bridgeStepInfo.step === "SBTC_COMPLETED" && (
+        <StepProgress
+          currentStep={
+            bridgeStepInfo.step === "SBTC_SENT_PENDING" ? 1 : bridgeStepInfo.step === "SBTC_SENT_BRIDGING" ? 2 : 3
+          }
+          steps={["Pending on Stacks", "Bridging", "Confirmed on Sui"]}
+          accentColor="sky"
+        />
+
+        {bridgeStepInfo.step === "SBTC_COMPLETED" && (
+          <div className="w-full flex-row flex justify-between items-center">
+            {suiTxHash && (
+              <a href={getExplorerUrlTransaction("SUI", suiTxHash)} target="_blank">
+                <Button className="w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90">
+                  View Sui tx
+                </Button>
+              </a>
+            )}
+
             <Button
               className={
                 "cursor-pointer bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
@@ -88,8 +120,8 @@ export default function BridgeTxStatus() {
             >
               Bridge again
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

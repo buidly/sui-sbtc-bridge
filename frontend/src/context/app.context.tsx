@@ -11,7 +11,8 @@ type BridgeStep =
   | "BTC_SENT_MINTING"
   | "BTC_FAILED"
   | "BTC_COMPLETED"
-  | "SBTC_SENT"
+  | "SBTC_SENT_PENDING"
+  | "SBTC_SENT_BRIDGING"
   | "SBTC_COMPLETED"
   | null;
 
@@ -157,7 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       setBridgeStepInfo({
-        step: "SBTC_SENT",
+        step: "SBTC_SENT_PENDING",
         btcTxId,
         stacksTxId: params.get("stacksTxId"),
       });

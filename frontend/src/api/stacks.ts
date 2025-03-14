@@ -7,6 +7,16 @@ export const STACKS_NETWORK = ENV.STACKS_API.includes("testnet") ? "testnet" : "
 export const SBTC_TOKEN_CONTRACT = `${ENV.STACKS_SBTC_CONTRACT_DEPLOYER}.sbtc-token` as `${string}.${string}`;
 const SBTC_TOKEN = `${SBTC_TOKEN_CONTRACT}::sbtc-token`;
 
+export interface Transaction {
+  tx_id: string;
+  sender_address: string;
+  tx_status: "success" | "pending" | "error";
+  post_conditions: {
+    amount: string;
+    type: string;
+  }[]
+}
+
 const client = axios.create({
   baseURL: ENV.STACKS_API,
   timeout: 30_000,
@@ -41,4 +51,14 @@ export const StacksApi = {
 
     return result.value;
   },
+
+  async getTransaction(txHash: string): Promise<Transaction | undefined> {
+    try {
+      const response = await client.get(`/extended/v1/tx/${txHash}`);
+
+      return response.data;
+    } catch {
+      return undefined;
+    }
+  }
 };

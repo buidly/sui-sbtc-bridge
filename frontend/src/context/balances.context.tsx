@@ -41,8 +41,6 @@ export function BalancesProvider({ children }: { children: ReactNode }) {
 
   const [stacksBalances, setStacksBalances] = useState(undefined);
   const getStacksBalances = async () => {
-    console.log('works', stacksAddress);
-
     if (!stacksAddress) {
       setStacksBalances(undefined);
       return;

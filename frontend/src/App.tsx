@@ -25,7 +25,7 @@ function App() {
         </div>
 
         <div className="flex items-center justify-center p-4">
-          <div class="w-full max-w-lg">
+          <div className="w-full max-w-lg">
             {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
               <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
                 <CardHeader className="space-y-1">
@@ -45,9 +45,10 @@ function App() {
             )}
 
             {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
-            {bridgeStepInfo && (bridgeStepInfo.step === "SBTC_SENT" || bridgeStepInfo.step === "SBTC_COMPLETED") && (
-              <BridgeTxStatus />
-            )}
+            {bridgeStepInfo &&
+              (bridgeStepInfo.step === "SBTC_SENT_PENDING" ||
+                bridgeStepInfo.step === "SBTC_SENT_BRIDGING" ||
+                bridgeStepInfo.step === "SBTC_COMPLETED") && <BridgeTxStatus />}
           </div>
         </div>
       </div>

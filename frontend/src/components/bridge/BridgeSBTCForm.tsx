@@ -56,8 +56,6 @@ export default function BridgeSBTCForm() {
         ],
         network: STACKS_NETWORK,
         onFinish: (response) => {
-          console.log("response", response);
-
           if (!response?.txId) {
             alert("Failed to send Stacks transaction");
             setIsSubmitting(false);
@@ -65,9 +63,7 @@ export default function BridgeSBTCForm() {
             return;
           }
 
-          console.log("Respoinse", response);
-
-          updateBridgeStepInfo("SBTC_SENT", bridgeStepInfo.btcTxId, response.txId);
+          updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, response.txId);
         },
         onCancel: () => {
           setIsSubmitting(false);

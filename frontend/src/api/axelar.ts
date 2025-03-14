@@ -30,12 +30,12 @@ interface AxelarTransaction {
   symbol: string;
   executed: {
     chain: string;
-    transactionHash: string; // TODO: Also fetch 2nd ITS call using this hash?
+    transactionHash: string;
   };
 }
 
 export const AxelarApi = {
-  async getTransactionData(txHash: string): Promise<AxelarTransaction | null> {
+  async getTransactionData(txHash: string): Promise<AxelarTransaction[] | null> {
     try {
       const result = await client.post("", {
         txHash,
@@ -45,7 +45,21 @@ export const AxelarApi = {
         return null;
       }
 
-      return result.data?.data?.[0] || null;
+      const firstTransaction: AxelarTransaction | null = result.data?.data?.[0] || null;
+
+      if (!firstTransaction) {
+        return null;
+      }
+
+      if (firstTransaction.status === "executed") {
+        const newResult = await client.post("", {
+          txHash: firstTransaction.executed.transactionHash,
+        });
+
+        return newResult.data?.data || null;
+      }
+
+      return [firstTransaction];
     } catch {
       return null;
     }

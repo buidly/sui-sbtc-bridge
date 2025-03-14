@@ -31,12 +31,9 @@ export default function BTCTxStatus() {
           Step 2 - sBTC Tx Status
           {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-orange-500" />}
         </CardTitle>
-        {bridgeStepInfo.step === "BTC_SENT_PENDING" ||
-          (bridgeStepInfo.step === "BTC_SENT_MINTING" && (
-            <CardDescription className="text-center text-slate-400">
-              Waiting for sBTC to arrive on Stacks
-            </CardDescription>
-          ))}
+        {(bridgeStepInfo.step === "BTC_SENT_PENDING" || bridgeStepInfo.step === "BTC_SENT_MINTING") && (
+          <CardDescription className="text-center text-slate-400">Waiting for sBTC to arrive on Stacks</CardDescription>
+        )}
       </CardHeader>
       <CardContent>
         <div className="grid gap-3 text-slate-300">
@@ -116,7 +113,7 @@ export default function BTCTxStatus() {
           <div className="w-full flex-row flex justify-between items-center">
             <a href={getExplorerUrlTransaction("STACKS", stacksTxId)} target="_blank">
               <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700">
-                View stacks tx
+                View Stacks tx
               </Button>
             </a>
           </div>
