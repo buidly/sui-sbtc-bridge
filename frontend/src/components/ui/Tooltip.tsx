@@ -1,8 +1,8 @@
 import { ReactNode, useState } from "react";
 
 interface TooltipProps {
-  children: ReactNode;
-  content: string;
+  children: React.ReactNode;
+  content: React.ReactNode;
 }
 
 export function Tooltip({ children, content }: TooltipProps) {

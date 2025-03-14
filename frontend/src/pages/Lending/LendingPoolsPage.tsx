@@ -4,6 +4,73 @@ import { LendingPool } from "./LendingMarkets/LendingPools";
 import { NaviPoolProvider } from "./LendingMarkets/Navi/NaviPools";
 import { ScallopPoolProvider } from "./LendingMarkets/Scallop/ScallopPools";
 import { SuilendPoolProvider } from "./LendingMarkets/Suilend/SuilendPools";
+import { RewardInfo } from "./LendingMarkets/LendingPools";
+
+function ApyDisplay({
+  baseApy,
+  rewards,
+  totalApy,
+  type,
+  name,
+}: {
+  baseApy: number;
+  rewards: RewardInfo[];
+  totalApy: number;
+  type: "supply" | "borrow";
+  name: string;
+}) {
+  const bgColor = type === "supply" ? "bg-green-50" : "bg-red-50";
+  const textColor = type === "supply" ? "text-green-600" : "text-red-600";
+
+  const tooltipContent = (
+    <div className="px-3 py-2 space-y-1 bg-[#0F172A] text-white rounded">
+      <div className="flex flex-col">
+        <span className="text-gray-400">
+          {type === "supply" ? "Supply" : "Borrow"} {name} and earn rewards
+        </span>
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-gray-400">Interest</span>
+            <span className="text-white">{Math.abs(baseApy).toFixed(2)}%</span>
+          </div>
+          {rewards.map((reward) => (
+            <div key={reward.symbol} className="flex items-center justify-between gap-4">
+              <span className="text-gray-400 flex items-center gap-2">Rewards in {reward.symbol}</span>
+              <span className="text-white">({Math.abs(reward.apy).toFixed(2)}%)</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className={`${bgColor} p-3 rounded`}>
+      <div className="text-sm text-gray-600 flex items-center gap-1">
+        {type === "supply" ? "Supply APY" : "Borrow APY"}
+        {rewards.length > 0 && (
+          <Tooltip content={tooltipContent}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+              />
+            </svg>
+          </Tooltip>
+        )}
+      </div>
+      <div className={`text-lg font-semibold ${textColor}`}>{Math.abs(totalApy).toFixed(2)}%</div>
+    </div>
+  );
+}
 
 export function LendingPoolsPage() {
   const [pools, setPools] = useState<LendingPool[]>([]);
@@ -55,14 +122,20 @@ export function LendingPoolsPage() {
 
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-green-50 p-3 rounded">
-                  <div className="text-sm text-gray-600">Supply APY</div>
-                  <div className="text-lg font-semibold text-green-600">{pool.supplyApy.toFixed(2)}%</div>
-                </div>
-                <div className="bg-red-50 p-3 rounded">
-                  <div className="text-sm text-gray-600">Borrow APY</div>
-                  <div className="text-lg font-semibold text-red-600">{pool.borrowApy.toFixed(2)}%</div>
-                </div>
+                <ApyDisplay
+                  baseApy={pool.baseSupplyApy}
+                  rewards={pool.supplyRewards}
+                  totalApy={pool.supplyApy}
+                  type="supply"
+                  name={pool.name}
+                />
+                <ApyDisplay
+                  baseApy={pool.baseBorrowApy}
+                  rewards={pool.borrowRewards}
+                  totalApy={pool.borrowApy}
+                  type="borrow"
+                  name={pool.name}
+                />
               </div>
 
               <div className="space-y-2">

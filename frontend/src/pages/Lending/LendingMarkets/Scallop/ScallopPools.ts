@@ -94,6 +94,10 @@ export class ScallopPoolProvider extends LendingPoolProvider {
       ltv: data.ltv ? Number(data.ltv) : 0,
       liquidationThreshold: data.highKink,
       protocol: this.protocol,
+      baseSupplyApy: data.supplyApy * 100,
+      baseBorrowApy: data.borrowApy * 100,
+      supplyRewards: [],
+      borrowRewards: [],
     };
   }
 }

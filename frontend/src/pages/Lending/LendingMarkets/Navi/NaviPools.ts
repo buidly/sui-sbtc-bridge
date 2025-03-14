@@ -78,6 +78,10 @@ export class NaviPoolProvider extends LendingPoolProvider {
       ltv: Number(data.ltv) / 1e27,
       liquidationThreshold: Number(data.liquidationFactor.threshold),
       protocol: this.protocol,
+      baseSupplyApy: supplyApy,
+      baseBorrowApy: borrowApy,
+      supplyRewards: [],
+      borrowRewards: [],
     };
   }
 }

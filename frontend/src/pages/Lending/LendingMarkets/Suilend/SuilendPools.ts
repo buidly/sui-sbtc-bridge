@@ -9,7 +9,7 @@ import {
   initializeSuilendRewards,
 } from "@suilend/sdk";
 import { LendingPoolProvider } from "../BaseLendingProvider";
-import { LendingPool, LendingProtocol } from "../LendingPools";
+import { LendingPool, LendingProtocol, RewardInfo } from "../LendingPools";
 import { btcPools } from "../config";
 import BigNumber from "bignumber.js";
 
@@ -38,21 +38,35 @@ export class SuilendPoolProvider extends LendingPoolProvider {
     return lendingMarket.reserves
       .filter((reserve: any) => Object.values(btcPools).includes(reserve.coinType.slice(2)))
       .map((reserve: any) => {
-        // Get supply rewards from formatted rewards
+        // Get supply rewards and calculate APYs
         const supplyRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.DEPOSIT] ?? []);
+        const supplyRewardInfos: RewardInfo[] = supplyRewards.map((reward) => ({
+          symbol: reward.stats.symbol,
+          apy: reward.stats.aprPercent.toNumber(),
+        }));
+
         const stakingYieldAprPercent = new BigNumber(0);
 
-        // Calculate total supply APY including rewards
-        const totalSupplyApy = getTotalAprPercent(
-          Side.DEPOSIT,
-          reserve.depositAprPercent,
-          supplyRewards,
-          stakingYieldAprPercent,
+        const baseSupplyApy = reserve.depositAprPercent;
+        const baseRewardApy = supplyRewards.reduce(
+          (total, reward) => total.plus(reward.stats.aprPercent || 0),
+          new BigNumber(0),
         );
+        const totalSupplyApy = getTotalAprPercent(Side.DEPOSIT, baseSupplyApy, supplyRewards, stakingYieldAprPercent);
 
-        // Get borrow rewards and calculate total borrow APY
+        // Get borrow rewards and calculate APYs
         const borrowRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.BORROW] ?? []);
-        const totalBorrowApy = getTotalAprPercent(Side.BORROW, reserve.borrowAprPercent, borrowRewards, undefined);
+        const borrowRewardInfos: RewardInfo[] = borrowRewards.map((reward) => ({
+          symbol: reward.stats.symbol,
+          apy: reward.stats.aprPercent.toNumber(),
+        }));
+
+        const baseBorrowApy = reserve.borrowAprPercent;
+        const borrowRewardApy = borrowRewards.reduce(
+          (total, reward) => total.plus(reward.stats.aprPercent || 0),
+          new BigNumber(0),
+        );
+        const totalBorrowApy = getTotalAprPercent(Side.BORROW, baseBorrowApy, borrowRewards, undefined);
 
         return {
           name: reserve.token.symbol,
@@ -61,11 +75,17 @@ export class SuilendPoolProvider extends LendingPoolProvider {
           totalBorrow: reserve.borrowedAmount.toNumber(),
           supplyApy: totalSupplyApy.toNumber(),
           borrowApy: totalBorrowApy.toNumber(),
+          baseSupplyApy: baseSupplyApy.toNumber(),
+          baseRewardApy: baseRewardApy.toNumber(),
+          baseBorrowApy: baseBorrowApy.toNumber(),
+          borrowRewardApy: borrowRewardApy.toNumber(),
           price: reserve.price.toNumber(),
           tvl: reserve.depositedAmountUsd.toNumber(),
           ltv: reserve.config.openLtvPct / 100,
           liquidationThreshold: reserve.config.closeLtvPct / 100,
           protocol: this.protocol,
+          supplyRewards: supplyRewardInfos,
+          borrowRewards: borrowRewardInfos,
         };
       });
   }
