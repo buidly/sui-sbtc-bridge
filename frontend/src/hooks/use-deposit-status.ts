@@ -5,6 +5,7 @@ import { Cl, PrincipalCV } from "@stacks/transactions";
 import { EMILY_WRAPPER_URL } from "@/hooks/use-emily-deposit.ts";
 import { BitcoinApi } from "@/api/bitcoin.ts";
 import { useApp } from "@/context/app.context.tsx";
+import { useBalances } from "@/context/balances.context.tsx";
 
 export enum DepositStatus {
   PendingConfirmation = "pending",
@@ -27,7 +28,7 @@ const getEmilyDepositInfo = async (txId: string) => {
 };
 
 export function useDepositStatus(txId: string) {
-  const { bridgeStepInfo, updateBridgeStepInfo } = useApp();
+  const { bridgeStepInfo, updateBridgeStepInfo, stacksAddress } = useApp();
 
   const [emilyResponse, setEmilyResponse] = useState(null);
   const [statusResponse, setStatusResponse] = useState(null);
@@ -37,15 +38,23 @@ export function useDepositStatus(txId: string) {
   const POLLING_INTERVAL = 10_000;
 
   const recipient = useMemo(() => {
-    return emilyResponse?.recipient || "";
+    const temp = emilyResponse?.recipient || "";
+
+    if (!temp) {
+      return null;
+    }
+
+    return (Cl.deserialize(temp) as PrincipalCV).value;
   }, [emilyResponse]);
 
   const stacksTxId = useMemo(() => {
     return (emilyResponse?.status === DepositStatus.Completed && emilyResponse.fulfillment.StacksTxid) || "";
   }, [emilyResponse]);
 
+  const { getStacksBalances } = useBalances();
+
   useEffect(() => {
-    if (txId && bridgeStepInfo?.step !== "BTC_COMPLETED" && bridgeStepInfo?.step !== "BTC_FAILED") {
+    if (txId && stacksAddress && bridgeStepInfo?.step !== "BTC_COMPLETED" && bridgeStepInfo?.step !== "BTC_FAILED") {
       const check = async () => {
         setLoading(true);
 
@@ -54,11 +63,15 @@ export function useDepositStatus(txId: string) {
         const txInfo = await getEmilyDepositInfo(txId);
         setEmilyResponse(txInfo);
 
-        if (!info) {
+        // Check if transaction is not found or if Stacks address is not correct
+        if (
+          !info ||
+          (txInfo && txInfo.recipient && (Cl.deserialize(txInfo.recipient) as PrincipalCV).value !== stacksAddress)
+        ) {
           // TODO: Handle this better in the future
           console.error("Could not retrieve bitcoin transaction");
-          clearInterval(interval);
           updateBridgeStepInfo(null, null);
+          clearInterval(interval);
           setLoading(false);
 
           return;
@@ -69,6 +82,9 @@ export function useDepositStatus(txId: string) {
           if (txInfo.status === DepositStatus.Completed) {
             updateBridgeStepInfo("BTC_COMPLETED", txId);
             clearInterval(interval);
+            // This works here for Stacks because stacksAddress is set before the setInterval
+            // However a useEffect doesn't work because the updateBridgeStepInfo doesn't update the object just a property
+            getStacksBalances();
             setLoading(false);
 
             return;
@@ -99,10 +115,10 @@ export function useDepositStatus(txId: string) {
       const interval = setInterval(check, POLLING_INTERVAL);
       return () => clearInterval(interval);
     }
-  }, [POLLING_INTERVAL, RECLAIM_LOCK_TIME, txId]);
+  }, [POLLING_INTERVAL, RECLAIM_LOCK_TIME, txId, stacksAddress]);
 
   return {
-    recipient: recipient && (Cl.deserialize(recipient) as PrincipalCV).value,
+    recipient,
     stacksTxId: stacksTxId,
     statusResponse,
     loading,

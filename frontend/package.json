@@ -16,7 +16,7 @@
     "@radix-ui/react-label": "^2.1.2",
     "@radix-ui/react-select": "^2.1.6",
     "@radix-ui/react-slot": "^1.1.2",
-    "@stacks/connect": "^8.1.5",
+    "@stacks/connect": "^7.10.1",
     "@stacks/network": "^7.0.2",
     "@stacks/transactions": "^7.0.4",
     "@suilend/sdk": "^1.1.44",

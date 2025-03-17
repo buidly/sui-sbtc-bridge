@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProvider } from "@/context/app.context";
 
 import "@mysten/dapp-kit/dist/index.css";
+import { STACKS_NETWORK } from "@/api/stacks.ts";
+import { BalancesProvider } from "@/context/balances.context.tsx";
 
 // Sui
 const { networkConfig: suiNetworkConfig } = createNetworkConfig({
@@ -18,15 +20,19 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      {/*TODO: Change Sui network when going to mainnet*/}
-      <SuiClientProvider networks={suiNetworkConfig} defaultNetwork="testnet">
-        <WalletProvider autoConnect={true}>
-          <AppProvider>
+  <QueryClientProvider client={queryClient}>
+    <SuiClientProvider
+      networks={suiNetworkConfig}
+      defaultNetwork={STACKS_NETWORK === "testnet" ? "testnet" : "mainnet"}
+    >
+      <WalletProvider autoConnect={true}>
+        <AppProvider>
+          <BalancesProvider>
             <App />
-          </AppProvider>
-        </WalletProvider>
-      </SuiClientProvider>
-    </QueryClientProvider>
+          </BalancesProvider>
+        </AppProvider>
+      </WalletProvider>
+    </SuiClientProvider>
+  </QueryClientProvider>,
   // </StrictMode>,
 );

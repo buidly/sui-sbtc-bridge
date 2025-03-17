@@ -1,14 +1,13 @@
-import { request as stacksRequest } from "@stacks/connect";
 import { request } from "sats-connect";
 
 type Payload = {
   recipient: string;
   amountInSats: number;
-  network?: "sbtcTestnet"; // TODO:
+  network?: "sbtcTestnet" | "mainnet";
 };
 
 export async function sendBTCLeather({ amountInSats, recipient, network }: Payload) {
-  const response = await stacksRequest("sendTransfer", {
+  const response = await window.LeatherProvider.request("sendTransfer", {
     recipients: [
       {
         address: recipient,
@@ -18,7 +17,7 @@ export async function sendBTCLeather({ amountInSats, recipient, network }: Paylo
     network,
   });
 
-  return response.txid.replace(/"|'/g, "");
+  return response.result.txid;
 }
 
 export async function sendBTCOther({ amountInSats, recipient }: Payload) {

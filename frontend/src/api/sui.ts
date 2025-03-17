@@ -1,9 +1,8 @@
 import { SuiClient } from "@mysten/sui/client";
-
-const SBTC_TOKEN = "0xdaa725387e5f08fe8a7c936b0b448f8f9c13ac9b41fe3ee159e9cc25e0ef5f63::axlusdc::AXLUSDC"; // TODO: This is not correct token, update after it is available
+import { ENV } from "@/lib/env.ts";
 
 export const client = new SuiClient({
-  url: "https://fullnode.mainnet.sui.io", // TODO: Update for mainnet
+  url: ENV.SUI_CLIENT_URL,
 });
 
 export const SuiApi = {
@@ -23,7 +22,7 @@ export const SuiApi = {
       // Get all coin objects owned by the address
       const { data: coinsSbtc } = await client.getCoins({
         owner: address,
-        coinType: SBTC_TOKEN,
+        coinType: ENV.SUI_SBTC_COIN_TYPE,
       });
 
       // Sum up the balances

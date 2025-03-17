@@ -1,28 +1,58 @@
+import { STACKS_NETWORK } from "@/api/stacks.ts";
+
 export const formatTrimmed = (address: string, size: number = 10) => {
+  if (!address) {
+    return '';
+  }
+
+  if (address.length <= size) {
+    return address;
+  }
+
   return address.slice(0, size) + "..." + address.slice(-size);
 };
 
 export const getExplorerUrlAddress = (type: "BITCOIN" | "STACKS" | "SUI", address: string) => {
-  // TODO: Add support for mainnet
+  if (STACKS_NETWORK === "testnet") {
+    switch (type) {
+      case "BITCOIN":
+        return `https://beta.sbtc-mempool.tech/api/proxy/address/${address}`;
+      case "STACKS":
+        return `https://explorer.hiro.so/address/${address}?chain=testnet`;
+      case "SUI":
+        return `https://testnet.suivision.xyz/address/${address}`;
+    }
+  }
+
   switch (type) {
     case "BITCOIN":
-      return `https://beta.sbtc-mempool.tech/api/proxy/address/${address}`;
+      return `https://blockstream.info/address/${address}`;
     case "STACKS":
-      return `https://explorer.hiro.so/address/${address}?chain=testnet`;
+      return `https://explorer.hiro.so/address/${address}`;
     case "SUI":
-      return `https://testnet.suivision.xyz/address/${address}`;
+      return `https://suivision.xyz/address/${address}`;
   }
 };
 
 export const getExplorerUrlTransaction = (type: "BITCOIN" | "STACKS" | "SUI", transaction: string) => {
-  // TODO: Add support for mainnet
+  if (STACKS_NETWORK === "testnet") {
+    switch (type) {
+      case "BITCOIN":
+        return `https://beta.sbtc-mempool.tech/api/proxy/tx/${transaction}`;
+      case "STACKS":
+        return `https://explorer.hiro.so/txid/${transaction}?chain=testnet`;
+      case "SUI":
+        return `https://testnet.suivision.xyz/tx/${transaction}`;
+    }
+  }
+
   switch (type) {
     case "BITCOIN":
-      return `https://beta.sbtc-mempool.tech/api/proxy/tx/${transaction}`;
+      return `https://blockstream.info/tx/${transaction}`;
     case "STACKS":
-      return `https://explorer.hiro.so/txid/${transaction}?chain=testnet`;
+      return `https://explorer.hiro.so/txid/${transaction}`;
     case "SUI":
-      return `https://testnet.suivision.xyz/tx/${transaction}`;
+      return `https://suivision.xyz/tx/${transaction}`;
   }
 };
 
