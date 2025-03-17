@@ -11,13 +11,25 @@ import { Button } from "@/components/ui/button.tsx";
 import { cn } from "@/lib/utils.ts";
 
 export default function BTCTxStatus() {
-  const { bridgeStepInfo } = useApp();
+  const { bridgeStepInfo, stacksAddress } = useApp();
 
   const { recipient, stacksTxId, statusResponse, loading } = useDepositStatus(bridgeStepInfo.btcTxId);
 
   const btcAmount = useMemo(() => {
     return BigInt(statusResponse?.vout[0].value || 0);
   }, [statusResponse?.vout]);
+
+  if (!stacksAddress) {
+    return (
+      <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center text-white">
+            Connect a Stacks wallet first
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm gap-4">

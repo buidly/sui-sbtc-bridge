@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { AlertCircle, Bitcoin, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, Bitcoin, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import { useApp } from "@/context/app.context.tsx";
 import { STACKS_NETWORK, StacksApi } from "@/api/stacks.ts";
@@ -14,6 +14,9 @@ import { networks } from "bitcoinjs-lib";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { sendBTCLeather, sendBTCOther } from "@/lib/sendBTC.ts";
 import { useEmilyDeposit } from "@/hooks/use-emily-deposit.ts";
+import { formatBalance } from "@/lib/helpers.ts";
+import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
+import { useBalances } from "@/context/balances.context.tsx";
 
 export default function SendBTCForm() {
   const { btcAddressInfo, stacksAddress, updateBridgeStepInfo } = useApp();
@@ -22,6 +25,15 @@ export default function SendBTCForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { notifyEmily } = useEmilyDeposit();
+
+  const { btcBalance, loading } = useBalances();
+  const denominatedBtcBalance = useMemo(() => {
+    if (!btcBalance) {
+      return 0;
+    }
+
+    return Number(btcBalance) / (10 ** 8);
+  }, [btcBalance]);
 
   if (!btcAddressInfo || !stacksAddress) {
     return undefined;
@@ -63,7 +75,7 @@ export default function SendBTCForm() {
         signersAggregatePubKey!,
         maxFee,
         parsedLockTime,
-        STACKS_NETWORK === 'testnet' ? networks.regtest : networks.bitcoin,
+        STACKS_NETWORK === "testnet" ? networks.regtest : networks.bitcoin,
         reclaimPublicKeys,
         signatureThreshold,
       );
@@ -149,10 +161,21 @@ export default function SendBTCForm() {
           </div>
         </div>
 
-        <CardTitle className="text-2xl font-bold text-center text-white">Step 1 - Bridge Bitcoin</CardTitle>
+        <CardTitle className="text-2xl font-bold text-center text-white">
+          Step 1 - Bridge Bitcoin
+          {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
+        </CardTitle>
         <CardDescription className="text-center text-slate-400">Convert BTC tokens to sBTC</CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="grid gap-3 text-slate-300">
+          <p className="mb-2 flex items-center">
+            <strong className="mr-1">BTC Balance:</strong> {formatBalance(btcBalance, 8)}
+            <span className="text-amber-500 ml-1">BTC</span>
+            <img src={bitcoinLogo} alt={"BTC Logo"} className="ml-1 h-4 w-4" />
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-3">
             <div className="space-y-2">
@@ -177,19 +200,17 @@ export default function SendBTCForm() {
               </div>
             </div>
 
-            {/* TODO: Add check for max amount */}
-
             {parseFloat(amount) < 0.001 && (
               <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>Minimum deposit amount is 0.001 BTC</AlertDescription>
               </Alert>
             )}
-            {parseFloat(amount) > 0.002 && (
+            {parseFloat(amount) > denominatedBtcBalance && (
               <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  You're about to send a large amount. Please double-check the wallets.
+                  You don't have enough BTC in your wallet
                 </AlertDescription>
               </Alert>
             )}
@@ -201,7 +222,7 @@ export default function SendBTCForm() {
           className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
           type="submit"
           onClick={handleSubmit}
-          disabled={isSubmitting || !amount || parseFloat(amount) < 0.001}
+          disabled={isSubmitting || !amount || parseFloat(amount) < 0.001 || parseFloat(amount) > denominatedBtcBalance}
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">

@@ -78,7 +78,6 @@ export default function BridgeSBTCForm() {
 
   const { stacksBalances, loading } = useBalances();
 
-  // TODO: Check if Stacks address is the correct one
   if (!stacksAddress || !suiAddress) {
     return (
       <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">

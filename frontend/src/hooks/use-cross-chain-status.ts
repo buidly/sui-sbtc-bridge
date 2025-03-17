@@ -64,7 +64,6 @@ export function useCrossChainStatus(txId: string) {
 
         setSuiRecipientAddress((info?.[1] || info?.[0])?.interchain_transfer?.destinationAddress || null);
 
-        // TODO: Check if connected Bitcoin & Stacks wallets belong to the correct address for this transaction
         if (info.length === 2) {
           if (info[0].status === "executed") {
             setSuiTxHash(info[0].executed.transactionHash);

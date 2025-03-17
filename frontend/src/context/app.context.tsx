@@ -148,6 +148,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const btcTxId = params.get("btcTxId");
 
     if (btcTxId) {
+      // Handle BTC transaction status
       if (!params.has("stacksTxId")) {
         setBridgeStepInfo({
           step: "BTC_SENT_PENDING",
@@ -157,6 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Handle sBTC bridge transaction status
       setBridgeStepInfo({
         step: "SBTC_SENT_PENDING",
         btcTxId,

@@ -38,17 +38,17 @@ function App() {
 
             {!bridgeStepInfo?.step ? (
               <SendBTCForm />
-            ) : (
-              (bridgeStepInfo.step === "BTC_SENT_PENDING" ||
-                bridgeStepInfo.step === "BTC_SENT_MINTING" ||
-                bridgeStepInfo.step === "BTC_FAILED") && <BTCTxStatus />
-            )}
-
-            {bridgeStepInfo && bridgeStepInfo.step === "BTC_COMPLETED" && <BridgeSBTCForm />}
-            {bridgeStepInfo &&
-              (bridgeStepInfo.step === "SBTC_SENT_PENDING" ||
-                bridgeStepInfo.step === "SBTC_SENT_BRIDGING" ||
-                bridgeStepInfo.step === "SBTC_COMPLETED") && <BridgeTxStatus />}
+            ) : bridgeStepInfo.step === "BTC_SENT_PENDING" ||
+              bridgeStepInfo.step === "BTC_SENT_MINTING" ||
+              bridgeStepInfo.step === "BTC_FAILED" ? (
+              <BTCTxStatus />
+            ) : bridgeStepInfo.step === "BTC_COMPLETED" ? (
+              <BridgeSBTCForm />
+            ) : bridgeStepInfo.step === "SBTC_SENT_PENDING" ||
+              bridgeStepInfo.step === "SBTC_SENT_BRIDGING" ||
+              bridgeStepInfo.step === "SBTC_COMPLETED" ? (
+              <BridgeTxStatus />
+            ) : undefined}
           </div>
         </div>
       </div>
