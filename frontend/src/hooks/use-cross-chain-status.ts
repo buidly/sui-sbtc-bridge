@@ -12,7 +12,7 @@ export function useCrossChainStatus(txId: string) {
   const [suiRecipientAddress, setSuiRecipientAddress] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { getSuiBalances } = useBalances();
+  const { getStacksBalances, getSuiBalances } = useBalances();
 
   useEffect(() => {
     if (!txId) {
@@ -85,7 +85,15 @@ export function useCrossChainStatus(txId: string) {
 
   // Need this useEffect because the setInterval will store an older version of some functions
   useEffect(() => {
-    if (bridgeStepInfo && bridgeStepInfo.step === "SBTC_COMPLETED") {
+    if (!bridgeStepInfo) {
+      return;
+    }
+
+    if (bridgeStepInfo.step === "SBTC_SENT_BRIDGING") {
+      getStacksBalances();
+    }
+
+    if (bridgeStepInfo.step === "SBTC_COMPLETED") {
       getSuiBalances();
     }
   }, [bridgeStepInfo]);

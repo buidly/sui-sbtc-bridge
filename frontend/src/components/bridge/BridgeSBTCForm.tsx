@@ -17,7 +17,7 @@ import { ENV } from "@/lib/env.ts";
 import { CONSTANTS } from "@/lib/constants.ts";
 import { useBalances } from "@/context/balances.context.tsx";
 import { storageHelper } from "@/lib/storageHelper.ts";
-import { MicroserviceApi } from '@/api/microservice.ts';
+import { MicroserviceApi } from "@/api/microservice.ts";
 
 export default function BridgeSBTCForm() {
   const { stacksAddress, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
@@ -31,70 +31,17 @@ export default function BridgeSBTCForm() {
 
     const denominatedAmount = Math.round(parseFloat(amount) * 10 ** 8);
 
-    console.log("denominated amount", denominatedAmount);
-
     const stackWallet = storageHelper.getStacksWallet();
 
     // If generated wallet, call backend for sponsored transaction
     if (stackWallet.type === "GENERATED") {
-      console.log("works");
-
-      try {
-        const nonce = await StacksApi.getNextNonce(stackWallet.address);
-
-        const transaction = await makeContractCall({
-          senderKey: stackWallet.privateKey,
-          nonce,
-          contractAddress: ENV.STACKS_AXELAR_CONTRACT_DEPLOYER, // Axelar ITS contract
-          contractName: "interchain-token-service",
-          functionName: "interchain-transfer",
-          functionArgs: [
-            principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gateway-impl`),
-            principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gas-impl`),
-            principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.interchain-token-service-impl`),
-            principalCV(ENV.STACKS_SBTC_TOKEN_MANAGER),
-            principalCV(SBTC_TOKEN_CONTRACT),
-            bufferFromHex(ENV.ITS_SBTC_TOKEN_ID),
-            stringAsciiCV(CONSTANTS.SUI_AXELAR_CHAIN),
-            // bufferFromHex(suiAddress.slice(2)), // remove 0x prefix // TODO: Set correct address
-            bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
-            uintCV(denominatedAmount), // sBTC has 8 decimals
-            tupleCV({ data: bufferFromHex(""), version: uintCV(0) }),
-            uintCV(1_000_000), // 1 STX for paying cross chain fee; TODO: This will not work?
-          ],
-          postConditions: [
-            Pc.principal(stacksAddress).willSendEq(1_000_000).ustx(),
-            Pc.principal(stacksAddress).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
-          ],
-          postConditionMode: "allow",
-          network: STACKS_NETWORK,
-          sponsored: true,
-        });
-
-        console.log(transaction);
-        console.log(transaction.serialize());
-
-        const txId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
-
-        if (!txId) {
-          alert("Failed to send Stacks transaction");
-          setIsSubmitting(false);
-
-          return;
-        }
-
-        updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, txId);
-      } catch (e) {
-        console.error(e);
-
-        setIsSubmitting(false);
-      }
+      await handleSubmitGenerated(stackWallet, denominatedAmount);
 
       return;
     }
 
     try {
-      openContractCall({
+      await openContractCall({
         contractAddress: ENV.STACKS_AXELAR_CONTRACT_DEPLOYER, // Axelar ITS contract
         contractName: "interchain-token-service",
         functionName: "interchain-transfer",
@@ -138,7 +85,84 @@ export default function BridgeSBTCForm() {
     }
   };
 
+  const handleSubmitGenerated = async (
+    stackWallet: {
+      type: "GENERATED" | "USER";
+      address: string;
+      privateKey?: string;
+    },
+    denominatedAmount: number | bigint,
+  ) => {
+    try {
+      const nonce = await StacksApi.getNextNonce(stackWallet.address);
+
+      const transaction = await makeContractCall({
+        senderKey: stackWallet.privateKey,
+        nonce,
+        contractAddress: ENV.STACKS_AXELAR_CONTRACT_DEPLOYER, // Axelar ITS contract
+        contractName: "interchain-token-service",
+        functionName: "interchain-transfer",
+        functionArgs: [
+          principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gateway-impl`),
+          principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gas-impl`),
+          principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.interchain-token-service-impl`),
+          principalCV(ENV.STACKS_SBTC_TOKEN_MANAGER),
+          principalCV(SBTC_TOKEN_CONTRACT),
+          bufferFromHex(ENV.ITS_SBTC_TOKEN_ID),
+          stringAsciiCV(CONSTANTS.SUI_AXELAR_CHAIN),
+          // bufferFromHex(suiAddress.slice(2)), // remove 0x prefix // TODO: Set correct address
+          bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
+          uintCV(denominatedAmount), // sBTC has 8 decimals
+          tupleCV({ data: bufferFromHex(""), version: uintCV(0) }),
+          uintCV(1_000_000), // 1 STX for paying cross chain fee; TODO: This will not work?
+        ],
+        postConditions: [
+          Pc.principal(stacksAddress).willSendEq(1_000_000).ustx(),
+          Pc.principal(stacksAddress).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
+        ],
+        postConditionMode: "allow",
+        network: STACKS_NETWORK,
+        sponsored: true,
+      });
+
+      const txId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
+
+      if (!txId) {
+        alert("Failed to send Stacks transaction");
+        setIsSubmitting(false);
+
+        return;
+      }
+
+      updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, txId);
+    } catch (e) {
+      console.error(e);
+
+      setIsSubmitting(false);
+    }
+  };
+
   const { stacksBalances, loading } = useBalances();
+
+  // If wallet is of type generated, then submit form automatically with max amount
+  useEffect(() => {
+    if (!stacksAddress) {
+      return;
+    }
+
+    const stackWallet = storageHelper.getStacksWallet();
+
+    // If generated wallet, call backend for sponsored transaction
+    if (stackWallet.type !== "GENERATED") {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const denominatedAmount = stacksBalances.sbtcBalance;
+
+    handleSubmitGenerated(stackWallet, denominatedAmount);
+  }, [stacksAddress]);
 
   if (!stacksAddress || !suiAddress) {
     return (
