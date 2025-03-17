@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ApiConfigModule } from '@monorepo/common/config/api.config.module';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { GeneralController } from './general.controller';
+import { SponsoredController } from './sponsored.controller';
+import { SponsoredService } from './sponsored.service';
+import { HelpersModule } from '@monorepo/common/helpers/helpers.module';
 
 @Module({
   imports: [
     ApiConfigModule,
+    HelpersModule,
     ThrottlerModule.forRoot([
       {
         ttl: 120_000, // 120 seconds
@@ -13,8 +16,8 @@ import { GeneralController } from './general.controller';
       },
     ]),
   ],
-  providers: [],
-  controllers: [GeneralController],
+  providers: [SponsoredService],
+  controllers: [SponsoredController],
   exports: [],
 })
 export class ApiModule {}

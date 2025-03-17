@@ -10,12 +10,14 @@ import stacksLogo from "@/assets/images/stacks_logo.svg";
 import { SBTC_TOKEN_CONTRACT, STACKS_NETWORK, StacksApi } from "@/api/stacks.ts";
 import { formatBalance } from "@/lib/helpers.ts";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
-import { Pc, principalCV, stringAsciiCV, tupleCV, uintCV } from "@stacks/transactions";
+import { makeContractCall, Pc, principalCV, stringAsciiCV, tupleCV, uintCV } from "@stacks/transactions";
 import { bufferFromHex } from "@stacks/transactions/dist/cl";
 import { openContractCall } from "@stacks/connect";
 import { ENV } from "@/lib/env.ts";
 import { CONSTANTS } from "@/lib/constants.ts";
 import { useBalances } from "@/context/balances.context.tsx";
+import { storageHelper } from "@/lib/storageHelper.ts";
+import { MicroserviceApi } from '@/api/microservice.ts';
 
 export default function BridgeSBTCForm() {
   const { stacksAddress, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
@@ -30,6 +32,66 @@ export default function BridgeSBTCForm() {
     const denominatedAmount = Math.round(parseFloat(amount) * 10 ** 8);
 
     console.log("denominated amount", denominatedAmount);
+
+    const stackWallet = storageHelper.getStacksWallet();
+
+    // If generated wallet, call backend for sponsored transaction
+    if (stackWallet.type === "GENERATED") {
+      console.log("works");
+
+      try {
+        const nonce = await StacksApi.getNextNonce(stackWallet.address);
+
+        const transaction = await makeContractCall({
+          senderKey: stackWallet.privateKey,
+          nonce,
+          contractAddress: ENV.STACKS_AXELAR_CONTRACT_DEPLOYER, // Axelar ITS contract
+          contractName: "interchain-token-service",
+          functionName: "interchain-transfer",
+          functionArgs: [
+            principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gateway-impl`),
+            principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.gas-impl`),
+            principalCV(`${ENV.STACKS_AXELAR_CONTRACT_DEPLOYER}.interchain-token-service-impl`),
+            principalCV(ENV.STACKS_SBTC_TOKEN_MANAGER),
+            principalCV(SBTC_TOKEN_CONTRACT),
+            bufferFromHex(ENV.ITS_SBTC_TOKEN_ID),
+            stringAsciiCV(CONSTANTS.SUI_AXELAR_CHAIN),
+            // bufferFromHex(suiAddress.slice(2)), // remove 0x prefix // TODO: Set correct address
+            bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
+            uintCV(denominatedAmount), // sBTC has 8 decimals
+            tupleCV({ data: bufferFromHex(""), version: uintCV(0) }),
+            uintCV(1_000_000), // 1 STX for paying cross chain fee; TODO: This will not work?
+          ],
+          postConditions: [
+            Pc.principal(stacksAddress).willSendEq(1_000_000).ustx(),
+            Pc.principal(stacksAddress).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
+          ],
+          postConditionMode: "allow",
+          network: STACKS_NETWORK,
+          sponsored: true,
+        });
+
+        console.log(transaction);
+        console.log(transaction.serialize());
+
+        const txId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
+
+        if (!txId) {
+          alert("Failed to send Stacks transaction");
+          setIsSubmitting(false);
+
+          return;
+        }
+
+        updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, txId);
+      } catch (e) {
+        console.error(e);
+
+        setIsSubmitting(false);
+      }
+
+      return;
+    }
 
     try {
       openContractCall({
@@ -126,10 +188,19 @@ export default function BridgeSBTCForm() {
                   max={formatBalance(stacksBalances?.sbtcBalance, 8)}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pr-12 text-slate-300"
+                  className="pr-28 text-slate-300"
                   required
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">sBTC</div>
+                <div className="absolute inset-y-0 right-0 flex items-center">
+                  <span className="pr-2 text-slate-400">sBTC</span>
+                  <button
+                    type="button"
+                    onClick={() => setAmount(formatBalance(stacksBalances?.sbtcBalance, 8))}
+                    className="px-2 py-1 mr-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded"
+                  >
+                    Max
+                  </button>
+                </div>
               </div>
             </div>
           </div>

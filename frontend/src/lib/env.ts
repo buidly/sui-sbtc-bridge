@@ -12,4 +12,6 @@ export const ENV = {
 
   SUI_SBTC_COIN_TYPE: import.meta.env.VITE_SUI_SBTC_COIN_TYPE,
   SUI_CLIENT_URL: import.meta.env.VITE_SUI_CLIENT_URL,
+
+  MICROSERVICE_URL: import.meta.env.VITE_MICROSERVICE_URL,
 };

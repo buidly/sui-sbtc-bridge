@@ -38,9 +38,11 @@ function StacksConnect() {
         "Are you sure you want to disconnect this wallet? The wallet will be DELETED and CAN NOT be recovered!",
       );
 
-      if (isConfirmed) {
-        processConnectStacksGenerated(null);
+      if (!isConfirmed) {
+        return;
       }
+
+      processConnectStacksGenerated(null);
     }
 
     updateBridgeStepInfo(null, null);
