@@ -125,16 +125,16 @@ export default function BridgeSBTCForm() {
         sponsored: true,
       });
 
-      const sponsoredTransactionId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
+      const sponsoredTxId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
 
-      if (!sponsoredTransactionId) {
-        alert("Failed to submit Stacks transaction");
+      if (!sponsoredTxId) {
+        alert("Failed to submit Stacks transaction. Please try again");
         setIsSubmitting(false);
 
         return;
       }
 
-      updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, null, sponsoredTransactionId);
+      updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, null, sponsoredTxId);
     } catch (e) {
       console.error(e);
 

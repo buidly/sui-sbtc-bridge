@@ -30,7 +30,7 @@ interface AppContextType {
     stacksTxId?: string;
     sponsoredTxId?: string;
   };
-  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => void;
+  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string, sponsoredTxId?: string) => void;
 }
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
@@ -151,7 +151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (btcTxId) {
       // Handle BTC transaction status
-      if (!params.has("stacksTxId") && !params.has('sponsoredTxId')) {
+      if (!params.has("stacksTxId") && !params.has("sponsoredTxId")) {
         setBridgeStepInfo({
           step: "BTC_SENT_PENDING",
           btcTxId,
@@ -170,18 +170,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updateBridgeStepInfo = (
-    step?: BridgeStep,
-    btcTxId?: string,
-    stacksTxId?: string,
-    sponsoredTxId?: string,
-  ) => {
+  const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string, stacksTxId?: string, sponsoredTxId?: string) => {
     if (!step || !btcTxId) {
       setBridgeStepInfo(null);
 
       const params = new URLSearchParams(window.location.search);
       params.delete("btcTxId");
       params.delete("stacksTxId");
+      params.delete("sponsoredTxId");
 
       // Update URL without page reload
       const newUrl = `${window.location.pathname}${params.size !== 0 ? "?" + params.toString() : ""}`;
@@ -194,7 +190,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       step,
       btcTxId,
       stacksTxId,
-      sponsoredTxId
+      sponsoredTxId,
     });
 
     const params = new URLSearchParams(window.location.search);
