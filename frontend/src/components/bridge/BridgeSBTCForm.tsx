@@ -57,10 +57,10 @@ export default function BridgeSBTCForm() {
           bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
           uintCV(denominatedAmount), // sBTC has 8 decimals
           tupleCV({ data: bufferFromHex(""), version: uintCV(0) }),
-          uintCV(1_000_000), // 1 STX for paying cross chain fee
+          uintCV(CONSTANTS.CROSS_CHAIN_STX_VALUE), // 1 STX for paying cross chain fee
         ],
         postConditions: [
-          Pc.origin().willSendEq(1_000_000).ustx(),
+          Pc.origin().willSendEq(CONSTANTS.CROSS_CHAIN_STX_VALUE).ustx(),
           Pc.origin().willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
         ],
         network: STACKS_NETWORK,
@@ -114,10 +114,10 @@ export default function BridgeSBTCForm() {
           bufferFromHex("0xF12372616f9c986355414BA06b3Ca954c0a7b0dC"),
           uintCV(denominatedAmount), // sBTC has 8 decimals
           tupleCV({ data: bufferFromHex(""), version: uintCV(0) }),
-          uintCV(1_000_000), // 1 STX for paying cross chain fee; TODO: This will not work?
+          uintCV(CONSTANTS.CROSS_CHAIN_STX_VALUE),
         ],
         postConditions: [
-          Pc.principal(stacksAddress).willSendEq(1_000_000).ustx(),
+          Pc.principal(stacksAddress).willSendEq(CONSTANTS.CROSS_CHAIN_STX_VALUE).ustx(),
           Pc.principal(stacksAddress).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
         ],
         postConditionMode: "allow",

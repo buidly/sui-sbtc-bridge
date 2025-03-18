@@ -9,8 +9,10 @@ const API_TIMEOUT = 30_000; // 30 seconds
 
 @Injectable()
 export class StacksApiHelper {
-  private readonly logger: Logger;
   private readonly client: AxiosInstance;
+  private readonly logger: Logger;
+
+  private readonly sbtcToken: string;
 
   constructor(
     apiConfigService: ApiConfigService,
@@ -25,6 +27,8 @@ export class StacksApiHelper {
     });
 
     this.logger = new Logger(StacksApiHelper.name);
+
+    this.sbtcToken = `${apiConfigService.getStacksSbtcContractDeployer()}.sbtc-token::sbtc-token`;
   }
 
   async getNextNonce(address: string): Promise<number> {
@@ -96,5 +100,21 @@ export class StacksApiHelper {
     this.logger.log(`Sent ${hashes.length}/${transactions.length} transactions successfully`);
 
     return hashes;
+  }
+
+  async getAddressBalances(address: string) {
+    try {
+      const result = await this.client.get(`/extended/v1/address/${address}/balances`);
+
+      return {
+        stxBalance: BigInt(result.data?.stx?.balance || 0),
+        sbtcBalance: BigInt(result.data?.fungible_tokens?.[this.sbtcToken]?.balance || 0),
+      };
+    } catch {
+      return {
+        stxBalance: 0n,
+        sbtcBalance: 0n,
+      };
+    }
   }
 }

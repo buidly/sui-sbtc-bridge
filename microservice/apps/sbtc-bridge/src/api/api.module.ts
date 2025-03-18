@@ -14,7 +14,7 @@ import { DatabaseModule } from '@monorepo/common/database/database.module';
     ThrottlerModule.forRoot([
       {
         ttl: 120_000, // 120 seconds
-        limit: 10,
+        limit: 5,
       },
     ]),
   ],

@@ -13,6 +13,7 @@ import { ProviderKeys } from '@monorepo/common/utils/provider.enum';
 import { Locker } from '@monorepo/common/utils/locker';
 import { SponsoredTransaction, SponsoredTransactionStatus } from '@prisma/client';
 import { StacksApiHelper } from '@monorepo/common/helpers/stacks.api.helper';
+import { CONSTANTS } from '@monorepo/common/utils/constants';
 
 const MAX_NUMBER_OF_RETRIES: number = 3;
 
@@ -43,7 +44,7 @@ export class SponsoredTransactionProcessorService {
       while ((entries = await this.sponsoredTransactionRepository.findPending(0))?.length) {
         let nonce = await this.stacksApi.getNextNonce(this.walletSignerAddress);
 
-        this.logger.log(`Found ${entries.length} CallContractApproved transactions to execute`);
+        this.logger.log(`Found ${entries.length} SponsoredTransaction to execute`);
 
         const transactionsToSend: StacksTransactionWire[] = [];
         const entriesToUpdate: SponsoredTransaction[] = [];
@@ -100,14 +101,19 @@ export class SponsoredTransactionProcessorService {
     incrementRetry: boolean;
   }> {
     // 1st send STX transaction
-    if (!sponsoredTransaction.stxTransactionHash) {
+    // Transaction can be skipped if user balance is enough to pay for cross chain fee
+    if (
+      (sponsoredTransaction.status === SponsoredTransactionStatus.PENDING ||
+        sponsoredTransaction.status === SponsoredTransactionStatus.PENDING_STX) &&
+      !sponsoredTransaction.stxTransactionHash
+    ) {
       this.logger.debug(
         `Sending STX to ${sponsoredTransaction.stacksAddress} for sponsored transaction ${sponsoredTransaction.id}`,
       );
 
       const stxTransfer = await makeSTXTokenTransfer({
         recipient: sponsoredTransaction.stacksAddress,
-        amount: 1_000_000, // Send 1 STX to the user, TODO: Update cross chain fee
+        amount: CONSTANTS.CROSS_CHAIN_STX_VALUE, // Send 1 STX to the user
         senderKey: this.walletSigner,
         nonce,
         network: this.network,
