@@ -14,6 +14,7 @@ import StepProgress from "@/components/StepProgress.tsx";
 export default function BridgeTxStatus() {
   const { bridgeStepInfo, updateBridgeStepInfo } = useApp();
 
+  // TODO: Handle status of sponsored transaction
   const { suiRecipientAddress, suiTxHash, stacksResponse, loading } = useCrossChainStatus(bridgeStepInfo.stacksTxId);
 
   const sbtcAmount = useMemo(() => {

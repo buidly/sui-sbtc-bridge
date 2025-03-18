@@ -3,6 +3,7 @@ import axios, { AxiosInstance } from 'axios';
 import { broadcastTransaction, fetchFeeEstimate, StacksTransactionWire } from '@stacks/transactions';
 import { ApiConfigService } from '@monorepo/common/config/api.config.service';
 import { ProviderKeys } from '@monorepo/common/utils/provider.enum';
+import { Transaction } from '@stacks/blockchain-api-client';
 
 const API_TIMEOUT = 30_000; // 30 seconds
 
@@ -37,6 +38,25 @@ export class StacksApiHelper {
     return data.possible_next_nonce;
   }
 
+  async getTransactionFee(transaction: StacksTransactionWire): Promise<bigint> {
+    const result = await fetchFeeEstimate({
+      transaction,
+      network: this.network,
+    });
+
+    if (!result) {
+      throw new Error(`Could not get fee for transaction ${transaction.txid()} ${JSON.stringify(result)}`);
+    }
+
+    return BigInt(result);
+  }
+
+  async getTransaction(txHash: string): Promise<Transaction> {
+    const response = await this.client.get(`/extended/v1/tx/${txHash}`);
+
+    return response.data as Transaction;
+  }
+
   async sendTransaction(transaction: StacksTransactionWire): Promise<string> {
     try {
       const broadcastResponse = await broadcastTransaction({
@@ -54,16 +74,27 @@ export class StacksApiHelper {
     }
   }
 
-  async getTransactionFee(transaction: StacksTransactionWire): Promise<bigint> {
-    const result = await fetchFeeEstimate({
-      transaction,
-      network: this.network,
-    });
-
-    if (!result) {
-      throw new Error(`Could not get fee for transaction ${transaction.txid()} ${JSON.stringify(result)}`);
+  async sendTransactions(transactions: StacksTransactionWire[]) {
+    if (!transactions.length) {
+      return [];
     }
 
-    return BigInt(result);
+    const hashes: string[] = [];
+
+    for (const tx of transactions) {
+      try {
+        const hash = await this.sendTransaction(tx);
+        hashes.push(hash);
+        this.logger.log(`Transaction ${tx.txid()} sent successfully`);
+      } catch (e) {
+        this.logger.error(`Transaction ${tx.txid()} could not be sent`, e);
+
+        throw e;
+      }
+    }
+
+    this.logger.log(`Sent ${hashes.length}/${transactions.length} transactions successfully`);
+
+    return hashes;
   }
 }

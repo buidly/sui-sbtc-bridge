@@ -125,16 +125,16 @@ export default function BridgeSBTCForm() {
         sponsored: true,
       });
 
-      const txId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
+      const sponsoredTransactionId = await MicroserviceApi.sendSponsoredTransaction(transaction.serialize());
 
-      if (!txId) {
-        alert("Failed to send Stacks transaction");
+      if (!sponsoredTransactionId) {
+        alert("Failed to submit Stacks transaction");
         setIsSubmitting(false);
 
         return;
       }
 
-      updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, txId);
+      updateBridgeStepInfo("SBTC_SENT_PENDING", bridgeStepInfo.btcTxId, null, sponsoredTransactionId);
     } catch (e) {
       console.error(e);
 
@@ -157,11 +157,12 @@ export default function BridgeSBTCForm() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    const denominatedAmount = stacksBalances.sbtcBalance;
-
-    handleSubmitGenerated(stackWallet, denominatedAmount);
+    // TODO: Handle this differently
+    // setIsSubmitting(true);
+    //
+    // const denominatedAmount = stacksBalances.sbtcBalance;
+    //
+    // handleSubmitGenerated(stackWallet, denominatedAmount);
   }, [stacksAddress]);
 
   if (!stacksAddress || !suiAddress) {

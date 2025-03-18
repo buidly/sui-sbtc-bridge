@@ -1,7 +1,7 @@
 import { ApiTags } from '@nestjs/swagger';
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import { deserializeTransaction } from '@stacks/transactions';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { SponsoredService } from './sponsored.service';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('general')
 @Controller('/sponsored-transactions')
@@ -10,20 +10,16 @@ export class SponsoredController {
 
   @Post('/send')
   async sendSponsoredTransaction(@Body('rawTransaction') rawTransaction: string) {
-    const transaction = deserializeTransaction(rawTransaction);
-
-    try {
-      transaction.verifyOrigin();
-    } catch (e) {
-      throw new BadRequestException('Invalid signed transaction');
-    }
-
-    // TODO: Get transaction and test that we support it (sender has 0 STX, is for ITS only for sBTC towards Sui etc)
-
-    const txHash = await this.sponsoredService.sendSponsoredTransaction(transaction);
+    const sponsoredTransactionId = await this.sponsoredService.saveSponsoredTransaction(rawTransaction);
 
     return {
-      txHash,
+      sponsoredTransactionId,
     };
+  }
+
+  @UseGuards(ThrottlerGuard)
+  @Get('/:id')
+  async getSponsoredTransaction(@Param('id') id: string) {
+    return await this.sponsoredService.getSponsoredTransaction(id);
   }
 }
