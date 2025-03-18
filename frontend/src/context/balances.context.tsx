@@ -16,7 +16,7 @@ interface BalancesContextType {
 const BalancesContext = createContext<BalancesContextType>(undefined as BalancesContextType);
 
 export function BalancesProvider({ children }: { children: ReactNode }) {
-  const { btcAddressInfo, stacksAddress, suiAddress } = useApp();
+  const { btcAddressInfo, stacksAddressInfo, suiAddress } = useApp();
 
   const [btcBalance, setBtcBalance] = useState<bigint>(0n);
   const [loading, setLoading] = useState(false);
@@ -41,14 +41,14 @@ export function BalancesProvider({ children }: { children: ReactNode }) {
 
   const [stacksBalances, setStacksBalances] = useState(undefined);
   const getStacksBalances = async () => {
-    if (!stacksAddress) {
+    if (!stacksAddressInfo) {
       setStacksBalances(undefined);
       return;
     }
 
     setLoading(true);
 
-    const balances = await StacksApi.getAddressBalances(stacksAddress);
+    const balances = await StacksApi.getAddressBalances(stacksAddressInfo.address);
 
     setStacksBalances(balances);
     setLoading(false);
@@ -56,7 +56,7 @@ export function BalancesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     getStacksBalances();
-  }, [stacksAddress]);
+  }, [stacksAddressInfo]);
 
   const [suiBalances, setSuiBalances] = useState(undefined);
   const getSuiBalances = async () => {

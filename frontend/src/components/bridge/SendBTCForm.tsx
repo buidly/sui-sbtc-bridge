@@ -19,7 +19,7 @@ import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { useBalances } from "@/context/balances.context.tsx";
 
 export default function SendBTCForm() {
-  const { btcAddressInfo, stacksAddress, updateBridgeStepInfo } = useApp();
+  const { btcAddressInfo, stacksAddressInfo, updateBridgeStepInfo } = useApp();
 
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +35,7 @@ export default function SendBTCForm() {
     return Number(btcBalance) / (10 ** 8);
   }, [btcBalance]);
 
-  if (!btcAddressInfo || !stacksAddress) {
+  if (!btcAddressInfo || !stacksAddressInfo) {
     return undefined;
   }
 
@@ -47,7 +47,7 @@ export default function SendBTCForm() {
       const signersAggregatePubKey = (await StacksApi.getAggregateKey()).slice(2);
 
       // Combine the version and hash into a single Uint8Array
-      const serializedAddress = serializeCVBytes(principalCV(stacksAddress));
+      const serializedAddress = serializeCVBytes(principalCV(stacksAddressInfo.address));
 
       // get the publicKey from the user payment address
       // user cannot continue if they're not connected

@@ -20,7 +20,7 @@ import { storageHelper } from "@/lib/storageHelper.ts";
 import { MicroserviceApi } from "@/api/microservice.ts";
 
 export default function BridgeSBTCForm() {
-  const { stacksAddress, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
+  const { stacksAddressInfo, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
 
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -89,7 +89,6 @@ export default function BridgeSBTCForm() {
     stackWallet: {
       type: "GENERATED" | "USER";
       address: string;
-      privateKey?: string;
     },
     denominatedAmount: number | bigint,
   ) => {
@@ -117,8 +116,8 @@ export default function BridgeSBTCForm() {
           uintCV(1_000_000), // 1 STX for paying cross chain fee; TODO: This will not work?
         ],
         postConditions: [
-          Pc.principal(stacksAddress).willSendEq(1_000_000).ustx(),
-          Pc.principal(stacksAddress).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
+          Pc.principal(stacksAddressInfo.address).willSendEq(1_000_000).ustx(),
+          Pc.principal(stacksAddressInfo.address).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
         ],
         postConditionMode: "allow",
         network: STACKS_NETWORK,
@@ -146,7 +145,7 @@ export default function BridgeSBTCForm() {
 
   // If wallet is of type generated, then submit form automatically with max amount
   useEffect(() => {
-    if (!stacksAddress) {
+    if (!stacksAddressInfo || !stacksBalances?.sbtcBalance) {
       return;
     }
 
@@ -162,9 +161,9 @@ export default function BridgeSBTCForm() {
     const denominatedAmount = stacksBalances.sbtcBalance;
 
     handleSubmitGenerated(stackWallet, denominatedAmount);
-  }, [stacksAddress]);
+  }, [stacksAddressInfo, stacksBalances]);
 
-  if (!stacksAddress || !suiAddress) {
+  if (!stacksAddressInfo || !suiAddress) {
     return (
       <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
         <CardHeader className="space-y-1">

@@ -12,7 +12,7 @@ import BridgeSBTCForm from "@/components/bridge/BridgeSBTCForm.tsx";
 import BridgeTxStatus from "@/components/bridge/BridgeTxStatus.tsx";
 
 function App() {
-  const { stacksAddress, btcAddressInfo, bridgeStepInfo } = useApp();
+  const { stacksAddressInfo, btcAddressInfo, bridgeStepInfo } = useApp();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
@@ -26,7 +26,7 @@ function App() {
 
         <div className="flex items-center justify-center p-4">
           <div className="w-full max-w-lg">
-            {!bridgeStepInfo && (!btcAddressInfo || !stacksAddress) && (
+            {!bridgeStepInfo && (!btcAddressInfo || !stacksAddressInfo) && (
               <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
                 <CardHeader className="space-y-1">
                   <CardTitle className="text-2xl font-bold text-center text-white">

@@ -33,7 +33,7 @@ export const storageHelper = {
     localStorage.removeItem(BTC_WALLET_KEY);
   },
 
-  setStacksWallet(type: 'GENERATED' | 'USER', address: string, privateKey?: string) {
+  setStacksWallet(type: 'GENERATED' | 'USER', address: string) {
     let expirationTime = 24 * 60 * 60 * 1000; // 1 day
 
     localStorage.setItem(
@@ -41,21 +41,19 @@ export const storageHelper = {
       JSON.stringify({
         type,
         address,
-        privateKey,
         timestamp: Date.now(),
         expirationTime,
       }),
     );
   },
-  getStacksWallet(): { type: 'GENERATED' | 'USER'; address: string; privateKey?: string } | undefined {
+  getStacksWallet(): { type: 'GENERATED' | 'USER'; address: string } | undefined {
     const storedData = localStorage.getItem(STACKS_WALLET_KEY);
     if (!storedData) {
       return undefined;
     }
 
     const { timestamp, expirationTime, ...rest } = JSON.parse(storedData);
-    // Generated wallet does not expire
-    if (rest?.type !== 'GENERATED' && Date.now() > timestamp + expirationTime) {
+    if (Date.now() > timestamp + expirationTime) {
       localStorage.removeItem(STACKS_WALLET_KEY);
 
       return undefined;
