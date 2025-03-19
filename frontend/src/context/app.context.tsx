@@ -3,7 +3,6 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { AddressPurpose, request, RpcResult } from "sats-connect";
 import { AppConfig, UserData, UserSession } from "@stacks/connect";
 import { storageHelper } from "@/lib/storageHelper.ts";
-import { privateKeyToAddress } from "@stacks/transactions";
 import { STACKS_NETWORK } from "@/api/stacks.ts";
 
 type BridgeStep =
@@ -18,12 +17,12 @@ type BridgeStep =
 
 interface AppContextType {
   btcAddressInfo: { address: string; publicKey: string } | null;
-  stacksAddress: string | null;
+  stacksAddressInfo: { address: string; privateKey?: string } | null;
   suiAddress: string | null;
   processConnectBtc: (res?: RpcResult<"wallet_getAccount">) => void;
   processConnectBtcLeather: () => void;
   processConnectStacksUser: (userData?: UserData | null) => void;
-  processConnectStacksGenerated: (privateKey: string) => void;
+  processConnectStacksGenerated: (stacksAddress?: string, privateKey?: string) => void;
   bridgeStepInfo?: {
     step: BridgeStep;
     btcTxId: string;
@@ -40,7 +39,7 @@ const AppContext = createContext<AppContextType>(undefined as AppContextType);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string; publicKey: string } | null>(null);
-  const [stacksAddress, setStacksAddress] = useState<string | null>(null);
+  const [stacksAddressInfo, setStacksAddressInfo] = useState<{ address: string; privateKey?: string } | null>(null);
   const suiWallet = useCurrentAccount();
   const suiAddress = useMemo(() => suiWallet?.address, [suiWallet]);
 
@@ -81,27 +80,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     if (!userData) {
-      setStacksAddress(null);
+      setStacksAddressInfo(null);
       storageHelper.removeStacksWallet();
       return;
     }
 
     const stacksAddress = userData.profile.stxAddress[STACKS_NETWORK];
 
-    setStacksAddress(stacksAddress);
+    setStacksAddressInfo({ address: stacksAddress });
     storageHelper.setStacksWallet("USER", stacksAddress);
   };
-  const processConnectStacksGenerated = (privateKey?: string) => {
-    if (!privateKey) {
-      setStacksAddress(null);
+  const processConnectStacksGenerated = (stacksAddress?: string, privateKey?: string) => {
+    if (!stacksAddress) {
+      setStacksAddressInfo(null);
       storageHelper.removeStacksWallet();
       return;
     }
 
-    const stacksAddress = privateKeyToAddress(privateKey, STACKS_NETWORK);
-
-    setStacksAddress(stacksAddress);
-    storageHelper.setStacksWallet("GENERATED", stacksAddress, privateKey);
+    setStacksAddressInfo({ address: stacksAddress, privateKey });
+    storageHelper.setStacksWallet("GENERATED", stacksAddress);
   };
 
   useEffect(() => {
@@ -122,7 +119,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const storageStacksWallet = storageHelper.getStacksWallet();
     if (storageStacksWallet?.type === "GENERATED") {
-      processConnectStacksGenerated(storageStacksWallet?.privateKey);
+      processConnectStacksGenerated(storageStacksWallet.address, null);
     }
 
     // Handle Stacks
@@ -220,7 +217,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         btcAddressInfo,
-        stacksAddress,
+        stacksAddressInfo,
         suiAddress,
         processConnectBtc,
         processConnectBtcLeather,

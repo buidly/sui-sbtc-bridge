@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { cn } from "@/lib/utils.ts";
 
 export default function BTCTxStatus() {
-  const { bridgeStepInfo, stacksAddress } = useApp();
+  const { bridgeStepInfo, stacksAddressInfo } = useApp();
 
   const { recipient, stacksTxId, statusResponse, loading } = useDepositStatus(bridgeStepInfo.btcTxId);
 
@@ -19,7 +19,7 @@ export default function BTCTxStatus() {
     return BigInt(statusResponse?.vout[0].value || 0);
   }, [statusResponse?.vout]);
 
-  if (!stacksAddress) {
+  if (!stacksAddressInfo) {
     return (
       <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
         <CardHeader className="space-y-1">

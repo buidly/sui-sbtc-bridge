@@ -4,15 +4,20 @@ import { Button } from "@/components/ui/button";
 import { useApp, userSession } from "@/context/app.context";
 import { formatBalance } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
-import { randomPrivateKey } from "@stacks/transactions";
 import { WalletCard } from "@/components/base/WalletCard.tsx";
+import { useBalances } from "@/context/balances.context.tsx";
+import { generateWallet } from "@stacks/wallet-sdk";
+import { scrypt } from "scrypt-js";
+import * as bip39 from "bip39";
 
 import stacksLogo from "@/assets/images/stacks_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
-import { useBalances } from "@/context/balances.context.tsx";
+import { STACKS_NETWORK } from '@/api/stacks.ts';
+import { privateKeyToAddress } from '@stacks/transactions';
 
 function StacksConnect() {
-  const { stacksAddress, processConnectStacksUser, processConnectStacksGenerated, updateBridgeStepInfo } = useApp();
+  const { stacksAddressInfo, suiAddress, processConnectStacksUser, processConnectStacksGenerated, updateBridgeStepInfo } =
+    useApp();
 
   const connectUserWallet = async () => {
     showConnect({
@@ -49,9 +54,46 @@ function StacksConnect() {
     setSelectedOption(null);
   };
   const connectGenerateWallet = async () => {
-    const privateKey = randomPrivateKey();
+    // TODO: Refactor
+    async function createDeterministicWallet(knownString: string, password: string) {
+      // 1. Derive 256-bit entropy using scrypt
+      const salt = Buffer.from(knownString, "utf-8");
+      const entropy = await scrypt(
+        Buffer.from(password, "utf-8"),
+        salt,
+        16384,
+        8,
+        1,
+        32, // N, r, p, dkLen
+      );
 
-    processConnectStacksGenerated(privateKey);
+      // 2. Generate BIP39 mnemonic from entropy
+      const mnemonic = bip39.entropyToMnemonic(Buffer.from(entropy));
+
+      // 3. Create Stacks wallet with derived seed
+      const wallet = await generateWallet({
+        secretKey: mnemonic,
+        password: password,
+      });
+
+      const privateKey = wallet.accounts[0].stxPrivateKey;
+
+      return {
+        mnemonic: mnemonic,
+        privateKey,
+        stacksAddress: privateKeyToAddress(privateKey, STACKS_NETWORK),
+      };
+    }
+
+    // Usage
+    const result = await createDeterministicWallet(suiAddress, "UserSecret123!");
+    console.log(`Mnemonic: ${result.mnemonic}`);
+    console.log(`Private Key: ${result.privateKey}`);
+    console.log(`Address: ${result.stacksAddress}`)
+
+    const privateKey = result.privateKey;
+
+    processConnectStacksGenerated(result.stacksAddress, privateKey);
   };
 
   const { stacksBalances, loading } = useBalances();
@@ -62,7 +104,7 @@ function StacksConnect() {
     <WalletCard
       title="Connect Stacks Wallet"
       icon={<img src={stacksLogo} alt={"Stacks Logo"} className="h-6 w-6" />}
-      isConnected={!!stacksAddress}
+      isConnected={!!stacksAddressInfo}
       notConnectedElement={
         <>
           <div className="grid grid-cols-2 gap-3 mb-3">
@@ -116,7 +158,7 @@ function StacksConnect() {
           ) : undefined}
         </>
       }
-      address={stacksAddress}
+      address={stacksAddressInfo?.address}
       addressType="STACKS"
       balance={formatBalance(stacksBalances?.stxBalance, 6)}
       currency="STX"
@@ -125,6 +167,7 @@ function StacksConnect() {
       disconnectWallet={disconnectWallet}
       loading={loading}
     >
+      {/* TODO: Show form for password, even at page reload */}
       <div className="flex items-end justify-between">
         <div>
           <div className="text-xs text-slate-400 mb-1">sBTC Balance:</div>

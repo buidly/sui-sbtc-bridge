@@ -28,7 +28,7 @@ const getEmilyDepositInfo = async (txId: string) => {
 };
 
 export function useDepositStatus(txId: string) {
-  const { bridgeStepInfo, updateBridgeStepInfo, stacksAddress } = useApp();
+  const { bridgeStepInfo, updateBridgeStepInfo, stacksAddressInfo } = useApp();
 
   const [emilyResponse, setEmilyResponse] = useState(null);
   const [statusResponse, setStatusResponse] = useState(null);
@@ -54,7 +54,12 @@ export function useDepositStatus(txId: string) {
   const { getStacksBalances } = useBalances();
 
   useEffect(() => {
-    if (txId && stacksAddress && bridgeStepInfo?.step !== "BTC_COMPLETED" && bridgeStepInfo?.step !== "BTC_FAILED") {
+    if (
+      txId &&
+      stacksAddressInfo &&
+      bridgeStepInfo?.step !== "BTC_COMPLETED" &&
+      bridgeStepInfo?.step !== "BTC_FAILED"
+    ) {
       const check = async () => {
         setLoading(true);
 
@@ -66,7 +71,9 @@ export function useDepositStatus(txId: string) {
         // Check if transaction is not found or if Stacks address is not correct
         if (
           !info ||
-          (txInfo && txInfo.recipient && (Cl.deserialize(txInfo.recipient) as PrincipalCV).value !== stacksAddress)
+          (txInfo &&
+            txInfo.recipient &&
+            (Cl.deserialize(txInfo.recipient) as PrincipalCV).value !== stacksAddressInfo.address)
         ) {
           // TODO: Handle this better in the future
           console.error("Could not retrieve bitcoin transaction");
@@ -115,7 +122,7 @@ export function useDepositStatus(txId: string) {
       const interval = setInterval(check, POLLING_INTERVAL);
       return () => clearInterval(interval);
     }
-  }, [POLLING_INTERVAL, RECLAIM_LOCK_TIME, txId, stacksAddress]);
+  }, [POLLING_INTERVAL, RECLAIM_LOCK_TIME, txId, stacksAddressInfo]);
 
   return {
     recipient,

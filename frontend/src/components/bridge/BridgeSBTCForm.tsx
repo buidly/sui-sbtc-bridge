@@ -30,7 +30,7 @@ import { ContractCallOptions } from "@stacks/transactions/src/builders.ts";
 import { ContractCallRegularOptions } from "@stacks/connect/dist/types/types/transactions";
 
 export default function BridgeSBTCForm() {
-  const { stacksAddress, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
+  const { stacksAddressInfo, suiAddress, bridgeStepInfo, updateBridgeStepInfo } = useApp();
 
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,8 +67,8 @@ export default function BridgeSBTCForm() {
         uintCV(CONSTANTS.CROSS_CHAIN_STX_VALUE), // 1 STX for paying cross chain fee
       ],
       postConditions: [
-        Pc.principal(stacksAddress).willSendEq(CONSTANTS.CROSS_CHAIN_STX_VALUE).ustx(),
-        Pc.principal(stacksAddress).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
+        Pc.principal(stacksAddressInfo.address).willSendEq(CONSTANTS.CROSS_CHAIN_STX_VALUE).ustx(),
+        Pc.principal(stacksAddressInfo.address).willSendEq(denominatedAmount).ft(SBTC_TOKEN_CONTRACT, "sbtc-token"),
       ],
       postConditionMode: PostConditionMode.Deny,
       network: STACKS_NETWORK,
@@ -145,7 +145,7 @@ export default function BridgeSBTCForm() {
 
   // If wallet is of type generated, then submit form automatically with max amount
   useEffect(() => {
-    if (!stacksAddress || !suiAddress || !stacksBalances?.sbtcBalance) {
+    if (!stacksAddressInfo || !suiAddress || !stacksBalances?.sbtcBalance) {
       return;
     }
 
@@ -159,9 +159,9 @@ export default function BridgeSBTCForm() {
     setIsGeneratedSubmitting(true);
 
     handleSubmitRaw(stacksBalances.sbtcBalance);
-  }, [stacksAddress, suiAddress, stacksBalances]);
+  }, [stacksAddressInfo, suiAddress, stacksBalances]);
 
-  if (!stacksAddress || !suiAddress) {
+  if (!stacksAddressInfo || !suiAddress) {
     return (
       <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
         <CardHeader className="space-y-1">

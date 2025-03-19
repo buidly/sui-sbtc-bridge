@@ -19,7 +19,7 @@ import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { useBalances } from "@/context/balances.context.tsx";
 
 export default function SendBTCForm() {
-  const { btcAddressInfo, stacksAddress, suiAddress, updateBridgeStepInfo } = useApp();
+  const { btcAddressInfo, stacksAddressInfo, suiAddress, updateBridgeStepInfo } = useApp();
   const { stacksBalances } = useBalances();
 
   const [amount, setAmount] = useState("");
@@ -36,7 +36,7 @@ export default function SendBTCForm() {
     return Number(btcBalance) / (10 ** 8);
   }, [btcBalance]);
 
-  if (!btcAddressInfo || !stacksAddress) {
+  if (!btcAddressInfo || !stacksAddressInfo) {
     return undefined;
   }
 
@@ -48,7 +48,7 @@ export default function SendBTCForm() {
       const signersAggregatePubKey = (await StacksApi.getAggregateKey()).slice(2);
 
       // Combine the version and hash into a single Uint8Array
-      const serializedAddress = serializeCVBytes(principalCV(stacksAddress));
+      const serializedAddress = serializeCVBytes(principalCV(stacksAddressInfo.address));
 
       // get the publicKey from the user payment address
       // user cannot continue if they're not connected
@@ -164,7 +164,7 @@ export default function SendBTCForm() {
 
   return (
     <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm relative">
-      {stacksAddress && suiAddress && stacksBalances?.sbtcBalance > 0 && (
+      {stacksAddressInfo && suiAddress && stacksBalances?.sbtcBalance > 0 && (
         <button
           className="absolute top-3 right-3 text-slate-300 hover:text-white transition-colors bg-slate-800 rounded-sm cursor-pointer"
           onClick={() => bridgeSBTC()}
