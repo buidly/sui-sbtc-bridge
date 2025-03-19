@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -137,6 +137,7 @@ export default function BridgeSBTCForm() {
 
   const [isGeneratedSubmitting, setIsGeneratedSubmitting] = useState(false);
   const { stacksBalances, loading } = useBalances();
+  const autoSubmitTimeout = useRef(null);
 
   // If wallet is of type generated, then submit form automatically with max amount
   useEffect(() => {
@@ -151,7 +152,20 @@ export default function BridgeSBTCForm() {
 
     setIsGeneratedSubmitting(true);
 
-    handleSubmitRaw(stacksBalances.sbtcBalance);
+    // Debounce so code is not executed multiple times
+    if (autoSubmitTimeout.current) {
+      clearTimeout(autoSubmitTimeout.current);
+    }
+
+    autoSubmitTimeout.current = setTimeout(() => {
+      handleSubmitRaw(stacksBalances.sbtcBalance);
+    }, 300);
+
+    return () => {
+      if (autoSubmitTimeout.current) {
+        clearTimeout(autoSubmitTimeout.current);
+      }
+    };
   }, [stacksAddressInfo, suiAddress, stacksBalances]);
 
   if (!stacksAddressInfo || !suiAddress) {

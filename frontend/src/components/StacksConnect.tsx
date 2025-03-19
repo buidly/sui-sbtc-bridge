@@ -6,14 +6,9 @@ import { createDeterministicStacksWallet, formatBalance } from "@/lib/helpers";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { WalletCard } from "@/components/base/WalletCard.tsx";
 import { useBalances } from "@/context/balances.context.tsx";
-import { generateWallet } from "@stacks/wallet-sdk";
-import { scrypt } from "scrypt-js";
-import * as bip39 from "bip39";
 
 import stacksLogo from "@/assets/images/stacks_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
-import { STACKS_NETWORK } from "@/api/stacks.ts";
-import { privateKeyToAddress } from "@stacks/transactions";
 import { Loader2 } from "lucide-react";
 
 function StacksConnect() {
@@ -129,7 +124,7 @@ function StacksConnect() {
           id="temp-wallet-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter password for temporary wallet"
+          placeholder="Enter a strong password"
           className={`w-full p-4 bg-slate-800 border ${!isValid ? "border-red-500" : "border-slate-700"} rounded-lg text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500`}
         />
         {!isValid && (
@@ -142,10 +137,10 @@ function StacksConnect() {
       <Button
         variant="default"
         onClick={connectGenerateWallet}
-        className="w-full p-4 mb-0 font-medium rounded-lg"
+        className="w-full p-4 font-medium rounded-lg"
         disabled={loadingGenerate}
       >
-        Get temporary wallet
+        {stacksAddressInfo?.address ? "Unlock" : "Get"} temporary wallet
         {loadingGenerate && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
       </Button>
     </>
@@ -160,7 +155,7 @@ function StacksConnect() {
         <>
           <div className="w-full space-y-4">
             {suiAddress && formElement}
-            <div className="text-center pt-2">
+            <div className="text-center">
               <p>
                 {!suiAddress && <span className="mt-2 text-sm text-white">Connect a Sui Wallet first or </span>}
                 <a
@@ -175,36 +170,13 @@ function StacksConnect() {
         </>
       }
       extraElement={
-        stacksAddressInfo?.type === "GENERATED" &&
-        !stacksAddressInfo?.privateKey && (
-          <>
-            <form onSubmit={connectGenerateWallet}>
-              <input
-                type="password"
-                id="temp-wallet-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password for temporary wallet"
-                className={`w-full p-4 bg-slate-800 border ${!isValid ? "border-red-500" : "border-slate-700"} rounded-lg text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500`}
-              />
-              {!isValid && (
-                <div className="mt-2 text-sm text-red-500">
-                  Password must be at least 8 characters with lowercase, uppercase, numbers and special characters.
-                </div>
-              )}
-            </form>
-
-            <Button
-              variant="default"
-              onClick={connectGenerateWallet}
-              className="w-full p-4 mb-0 font-medium rounded-lg "
-              disabled={loadingGenerate}
-            >
-              Unlock temporary wallet
-              {loadingGenerate && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
-            </Button>
-          </>
-        )
+        stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey
+          ? formElement
+          : stacksAddressInfo?.type === "GENERATED" && (
+              <div>
+                <em className="text-sm text-slate-50">Authenticated</em>
+              </div>
+            )
       }
       address={stacksAddressInfo?.address}
       addressType="STACKS"

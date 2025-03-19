@@ -20,22 +20,28 @@ function App() {
         <Navbar />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <BitcoinConnect />
-          <StacksConnect />
           <SuiConnect />
+          <StacksConnect />
         </div>
 
         <div className="flex items-center justify-center p-4">
           <div className="w-full max-w-lg">
-            {(stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey) ||
-            (!bridgeStepInfo && (!btcAddressInfo || !stacksAddressInfo)) ? (
-              <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
-                <CardHeader className="space-y-1">
-                  <CardTitle className="text-2xl font-bold text-center text-white">
-                    Connect a Bitcoin & Stacks wallet first
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-            ) : !bridgeStepInfo?.step ? (
+            {!bridgeStepInfo &&
+              (!btcAddressInfo ||
+                !stacksAddressInfo ||
+                ((!bridgeStepInfo?.step || bridgeStepInfo?.step === "BTC_COMPLETED") &&
+                  stacksAddressInfo?.type === "GENERATED" &&
+                  !stacksAddressInfo?.privateKey)) && (
+                <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl font-bold text-center text-white">
+                      Connect a Bitcoin & Stacks wallet first
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+              )}
+
+            {!bridgeStepInfo?.step ? (
               <SendBTCForm />
             ) : bridgeStepInfo.step === "BTC_SENT_PENDING" ||
               bridgeStepInfo.step === "BTC_SENT_MINTING" ||
