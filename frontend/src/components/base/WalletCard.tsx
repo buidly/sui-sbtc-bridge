@@ -17,6 +17,7 @@ export function WalletCard({
   currencyColor,
   disconnectWallet,
   loading,
+  extraElement = undefined,
   children = undefined,
 }) {
   return (
@@ -46,6 +47,8 @@ export function WalletCard({
                 {formatTrimmed(address, 16)}
               </a>
             </div>
+
+            {extraElement}
 
             <div className="flex items-end justify-between">
               <div>

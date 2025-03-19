@@ -1,4 +1,8 @@
 import { STACKS_NETWORK } from "@/api/stacks.ts";
+import { scrypt } from "scrypt-js";
+import * as bip39 from "bip39";
+import { generateWallet } from "@stacks/wallet-sdk";
+import { privateKeyToAddress } from "@stacks/transactions";
 
 export const formatTrimmed = (address: string, size: number = 10) => {
   if (!address) {
@@ -87,3 +91,33 @@ export const formatBalance = (balance: bigint, decimals: number) => {
     return integerPart;
   }
 };
+
+export async function createDeterministicStacksWallet(knownString: string, password: string) {
+  // 1. Derive 256-bit entropy using scrypt
+  const salt = Buffer.from(knownString, "utf-8");
+  const entropy = await scrypt(
+    Buffer.from(password, "utf-8"),
+    salt,
+    16384,
+    8,
+    1,
+    32, // N, r, p, dkLen
+  );
+
+  // 2. Generate BIP39 mnemonic from entropy
+  const mnemonic = bip39.entropyToMnemonic(Buffer.from(entropy));
+
+  // 3. Create Stacks wallet with derived seed
+  const wallet = await generateWallet({
+    secretKey: mnemonic,
+    password: password,
+  });
+
+  const privateKey = wallet.accounts[0].stxPrivateKey;
+
+  return {
+    mnemonic: mnemonic,
+    privateKey,
+    stacksAddress: privateKeyToAddress(privateKey, STACKS_NETWORK),
+  };
+}

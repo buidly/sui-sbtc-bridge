@@ -26,7 +26,8 @@ function App() {
 
         <div className="flex items-center justify-center p-4">
           <div className="w-full max-w-lg">
-            {!bridgeStepInfo && (!btcAddressInfo || !stacksAddressInfo) && (
+            {(stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey) ||
+            (!bridgeStepInfo && (!btcAddressInfo || !stacksAddressInfo)) ? (
               <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
                 <CardHeader className="space-y-1">
                   <CardTitle className="text-2xl font-bold text-center text-white">
@@ -34,9 +35,7 @@ function App() {
                   </CardTitle>
                 </CardHeader>
               </Card>
-            )}
-
-            {!bridgeStepInfo?.step ? (
+            ) : !bridgeStepInfo?.step ? (
               <SendBTCForm />
             ) : bridgeStepInfo.step === "BTC_SENT_PENDING" ||
               bridgeStepInfo.step === "BTC_SENT_MINTING" ||

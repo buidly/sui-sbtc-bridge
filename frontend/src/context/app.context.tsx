@@ -17,7 +17,7 @@ type BridgeStep =
 
 interface AppContextType {
   btcAddressInfo: { address: string; publicKey: string } | null;
-  stacksAddressInfo: { address: string; privateKey?: string } | null;
+  stacksAddressInfo: { type: 'GENERATED' | 'USER', address: string; privateKey?: string } | null;
   suiAddress: string | null;
   processConnectBtc: (res?: RpcResult<"wallet_getAccount">) => void;
   processConnectBtcLeather: () => void;
@@ -39,7 +39,7 @@ const AppContext = createContext<AppContextType>(undefined as AppContextType);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string; publicKey: string } | null>(null);
-  const [stacksAddressInfo, setStacksAddressInfo] = useState<{ address: string; privateKey?: string } | null>(null);
+  const [stacksAddressInfo, setStacksAddressInfo] = useState<{ type: 'GENERATED' | 'USER', address: string; privateKey?: string } | null>(null);
   const suiWallet = useCurrentAccount();
   const suiAddress = useMemo(() => suiWallet?.address, [suiWallet]);
 
@@ -87,7 +87,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const stacksAddress = userData.profile.stxAddress[STACKS_NETWORK];
 
-    setStacksAddressInfo({ address: stacksAddress });
+    setStacksAddressInfo({ type: 'USER', address: stacksAddress });
     storageHelper.setStacksWallet("USER", stacksAddress);
   };
   const processConnectStacksGenerated = (stacksAddress?: string, privateKey?: string) => {
@@ -97,7 +97,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setStacksAddressInfo({ address: stacksAddress, privateKey });
+    setStacksAddressInfo({ type: 'GENERATED', address: stacksAddress, privateKey });
     storageHelper.setStacksWallet("GENERATED", stacksAddress);
   };
 

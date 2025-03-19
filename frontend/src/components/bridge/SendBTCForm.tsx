@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Label } from "@/components/ui/label.tsx";
-import { AlertCircle, ArrowLeft, ArrowRight, Bitcoin, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowRight, Bitcoin, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import { useApp } from "@/context/app.context.tsx";
 import { STACKS_NETWORK, StacksApi } from "@/api/stacks.ts";
@@ -33,10 +33,14 @@ export default function SendBTCForm() {
       return 0;
     }
 
-    return Number(btcBalance) / (10 ** 8);
+    return Number(btcBalance) / 10 ** 8;
   }, [btcBalance]);
 
-  if (!btcAddressInfo || !stacksAddressInfo) {
+  if (
+    !btcAddressInfo ||
+    !stacksAddressInfo ||
+    (stacksAddressInfo.type === "GENERATED" && !stacksAddressInfo.privateKey)
+  ) {
     return undefined;
   }
 
@@ -153,13 +157,13 @@ export default function SendBTCForm() {
 
   const bridgeSBTC = () => {
     // In case of generated wallet, transaction will go through automatically with ALL the user's balance when we switch steps
-    if (storageHelper.getStacksWallet()?.type === 'GENERATED') {
-      if (!confirm('Are you sure you want to bridge ALL your sBTC?')) {
+    if (stacksAddressInfo?.type === "GENERATED") {
+      if (!confirm("Are you sure you want to bridge ALL your sBTC?")) {
         return;
       }
     }
 
-    updateBridgeStepInfo('BTC_COMPLETED');
+    updateBridgeStepInfo("BTC_COMPLETED");
   };
 
   return (
@@ -235,9 +239,7 @@ export default function SendBTCForm() {
             {parseFloat(amount) > denominatedBtcBalance && (
               <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  You don't have enough BTC in your wallet
-                </AlertDescription>
+                <AlertDescription>You don't have enough BTC in your wallet</AlertDescription>
               </Alert>
             )}
           </div>

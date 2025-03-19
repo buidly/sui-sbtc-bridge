@@ -46,8 +46,6 @@ export default function BridgeSBTCForm() {
   const handleSubmitRaw = async (denominatedAmount: number | bigint) => {
     setIsSubmitting(true);
 
-    const stackWallet = storageHelper.getStacksWallet();
-
     const baseCallArguments: ContractCallOptions = {
       contractAddress: ENV.STACKS_AXELAR_CONTRACT_DEPLOYER, // Axelar ITS contract
       contractName: "interchain-token-service",
@@ -75,8 +73,8 @@ export default function BridgeSBTCForm() {
     };
 
     // If generated wallet, call backend for sponsored transaction
-    if (stackWallet.type === "GENERATED") {
-      await handleSubmitGenerated(stackWallet, baseCallArguments);
+    if (stacksAddressInfo.type === "GENERATED") {
+      await handleSubmitGenerated(baseCallArguments);
 
       return;
     }
@@ -108,17 +106,14 @@ export default function BridgeSBTCForm() {
     }
   };
 
-  const handleSubmitGenerated = async (
-    stackWallet: { type: "GENERATED" | "USER"; address: string; privateKey?: string },
-    baseCallArguments: ContractCallOptions,
-  ) => {
+  const handleSubmitGenerated = async (baseCallArguments: ContractCallOptions) => {
     try {
-      const nonce = await StacksApi.getNextNonce(stackWallet.address);
+      const nonce = await StacksApi.getNextNonce(stacksAddressInfo.address);
 
       const transaction = await makeContractCall({
         ...baseCallArguments,
 
-        senderKey: stackWallet.privateKey,
+        senderKey: stacksAddressInfo.privateKey,
         nonce,
         sponsored: true,
       });
@@ -149,10 +144,8 @@ export default function BridgeSBTCForm() {
       return;
     }
 
-    const stackWallet = storageHelper.getStacksWallet();
-
     // If generated wallet, auto submit transaction & call backend for sponsored transaction
-    if (stackWallet.type !== "GENERATED") {
+    if (stacksAddressInfo.type !== "GENERATED") {
       return;
     }
 
