@@ -13,8 +13,8 @@ import { DatabaseModule } from '@monorepo/common/database/database.module';
     DatabaseModule,
     ThrottlerModule.forRoot([
       {
-        ttl: 120_000, // 120 seconds
-        limit: 5,
+        ttl: 60_000, // 60 seconds
+        limit: 6,
       },
     ]),
   ],

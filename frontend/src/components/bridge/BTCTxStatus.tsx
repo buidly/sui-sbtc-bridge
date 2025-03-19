@@ -40,7 +40,7 @@ export default function BTCTxStatus() {
           </div>
         </div>
         <CardTitle className="text-2xl font-bold text-center text-white">
-          Step 2 - sBTC Tx Status
+          Step 1 - Bridge Bitcoin Status
           {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-orange-500" />}
         </CardTitle>
         {(bridgeStepInfo.step === "BTC_SENT_PENDING" || bridgeStepInfo.step === "BTC_SENT_MINTING") && (

@@ -80,7 +80,10 @@ export class SponsoredTransactionProcessorService {
           } catch (e) {
             this.logger.error(`Could not build and sign transaction for ${sponsoredTransaction.id}`, e);
 
-            throw e;
+            // Incrementing retry if any error, the user can retry from frontend if needed
+            sponsoredTransaction.retry += 1;
+
+            entriesToUpdate.push(sponsoredTransaction);
           }
         }
 

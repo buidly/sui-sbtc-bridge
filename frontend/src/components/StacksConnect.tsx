@@ -51,7 +51,6 @@ function StacksConnect() {
   const connectGenerateWallet = async () => {
     const privateKey = randomPrivateKey();
 
-    // TODO: Fund wallet win a min STX balance from API? He has to pay with SUI?
     processConnectStacksGenerated(privateKey);
   };
 

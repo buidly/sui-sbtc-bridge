@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useApp } from "@/context/app.context.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import { formatBalance, formatTrimmed, getExplorerUrlAddress, getExplorerUrlTransaction } from "@/lib/helpers.ts";
 import { Button } from "@/components/ui/button.tsx";
@@ -11,11 +11,11 @@ import StepProgress from "@/components/StepProgress.tsx";
 import suiLogo from "@/assets/images/sui_logo.svg";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
 import { useSponsoredTransactionStatus } from "@/hooks/use-sponsored-transaction-status.ts";
+import stacksLogo from '@/assets/images/stacks_logo.svg';
 
 export default function BridgeTxStatus() {
   const { bridgeStepInfo, updateBridgeStepInfo } = useApp();
 
-  // TODO: Handle status of sponsored transaction
   const { suiRecipientAddress, suiTxHash, stacksResponse, loading } = useCrossChainStatus(bridgeStepInfo?.stacksTxId);
   const { sponsoredTxResponse, loading: loadingSponsoredTx } = useSponsoredTransactionStatus(
     bridgeStepInfo?.sponsoredTxId,
@@ -32,13 +32,14 @@ export default function BridgeTxStatus() {
   }, [stacksResponse?.post_conditions, sponsoredTxResponse?.sbtcAmount]);
 
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm gap-4">
+    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm gap-4 text-white">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-center mb-2">
+          <img src={stacksLogo} alt={"Stacks Logo"} className="h-8 w-8" /> <ArrowRight className="h-5 w-5 mx-1" />
           <img src={suiLogo} alt={"Sui Logo"} className="h-8 w-8" />
         </div>
         <CardTitle className="text-2xl font-bold text-center text-white">
-          Step 4 - Bridge sBTC Tx Status
+          Step 2 - Bridge sBTC Status
           {(loading || loadingSponsoredTx) && (
             <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />
           )}
@@ -72,7 +73,7 @@ export default function BridgeTxStatus() {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Waiting for sBTC transaction to be confirmed
-              {!bridgeStepInfo.stacksTxId && sponsoredTxResponse?.stxTransactionHash && (
+              {sponsoredTxResponse?.stxTransactionHash && (
                 <p>
                   <strong>Sponsored Tx Hash:</strong>{" "}
                   <a

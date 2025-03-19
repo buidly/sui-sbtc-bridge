@@ -149,29 +149,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const params = new URLSearchParams(window.location.search);
     const btcTxId = params.get("btcTxId");
 
-    if (btcTxId) {
-      // Handle BTC transaction status
-      if (!params.has("stacksTxId") && !params.has("sponsoredTxId")) {
+    // Check if we have any step
+    if (!params.has("stacksTxId") && !params.has("sponsoredTxId")) {
+      if (btcTxId) {
         setBridgeStepInfo({
           step: "BTC_SENT_PENDING",
           btcTxId,
         });
-
-        return;
       }
 
-      // Handle sBTC bridge transaction status
-      setBridgeStepInfo({
-        step: "SBTC_SENT_PENDING",
-        btcTxId,
-        stacksTxId: params.get("stacksTxId"),
-        sponsoredTxId: params.get("sponsoredTxId"),
-      });
+      return;
     }
+
+    // Handle sBTC bridge transaction status
+    setBridgeStepInfo({
+      step: "SBTC_SENT_PENDING",
+      btcTxId,
+      stacksTxId: params.get("stacksTxId"),
+      sponsoredTxId: params.get("sponsoredTxId"),
+    });
   }, []);
 
   const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string, stacksTxId?: string, sponsoredTxId?: string) => {
-    if (!step || !btcTxId) {
+    if (!step) {
       setBridgeStepInfo(null);
 
       const params = new URLSearchParams(window.location.search);
@@ -194,7 +194,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
 
     const params = new URLSearchParams(window.location.search);
-    params.set("btcTxId", btcTxId);
+
+    if (btcTxId) {
+      params.set("btcTxId", btcTxId);
+    }
 
     if (stacksTxId) {
       params.set("stacksTxId", stacksTxId);
@@ -202,6 +205,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (sponsoredTxId) {
       params.set("sponsoredTxId", sponsoredTxId);
+    }
+
+    if (!params.size) {
+      return;
     }
 
     // Update URL without page reload

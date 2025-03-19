@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { BitcoinApi } from "@/api/bitcoin.ts";
 import { useApp } from "@/context/app.context.tsx";
 import { StacksApi } from "@/api/stacks.ts";
@@ -39,7 +39,9 @@ export function BalancesProvider({ children }: { children: ReactNode }) {
     getBtcBalance();
   }, [btcAddressInfo]);
 
-  const [stacksBalances, setStacksBalances] = useState(undefined);
+  const [stacksBalances, setStacksBalances] = useState<{ stxBalance: bigint; sbtcBalance: bigint } | undefined>(
+    undefined,
+  );
   const getStacksBalances = async () => {
     if (!stacksAddress) {
       setStacksBalances(undefined);

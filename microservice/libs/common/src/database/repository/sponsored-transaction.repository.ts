@@ -22,7 +22,7 @@ export class SponsoredTransactionRepository {
 
   findPending(page: number = 0, take: number = 10): Promise<SponsoredTransaction[] | null> {
     // Prevent frequent retries of transactions
-    const lastUpdated = new Date(new Date().getTime() - 9_000);
+    const lastUpdated = new Date(new Date().getTime() - 8_000);
 
     return this.prisma.sponsoredTransaction.findMany({
       where: {
