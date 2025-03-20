@@ -24,7 +24,6 @@ import { openContractCall } from "@stacks/connect";
 import { ENV } from "@/lib/env.ts";
 import { CONSTANTS } from "@/lib/constants.ts";
 import { useBalances } from "@/context/balances.context.tsx";
-import { storageHelper } from "@/lib/storageHelper.ts";
 import { MicroserviceApi } from "@/api/microservice.ts";
 import { ContractCallOptions } from "@stacks/transactions/src/builders.ts";
 import { ContractCallRegularOptions } from "@stacks/connect/dist/types/types/transactions";
@@ -146,7 +145,7 @@ export default function BridgeSBTCForm() {
     }
 
     // If generated wallet, auto submit transaction & call backend for sponsored transaction
-    if (stacksAddressInfo.type !== "GENERATED") {
+    if (stacksAddressInfo.type !== "GENERATED" || !stacksAddressInfo.privateKey) {
       return;
     }
 
@@ -168,7 +167,7 @@ export default function BridgeSBTCForm() {
     };
   }, [stacksAddressInfo, suiAddress, stacksBalances]);
 
-  if (!stacksAddressInfo || !suiAddress) {
+  if (!stacksAddressInfo || !suiAddress || (stacksAddressInfo.type === "GENERATED" && !stacksAddressInfo.privateKey)) {
     return (
       <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
         <CardHeader className="space-y-1">
