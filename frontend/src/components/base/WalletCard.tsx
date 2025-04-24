@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.t
 import { Button } from "@/components/ui/button.tsx";
 import { formatTrimmed, getExplorerUrlAddress } from "@/lib/helpers.ts";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils.ts";
 
 export function WalletCard({
   title,
@@ -17,10 +18,12 @@ export function WalletCard({
   currencyColor,
   disconnectWallet,
   loading,
+  extraElement = undefined,
   children = undefined,
+  className = undefined,
 }) {
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-lg overflow-hidden backdrop-blur-sm">
+    <Card className={cn("bg-slate-50/5 border-slate-700 shadow-lg overflow-hidden backdrop-blur-sm", className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center`}>
@@ -46,6 +49,8 @@ export function WalletCard({
                 {formatTrimmed(address, 16)}
               </a>
             </div>
+
+            {extraElement}
 
             <div className="flex items-end justify-between">
               <div>

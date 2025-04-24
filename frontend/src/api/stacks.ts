@@ -60,5 +60,16 @@ export const StacksApi = {
     } catch {
       return undefined;
     }
+  },
+
+  async getNextNonce(address: string): Promise<number> {
+    const response = await client.get(`/extended/v1/address/${address}/nonces`);
+    const data = response.data;
+
+    if (data.detected_missing_nonces.length > 0) {
+      return data.detected_missing_nonces[data.detected_missing_nonces.length - 1];
+    }
+
+    return data.possible_next_nonce;
   }
 };

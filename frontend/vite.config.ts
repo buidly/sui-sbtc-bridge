@@ -14,4 +14,17 @@ export default defineConfig({
   define: {
     "process.env": {},
   },
+  server: {
+    host: "0.0.0.0",
+    port: 5173,
+    strictPort: true,
+    cors: true,
+    allowedHosts: ["sui-sbtc-bridge.buidly.com", "localhost"], 
+  },
+  preview: {
+    host: "0.0.0.0",
+    port: 4173,
+    strictPort: true,
+    allowedHosts: ["sui-sbtc-bridge.buidly.com", "localhost"],
+  },
 });

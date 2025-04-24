@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { cn } from "@/lib/utils.ts";
 
 export default function BTCTxStatus() {
-  const { bridgeStepInfo, stacksAddress } = useApp();
+  const { bridgeStepInfo, stacksAddressInfo } = useApp();
 
   const { recipient, stacksTxId, statusResponse, loading } = useDepositStatus(bridgeStepInfo.btcTxId);
 
@@ -19,7 +19,7 @@ export default function BTCTxStatus() {
     return BigInt(statusResponse?.vout[0].value || 0);
   }, [statusResponse?.vout]);
 
-  if (!stacksAddress) {
+  if (!stacksAddressInfo) {
     return (
       <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
         <CardHeader className="space-y-1">
@@ -40,7 +40,7 @@ export default function BTCTxStatus() {
           </div>
         </div>
         <CardTitle className="text-2xl font-bold text-center text-white">
-          Step 2 - sBTC Tx Status
+          Step 1 - Bridge Bitcoin Status
           {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-orange-500" />}
         </CardTitle>
         {(bridgeStepInfo.step === "BTC_SENT_PENDING" || bridgeStepInfo.step === "BTC_SENT_MINTING") && (

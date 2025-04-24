@@ -19,7 +19,8 @@ import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { useBalances } from "@/context/balances.context.tsx";
 
 export default function SendBTCForm() {
-  const { btcAddressInfo, stacksAddress, updateBridgeStepInfo } = useApp();
+  const { btcAddressInfo, stacksAddressInfo, suiAddress, updateBridgeStepInfo } = useApp();
+  const { stacksBalances } = useBalances();
 
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,10 +33,14 @@ export default function SendBTCForm() {
       return 0;
     }
 
-    return Number(btcBalance) / (10 ** 8);
+    return Number(btcBalance) / 10 ** 8;
   }, [btcBalance]);
 
-  if (!btcAddressInfo || !stacksAddress) {
+  if (
+    !btcAddressInfo ||
+    !stacksAddressInfo ||
+    (stacksAddressInfo.type === "GENERATED" && !stacksAddressInfo.privateKey)
+  ) {
     return undefined;
   }
 
@@ -47,7 +52,7 @@ export default function SendBTCForm() {
       const signersAggregatePubKey = (await StacksApi.getAggregateKey()).slice(2);
 
       // Combine the version and hash into a single Uint8Array
-      const serializedAddress = serializeCVBytes(principalCV(stacksAddress));
+      const serializedAddress = serializeCVBytes(principalCV(stacksAddressInfo.address));
 
       // get the publicKey from the user payment address
       // user cannot continue if they're not connected
@@ -112,8 +117,8 @@ export default function SendBTCForm() {
       } catch (error) {
         let errorMessage = error;
         console.warn(error);
-        if (error instanceof Error) {
-          errorMessage = error.message;
+        if (error?.error?.message) {
+          errorMessage = error.error.message;
         }
         alert(`Issue with Transaction ${errorMessage}`);
 
@@ -136,8 +141,6 @@ export default function SendBTCForm() {
         throw new Error("Error with the request");
       }
 
-      alert("Successful Deposit request");
-
       updateBridgeStepInfo("BTC_SENT_PENDING", txId);
     } catch (error) {
       console.error(error);
@@ -152,8 +155,27 @@ export default function SendBTCForm() {
     }
   };
 
+  const bridgeSBTC = () => {
+    // In case of generated wallet, transaction will go through automatically with ALL the user's balance when we switch steps
+    if (stacksAddressInfo?.type === "GENERATED") {
+      if (!confirm("Are you sure you want to bridge ALL your sBTC?")) {
+        return;
+      }
+    }
+
+    updateBridgeStepInfo("BTC_COMPLETED");
+  };
+
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
+    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm relative">
+      {stacksAddressInfo && suiAddress && stacksBalances?.sbtcBalance > 0 && (
+        <button
+          className="absolute top-3 right-3 text-slate-300 hover:text-white transition-colors bg-slate-800 rounded-sm cursor-pointer"
+          onClick={() => bridgeSBTC()}
+        >
+          Bridge sBTC <ArrowRight className="h-5 w-5 inline" />
+        </button>
+      )}
       <CardHeader className="space-y-1">
         <div className="flex justify-center mb-6">
           <div className="bg-amber-500/20 rounded-full p-4">
@@ -189,13 +211,21 @@ export default function SendBTCForm() {
                   placeholder="0.00"
                   step="0.00000001"
                   min="0.001"
+                  max={String(denominatedBtcBalance)}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="pr-12 text-slate-300"
+                  className="pr-28 text-slate-300"
                   required
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <span className="text-slate-400 font-medium">BTC</span>
+                <div className="absolute inset-y-0 right-0 flex items-center">
+                  <span className="pr-2 text-slate-400 font-medium">BTC</span>
+                  <button
+                    type="button"
+                    onClick={() => setAmount(String(denominatedBtcBalance))}
+                    className="px-2 py-1 mr-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded cursor-pointer"
+                  >
+                    Max
+                  </button>
                 </div>
               </div>
             </div>
@@ -209,9 +239,7 @@ export default function SendBTCForm() {
             {parseFloat(amount) > denominatedBtcBalance && (
               <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  You don't have enough BTC in your wallet
-                </AlertDescription>
+                <AlertDescription>You don't have enough BTC in your wallet</AlertDescription>
               </Alert>
             )}
           </div>

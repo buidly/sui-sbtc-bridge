@@ -3,7 +3,6 @@ import { useCurrentAccount } from "@mysten/dapp-kit";
 import { AddressPurpose, request, RpcResult } from "sats-connect";
 import { AppConfig, UserData, UserSession } from "@stacks/connect";
 import { storageHelper } from "@/lib/storageHelper.ts";
-import { privateKeyToAddress } from "@stacks/transactions";
 import { STACKS_NETWORK } from "@/api/stacks.ts";
 
 type BridgeStep =
@@ -18,18 +17,19 @@ type BridgeStep =
 
 interface AppContextType {
   btcAddressInfo: { address: string; publicKey: string } | null;
-  stacksAddress: string | null;
+  stacksAddressInfo: { type: 'GENERATED' | 'USER', address: string; privateKey?: string } | null;
   suiAddress: string | null;
   processConnectBtc: (res?: RpcResult<"wallet_getAccount">) => void;
   processConnectBtcLeather: () => void;
   processConnectStacksUser: (userData?: UserData | null) => void;
-  processConnectStacksGenerated: (privateKey: string) => void;
+  processConnectStacksGenerated: (stacksAddress?: string, privateKey?: string) => void;
   bridgeStepInfo?: {
     step: BridgeStep;
     btcTxId: string;
     stacksTxId?: string;
+    sponsoredTxId?: string;
   };
-  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => void;
+  updateBridgeStepInfo: (step?: BridgeStep, btcTxId?: string, stacksTxId?: string, sponsoredTxId?: string) => void;
 }
 
 const appConfig = new AppConfig(["store_write", "publish_data"]);
@@ -39,7 +39,7 @@ const AppContext = createContext<AppContextType>(undefined as AppContextType);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [btcAddressInfo, setBtcAddressInfo] = useState<{ address: string; publicKey: string } | null>(null);
-  const [stacksAddress, setStacksAddress] = useState<string | null>(null);
+  const [stacksAddressInfo, setStacksAddressInfo] = useState<{ type: 'GENERATED' | 'USER', address: string; privateKey?: string } | null>(null);
   const suiWallet = useCurrentAccount();
   const suiAddress = useMemo(() => suiWallet?.address, [suiWallet]);
 
@@ -80,27 +80,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     if (!userData) {
-      setStacksAddress(null);
+      setStacksAddressInfo(null);
       storageHelper.removeStacksWallet();
       return;
     }
 
     const stacksAddress = userData.profile.stxAddress[STACKS_NETWORK];
 
-    setStacksAddress(stacksAddress);
+    setStacksAddressInfo({ type: 'USER', address: stacksAddress });
     storageHelper.setStacksWallet("USER", stacksAddress);
   };
-  const processConnectStacksGenerated = (privateKey?: string) => {
-    if (!privateKey) {
-      setStacksAddress(null);
+  const processConnectStacksGenerated = (stacksAddress?: string, privateKey?: string) => {
+    if (!stacksAddress) {
+      setStacksAddressInfo(null);
       storageHelper.removeStacksWallet();
       return;
     }
 
-    const stacksAddress = privateKeyToAddress(privateKey, STACKS_NETWORK);
-
-    setStacksAddress(stacksAddress);
-    storageHelper.setStacksWallet("GENERATED", stacksAddress, privateKey);
+    setStacksAddressInfo({ type: 'GENERATED', address: stacksAddress, privateKey });
+    storageHelper.setStacksWallet("GENERATED", stacksAddress);
   };
 
   useEffect(() => {
@@ -121,7 +119,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const storageStacksWallet = storageHelper.getStacksWallet();
     if (storageStacksWallet?.type === "GENERATED") {
-      processConnectStacksGenerated(storageStacksWallet?.privateKey);
+      processConnectStacksGenerated(storageStacksWallet.address, null);
     }
 
     // Handle Stacks
@@ -140,6 +138,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     step: BridgeStep;
     btcTxId: string;
     stacksTxId?: string;
+    sponsoredTxId?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -147,33 +146,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const params = new URLSearchParams(window.location.search);
     const btcTxId = params.get("btcTxId");
 
-    if (btcTxId) {
-      // Handle BTC transaction status
-      if (!params.has("stacksTxId")) {
+    // Check if we have any step
+    if (!params.has("stacksTxId") && !params.has("sponsoredTxId")) {
+      if (btcTxId) {
         setBridgeStepInfo({
           step: "BTC_SENT_PENDING",
           btcTxId,
         });
-
-        return;
       }
 
-      // Handle sBTC bridge transaction status
-      setBridgeStepInfo({
-        step: "SBTC_SENT_PENDING",
-        btcTxId,
-        stacksTxId: params.get("stacksTxId"),
-      });
+      return;
     }
+
+    // Handle sBTC bridge transaction status
+    setBridgeStepInfo({
+      step: "SBTC_SENT_PENDING",
+      btcTxId,
+      stacksTxId: params.get("stacksTxId"),
+      sponsoredTxId: params.get("sponsoredTxId"),
+    });
   }, []);
 
-  const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string, stacksTxId?: string) => {
-    if (!step || !btcTxId) {
+  const updateBridgeStepInfo = (step?: BridgeStep, btcTxId?: string, stacksTxId?: string, sponsoredTxId?: string) => {
+    if (!step) {
       setBridgeStepInfo(null);
 
       const params = new URLSearchParams(window.location.search);
       params.delete("btcTxId");
       params.delete("stacksTxId");
+      params.delete("sponsoredTxId");
 
       // Update URL without page reload
       const newUrl = `${window.location.pathname}${params.size !== 0 ? "?" + params.toString() : ""}`;
@@ -186,13 +187,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
       step,
       btcTxId,
       stacksTxId,
+      sponsoredTxId,
     });
 
     const params = new URLSearchParams(window.location.search);
-    params.set("btcTxId", btcTxId);
+
+    if (btcTxId) {
+      params.set("btcTxId", btcTxId);
+    }
 
     if (stacksTxId) {
       params.set("stacksTxId", stacksTxId);
+    }
+
+    if (sponsoredTxId) {
+      params.set("sponsoredTxId", sponsoredTxId);
+    }
+
+    if (!params.size) {
+      return;
     }
 
     // Update URL without page reload
@@ -204,7 +217,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         btcAddressInfo,
-        stacksAddress,
+        stacksAddressInfo,
         suiAddress,
         processConnectBtc,
         processConnectBtcLeather,

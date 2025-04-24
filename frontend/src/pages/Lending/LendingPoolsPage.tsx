@@ -1,10 +1,14 @@
 import { Tooltip } from "@/components/ui/Tooltip";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LendingPool } from "./LendingMarkets/LendingPools";
 import { NaviPoolProvider } from "./LendingMarkets/Navi/NaviPools";
 import { ScallopPoolProvider } from "./LendingMarkets/Scallop/ScallopPools";
 import { SuilendPoolProvider } from "./LendingMarkets/Suilend/SuilendPools";
 import { RewardInfo } from "./LendingMarkets/LendingPools";
+import { useApp } from "@/context/app.context.tsx";
+import { Navigate } from "react-router-dom";
+import { ROUTES } from "@/lib/routes.ts";
+import { Loader2 } from "lucide-react";
 
 const ICON_MAP: Record<string, string> = {
   WBTC: "wbtc",
@@ -169,6 +173,8 @@ function ActionModal({ isOpen, onClose, asset }: { isOpen: boolean; onClose: () 
 }
 
 export function LendingPoolsPage() {
+  const { suiAddress } = useApp();
+
   const [pools, setPools] = useState<LendingPool[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"supplies" | "borrows">("supplies");
@@ -191,11 +197,13 @@ export function LendingPoolsPage() {
     fetchPools();
   }, []);
 
+  if (!suiAddress) {
+    return <Navigate to={ROUTES.home} replace />;
+  }
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-      </div>
+      <Loader2 className="h-10 w-10 mx-auto animate-spin text-sky-500" />
     );
   }
 
