@@ -1,4 +1,5 @@
 import React, { StrictMode } from "react";
+import { BrowserRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
@@ -14,25 +15,27 @@ import { BalancesProvider } from "@/context/balances.context.tsx";
 // Sui
 const { networkConfig: suiNetworkConfig } = createNetworkConfig({
   testnet: { url: getFullnodeUrl("testnet") },
-  mainnet: { url: getFullnodeUrl("mainnet") },
+  mainnet: { url: getFullnodeUrl("mainnet") }
 });
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
-  <QueryClientProvider client={queryClient}>
-    <SuiClientProvider
-      networks={suiNetworkConfig}
-      defaultNetwork={STACKS_NETWORK === "testnet" ? "testnet" : "mainnet"}
-    >
-      <WalletProvider autoConnect={true}>
-        <AppProvider>
-          <BalancesProvider>
-            <App />
-          </BalancesProvider>
-        </AppProvider>
-      </WalletProvider>
-    </SuiClientProvider>
-  </QueryClientProvider>,
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <SuiClientProvider
+        networks={suiNetworkConfig}
+        defaultNetwork={STACKS_NETWORK === "testnet" ? "testnet" : "mainnet"}
+      >
+        <WalletProvider autoConnect={true}>
+          <AppProvider>
+            <BalancesProvider>
+              <App />
+            </BalancesProvider>
+          </AppProvider>
+        </WalletProvider>
+      </SuiClientProvider>
+    </QueryClientProvider>,
+  </BrowserRouter>
   // </StrictMode>,
 );
