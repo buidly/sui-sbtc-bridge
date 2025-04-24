@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowDown, Loader2, RefreshCw } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/context/app.context.tsx";
 import { ROUTES } from "@/lib/routes.ts";
 import { Navigate } from "react-router-dom";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button.tsx";
 
 export default function Swap() {
   const { suiAddress } = useApp();
-  const { isLoading, coins } = useSwap();
+  const { isLoading, coins, doSwap } = useSwap();
 
   const [inputCoin, setInputCoin] = useState<CoinWithBalance | undefined>();
   const [outputCoin, setOutputCoin] = useState<CoinWithBalance | undefined>();
@@ -20,6 +20,7 @@ export default function Swap() {
     setOutputCoin(coins[1]);
   }, [coins]);
 
+  // TODO: Handle exchange rate
   // Exchange rates between coins (simplified for demo)
   const exchangeRates = {
     "btc-sbtc": 0.98, // 1 BTC = 0.98 sBTC (due to fees)
@@ -53,7 +54,7 @@ export default function Swap() {
   // Update output amount when input amount or coins change
   useEffect(() => {
     if (inputCoin === outputCoin) {
-      setOutputCoin(coins.filter(coin => coin.id !== inputCoin.id)[0]);
+      setOutputCoin(coins.filter((coin) => coin.id !== inputCoin.id)[0]);
     }
 
     if (inputAmount && !isNaN(parseFloat(inputAmount))) {
@@ -65,7 +66,7 @@ export default function Swap() {
   }, [inputAmount, inputCoin, outputCoin]);
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
       !inputCoin ||
@@ -78,13 +79,22 @@ export default function Swap() {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Reset form in a real app
+
+    const denominatedInputAmount = Math.round(parseFloat(inputAmount) * 10 ** inputCoin.decimals);
+    // TODO: Calculate proper output somehow
+    const denominatedOutputAmount = Math.round(parseFloat(outputAmount) * 10 ** outputCoin.decimals);
+
+    try {
+      await doSwap(inputCoin.coinType, outputCoin.coinType, denominatedInputAmount, denominatedOutputAmount);
+
       setInputAmount("");
       setOutputAmount("");
-    }, 2000);
+    } catch (e) {
+      // TODO: Handle errors
+      console.error(e);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Swap input and output coins
