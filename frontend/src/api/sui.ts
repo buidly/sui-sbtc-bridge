@@ -3,11 +3,11 @@ import { ENV } from "@/lib/env.ts";
 
 export interface StableSwapPool {
   admin_fee: string;
-  amp: string;
+  amp: bigint;
   fee: string;
   lp_supply: string;
   types: string[];
-  values: string[];
+  values: bigint[];
 }
 
 export const client = new SuiClient({
@@ -91,39 +91,22 @@ export const SuiApi = {
         },
       });
 
-      const data = result?.data?.content?.fields as StableSwapPool;
+      const data = (result?.data?.content as any)?.fields as StableSwapPool;
 
+      // Do type conversions
       if (data?.types) {
         data.types = data.types.map((type) => `0x${type}`);
       }
+      if (data?.values) {
+        data.values = data.values.map((value) => BigInt(value));
+      }
+      data.amp = BigInt(data.amp);
 
       return data;
     } catch (e) {
       console.error(e);
 
       return undefined;
-    }
-  },
-
-  async getCoinsMetadata(coinTypes: string[]) {
-    try {
-      const result = await Promise.all(
-        coinTypes.map((coinType) =>
-          client.getCoinMetadata({
-            coinType,
-          }),
-        ),
-      );
-
-      return result.reduce<{ [coinType: string]: CoinMetadata }>((acc, metadata, index) => {
-        acc[coinTypes[index]] = metadata;
-
-        return acc;
-      }, {});
-    } catch (e) {
-      console.error(e);
-
-      return {};
     }
   },
 };

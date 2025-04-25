@@ -11,12 +11,12 @@ import { STACKS_NETWORK } from "@/api/stacks.ts";
 import { BalancesProvider } from "@/context/balances.context.tsx";
 
 import "@mysten/dapp-kit/dist/index.css";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
 const { networkConfig: suiNetworkConfig } = createNetworkConfig({
   testnet: { url: getFullnodeUrl("testnet") },
-  mainnet: { url: getFullnodeUrl("mainnet") }
+  mainnet: { url: getFullnodeUrl("mainnet") },
 });
 const queryClient = new QueryClient();
 
@@ -33,12 +33,13 @@ createRoot(document.getElementById("root")).render(
             <BalancesProvider>
               <App />
 
-              <ToastContainer position="bottom-right" />
+              <ToastContainer position="bottom-right" autoClose={3_000} />
             </BalancesProvider>
           </AppProvider>
         </WalletProvider>
       </SuiClientProvider>
-    </QueryClientProvider>,
-  </BrowserRouter>
+    </QueryClientProvider>
+    ,
+  </BrowserRouter>,
   // </StrictMode>,
 );

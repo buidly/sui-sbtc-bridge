@@ -1,5 +1,6 @@
 import axios from "axios";
 import { ENV } from "@/lib/env.ts";
+import { CoinMetadata } from "@mysten/sui/client";
 
 export const SponsoredTransactionStatus = {
   PENDING: "PENDING",
@@ -48,6 +49,16 @@ export const MicroserviceApi = {
       return result.data as SponsoredTransaction;
     } catch (e) {
       return null;
+    }
+  },
+
+  async getSuiBtcCoins(): Promise<{ [coinType: string]: CoinMetadata }> {
+    try {
+      const result = await client.get(`/general/sui/btc-coins`);
+
+      return result.data;
+    } catch (e) {
+      return {};
     }
   },
 };

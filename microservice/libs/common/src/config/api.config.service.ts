@@ -58,4 +58,22 @@ export class ApiConfigService {
 
     return privateKey;
   }
+
+  getSuiClientUrl(): string {
+    const suiClientUrl = this.configService.get<string>('SUI_CLIENT_URL');
+    if (!suiClientUrl) {
+      throw new Error('No Sui Client Url present');
+    }
+
+    return suiClientUrl;
+  }
+
+  getStableSwapPoolObject(): string {
+    const stableSwapPoolObject = this.configService.get<string>('STABLE_SWAP_POOL_OBJECT');
+    if (!stableSwapPoolObject) {
+      throw new Error('No Stable Swap Pool Object present');
+    }
+
+    return stableSwapPoolObject;
+  }
 }

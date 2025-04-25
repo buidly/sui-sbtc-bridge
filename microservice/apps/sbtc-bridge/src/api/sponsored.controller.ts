@@ -1,6 +1,6 @@
 import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { SponsoredService } from './sponsored.service';
+import { SponsoredService } from './services/sponsored.service';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('general')
