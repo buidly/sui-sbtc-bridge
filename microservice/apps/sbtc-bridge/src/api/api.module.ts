@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { ApiConfigModule } from '@monorepo/common/config/api.config.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { SponsoredController } from './sponsored.controller';
-import { SponsoredService } from './sponsored.service';
+import { SponsoredService } from './services/sponsored.service';
 import { HelpersModule } from '@monorepo/common/helpers/helpers.module';
 import { DatabaseModule } from '@monorepo/common/database/database.module';
+import { GeneralService } from "./services/general.service";
+import { GeneralController } from "./general.controller";
 
 @Module({
   imports: [
@@ -18,8 +20,8 @@ import { DatabaseModule } from '@monorepo/common/database/database.module';
       },
     ]),
   ],
-  providers: [SponsoredService],
-  controllers: [SponsoredController],
+  providers: [SponsoredService, GeneralService],
+  controllers: [SponsoredController, GeneralController],
   exports: [],
 })
 export class ApiModule {}

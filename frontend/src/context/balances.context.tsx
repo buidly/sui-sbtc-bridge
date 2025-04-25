@@ -69,7 +69,7 @@ export function BalancesProvider({ children }: { children: ReactNode }) {
 
     setLoading(true);
 
-    const balances = await SuiApi.getAddressBalances(suiAddress);
+    const balances = await SuiApi.getAddressSuiSbtcBalances(suiAddress);
 
     setSuiBalances(balances);
     setLoading(false);

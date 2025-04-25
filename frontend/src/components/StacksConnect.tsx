@@ -187,7 +187,6 @@ function StacksConnect() {
       disconnectWallet={disconnectWallet}
       loading={loading}
     >
-      {/* TODO: Show form for password, even at page reload */}
       <div className="flex items-end justify-between">
         <div>
           <div className="text-xs text-slate-400 mb-1">sBTC Balance:</div>
