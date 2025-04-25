@@ -22,13 +22,19 @@ export const useSwap = () => {
   const [btcCoins, setBtcCoins] = useState<{ [coinType: string]: CoinMetadata }>({});
   const [balances, setBalances] = useState<{ [coinType: string]: bigint }>({});
 
+  const fetchStableSwap = async () => {
+    const result = await SuiApi.getObject(ENV.STABLE_SWAP_POOL_OBJECT);
+    setStableSwapObject(result);
+
+    return result;
+  };
+
   useEffect(() => {
-    // TODO: This can be moved to the microservice
+    // TODO: Coins metadata can be moved to microservice
     const getData = async () => {
       setIsLoading(true);
 
-      const result = await SuiApi.getObject(ENV.STABLE_SWAP_POOL_OBJECT);
-      setStableSwapObject(result);
+      const result = await fetchStableSwap();
 
       const coinsMetadata = await SuiApi.getCoinsMetadata(result.types);
       setBtcCoins(coinsMetadata);
@@ -61,10 +67,13 @@ export const useSwap = () => {
       return [];
     }
 
-    return Object.entries(btcCoins).map(([coinType, metadata]) => {
+    return Object.entries(btcCoins).map(([coinType, metadata], index) => {
       return {
         ...metadata,
-        symbol: metadata.name, // TODO: Remove this in prod
+        symbol:
+          Object.values(btcCoins).findIndex((coin) => coin.symbol === metadata.symbol) !== index
+            ? metadata.name
+            : metadata.symbol, // Don't display duplicate symbols, use names instead
         balance: balances?.[coinType] || 0n,
         denominatedBalance: Number(balances?.[coinType] || 0n) / 10 ** metadata.decimals,
         coinType,
@@ -72,7 +81,7 @@ export const useSwap = () => {
     });
   }, [btcCoins, balances]);
 
-  const doSwap = async (inputCoinType: string, outputCoinType: string, inputAmount: number, minOutput: number) => {
+  const doSwap = async (inputCoinType: string, outputCoinType: string, inputAmount: bigint, minOutput: bigint) => {
     const tx = new Transaction();
     tx.setSender(suiAddress);
 
@@ -89,7 +98,7 @@ export const useSwap = () => {
       arguments: [tx.pure("u64", minOutput), coin, tx.object(ENV.STABLE_SWAP_POOL_OBJECT)],
     });
 
-    tx.transferObjects(outputCoin, suiAddress);
+    tx.transferObjects([outputCoin], suiAddress);
 
     const result = await signAndExecuteTransaction({
       transaction: tx,
@@ -99,11 +108,15 @@ export const useSwap = () => {
   };
 
   useEffect(() => {
-    if (status === "success") {
+    if (status === "pending") {
+      toast.warning("Swapping...");
+    } else if (status === "success") {
       toast.success("Swap succeeded!");
 
       // Fetch coins with a timeout so rpc reflects changes
       setTimeout(() => {
+        fetchStableSwap();
+
         fetchBalances();
       }, 250);
     } else if (status === "error") {
@@ -114,6 +127,7 @@ export const useSwap = () => {
   return {
     isLoading,
     coins,
+    stableSwapObject,
     doSwap,
   };
 };

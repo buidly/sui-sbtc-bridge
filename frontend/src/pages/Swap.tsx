@@ -7,10 +7,11 @@ import { Navigate } from "react-router-dom";
 import { CoinWithBalance, useSwap } from "@/hooks/use-swap.ts";
 import { formatBalance } from "@/lib/helpers.ts";
 import { Button } from "@/components/ui/button.tsx";
+import { applySlippage, getOutputAmount } from "@/lib/stableswap.ts";
 
 export default function Swap() {
   const { suiAddress } = useApp();
-  const { isLoading, coins, doSwap } = useSwap();
+  const { isLoading, coins, stableSwapObject, doSwap } = useSwap();
 
   const [inputCoin, setInputCoin] = useState<CoinWithBalance | undefined>();
   const [outputCoin, setOutputCoin] = useState<CoinWithBalance | undefined>();
@@ -20,50 +21,63 @@ export default function Swap() {
     setOutputCoin(coins[1]);
   }, [coins]);
 
-  // TODO: Handle exchange rate
-  // Exchange rates between coins (simplified for demo)
-  const exchangeRates = {
-    "btc-sbtc": 0.98, // 1 BTC = 0.98 sBTC (due to fees)
-    "btc-suibtc": 0.97, // 1 BTC = 0.97 suiBTC
-    "btc-sui": 23500, // 1 BTC = 23500 SUI
-    "sbtc-btc": 1.01, // 1 sBTC = 1.01 BTC
-    "sbtc-suibtc": 0.99, // 1 sBTC = 0.99 suiBTC
-    "sbtc-sui": 24000, // 1 sBTC = 24000 SUI
-    "suibtc-btc": 1.02, // 1 suiBTC = 1.02 BTC
-    "suibtc-sbtc": 1.01, // 1 suiBTC = 1.01 sBTC
-    "suibtc-sui": 24500, // 1 suiBTC = 24500 SUI
-    "sui-btc": 0.000042, // 1 SUI = 0.000042 BTC
-    "sui-sbtc": 0.000041, // 1 SUI = 0.000041 sBTC
-    "sui-suibtc": 0.00004, // 1 SUI = 0.000040 suiBTC
-  };
-
   const [inputAmount, setInputAmount] = useState("");
   const [outputAmount, setOutputAmount] = useState("");
+  const [exchangeRate, setExchangeRate] = useState("");
+  const [exchangeRateInversed, setExchangeRateInversed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Calculate exchange rate between selected coins
-  const getExchangeRate = () => {
-    if (!inputCoin || !outputCoin) {
-      return 1;
-    }
-
-    const key = `${inputCoin.id}-${outputCoin.id}`;
-    return exchangeRates[key] || 1;
-  };
 
   // Update output amount when input amount or coins change
   useEffect(() => {
     if (inputCoin === outputCoin) {
       setOutputCoin(coins.filter((coin) => coin.id !== inputCoin.id)[0]);
+      setOutputAmount("");
+
+      return;
+    }
+
+    if (parseFloat(inputAmount) > inputCoin.denominatedBalance) {
+      setInputAmount(inputCoin.denominatedBalance.toString());
+      return;
     }
 
     if (inputAmount && !isNaN(parseFloat(inputAmount))) {
-      const rate = getExchangeRate();
-      setOutputAmount((parseFloat(inputAmount) * rate).toFixed(8));
-    } else {
-      setOutputAmount("");
+      const denominatedInputAmount = BigInt(Math.round(parseFloat(inputAmount) * 10 ** inputCoin.decimals));
+
+      try {
+        let outputAmount = getOutputAmount(
+          inputCoin.coinType,
+          outputCoin.coinType,
+          denominatedInputAmount,
+          stableSwapObject,
+        );
+
+        outputAmount = applySlippage(outputAmount);
+
+        setOutputAmount(formatBalance(outputAmount, outputCoin.decimals));
+
+        return;
+      } catch (e) {
+        console.error(e);
+      }
     }
+
+    setOutputAmount("");
   }, [inputAmount, inputCoin, outputCoin]);
+
+  // Calculate exchange rate
+  useEffect(() => {
+    if (!inputAmount || !outputAmount) {
+      setExchangeRate("-");
+      return;
+    }
+
+    if (!exchangeRateInversed) {
+      setExchangeRate((Number.parseFloat(outputAmount) / Number.parseFloat(inputAmount)).toFixed(8));
+    } else {
+      setExchangeRate((Number.parseFloat(inputAmount) / Number.parseFloat(outputAmount)).toFixed(8));
+    }
+  }, [inputAmount, outputAmount, exchangeRateInversed]);
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -80,9 +94,8 @@ export default function Swap() {
 
     setIsSubmitting(true);
 
-    const denominatedInputAmount = Math.round(parseFloat(inputAmount) * 10 ** inputCoin.decimals);
-    // TODO: Calculate proper output somehow
-    const denominatedOutputAmount = Math.round(parseFloat(outputAmount) * 10 ** outputCoin.decimals);
+    const denominatedInputAmount = BigInt(Math.round(parseFloat(inputAmount) * 10 ** inputCoin.decimals));
+    const denominatedOutputAmount = BigInt(Math.round(parseFloat(outputAmount) * 10 ** outputCoin.decimals));
 
     try {
       await doSwap(inputCoin.coinType, outputCoin.coinType, denominatedInputAmount, denominatedOutputAmount);
@@ -90,7 +103,6 @@ export default function Swap() {
       setInputAmount("");
       setOutputAmount("");
     } catch (e) {
-      // TODO: Handle errors
       console.error(e);
     } finally {
       setIsSubmitting(false);
@@ -231,10 +243,22 @@ export default function Swap() {
 
                 {/* Exchange rate display */}
                 <div className="text-center text-sm text-slate-400 mb-3 flex items-center justify-center">
+                  <RefreshCw
+                    className="h-3 w-3 mr-1 mt-1 cursor-pointer"
+                    onClick={() => setExchangeRateInversed(!exchangeRateInversed)}
+                  />
                   <span>
-                    Rate: 1 {inputCoin?.symbol} = {getExchangeRate()} {outputCoin?.symbol}
+                    Rate: 1{" "}
+                    {!exchangeRateInversed ? (
+                      <>
+                        {inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}
+                      </>
+                    ) : (
+                      <>
+                        {outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}
+                      </>
+                    )}
                   </span>
-                  <RefreshCw className="h-3 w-3 ml-2" />
                 </div>
 
                 {/* Submit button */}
@@ -261,7 +285,7 @@ export default function Swap() {
                 </Button>
 
                 <div className="mt-2 text-center text-xs text-slate-400">
-                  Network fee: ~0.005 SUI • Estimated completion: 30 seconds
+                  Network fee: ~0.0025 SUI • Estimated completion: 3 seconds
                 </div>
               </form>
             </div>

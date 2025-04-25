@@ -3,11 +3,11 @@ import { ENV } from "@/lib/env.ts";
 
 export interface StableSwapPool {
   admin_fee: string;
-  amp: string;
+  amp: bigint;
   fee: string;
   lp_supply: string;
   types: string[];
-  values: string[];
+  values: bigint[];
 }
 
 const client = new SuiClient({
@@ -93,9 +93,14 @@ export const SuiApi = {
 
       const data = result?.data?.content?.fields as StableSwapPool;
 
+      // Do type conversions
       if (data?.types) {
         data.types = data.types.map((type) => `0x${type}`);
       }
+      if (data?.values) {
+        data.values = data.values.map((value) => BigInt(value));
+      }
+      data.amp = BigInt(data.amp);
 
       return data;
     } catch (e) {
