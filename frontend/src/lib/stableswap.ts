@@ -1,7 +1,7 @@
 import { StableSwapPool } from "@/api/sui";
 
 export const MAX_PERCENTAGE = 10_000n;
-export const DEFAULT_SLIPPAGE = 25n; // 0.25%
+export const DEFAULT_SLIPPAGE = 10n; // 0.1%
 
 // Define constants and types
 const MAX_ITERATIONS = 255; // Maximum iterations for Newton's method

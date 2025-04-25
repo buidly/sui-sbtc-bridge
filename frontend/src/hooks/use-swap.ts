@@ -6,6 +6,7 @@ import { CoinMetadata } from "@mysten/sui/client";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
+import { useSuiBtcCoins } from "@/hooks/api/use-sui-btc-coins.ts";
 
 export type CoinWithBalance = CoinMetadata & {
   denominatedBalance: number;
@@ -17,32 +18,23 @@ export const useSwap = () => {
   const { suiAddress } = useApp();
   const { mutateAsync: signAndExecuteTransaction, status } = useSignAndExecuteTransaction();
 
+  const { btcCoins, isLoading: isLoadingBtcCoins } = useSuiBtcCoins();
+
   const [isLoading, setIsLoading] = useState(true);
   const [stableSwapObject, setStableSwapObject] = useState<StableSwapPool>();
-  const [btcCoins, setBtcCoins] = useState<{ [coinType: string]: CoinMetadata }>({});
   const [balances, setBalances] = useState<{ [coinType: string]: bigint }>({});
 
   const fetchStableSwap = async () => {
+    setIsLoading(true);
+
     const result = await SuiApi.getObject(ENV.STABLE_SWAP_POOL_OBJECT);
     setStableSwapObject(result);
 
-    return result;
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    // TODO: Coins metadata can be moved to microservice
-    const getData = async () => {
-      setIsLoading(true);
-
-      const result = await fetchStableSwap();
-
-      const coinsMetadata = await SuiApi.getCoinsMetadata(result.types);
-      setBtcCoins(coinsMetadata);
-
-      setIsLoading(false);
-    };
-
-    getData();
+    fetchStableSwap();
   }, []);
 
   const fetchBalances = async () => {
@@ -55,7 +47,7 @@ export const useSwap = () => {
   };
 
   useEffect(() => {
-    if (!suiAddress) {
+    if (!suiAddress || !Object.keys(btcCoins).length) {
       return;
     }
 
@@ -125,7 +117,7 @@ export const useSwap = () => {
   }, [status]);
 
   return {
-    isLoading,
+    isLoading: isLoading || isLoadingBtcCoins,
     coins,
     stableSwapObject,
     doSwap,

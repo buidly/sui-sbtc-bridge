@@ -30,7 +30,7 @@ export default function Swap() {
   // Update output amount when input amount or coins change
   useEffect(() => {
     if (inputCoin === outputCoin) {
-      setOutputCoin(coins.filter((coin) => coin.id !== inputCoin.id)[0]);
+      setOutputCoin(coins.filter((coin) => coin.id !== inputCoin?.id)[0]);
       setOutputAmount("");
 
       return;
