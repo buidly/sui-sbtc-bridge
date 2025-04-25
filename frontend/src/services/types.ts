@@ -1,11 +1,4 @@
-export interface LendingPools {
-  pools: LendingPool[];
-}
-
-export interface RewardInfo {
-  symbol: string; // Token symbol (e.g. "DEEP", "USDC")
-  apy: number; // APY for this reward token
-}
+import { LendingProtocol } from "@/services/config.ts";
 
 export interface LendingPool {
   name: string;
@@ -25,16 +18,7 @@ export interface LendingPool {
   protocol: LendingProtocol;
 }
 
-export enum LendingProtocol {
-  NAVI = "navi",
-  SCALLOP = "scallop",
-  SUILEND = "suilend",
-}
-
-export interface PoolConfig {
-  name: string;
-  symbol: string;
-  poolId: string;
-  assetId: number;
-  type: string;
+export interface RewardInfo {
+  symbol: string; // Token symbol (e.g. "DEEP", "USDC")
+  apy: number; // APY for this reward token
 }

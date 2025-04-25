@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, Loader2, RefreshCw } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/context/app.context.tsx";

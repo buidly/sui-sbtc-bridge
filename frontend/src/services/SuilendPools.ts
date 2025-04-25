@@ -1,17 +1,17 @@
-import { client } from "@/api/sui";
+import { client } from "@/api/sui.ts";
 import {
-  initializeSuilend,
-  SuilendClient,
-  Side,
-  getTotalAprPercent,
-  getFilteredRewards,
   formatRewards,
+  getFilteredRewards,
+  getTotalAprPercent,
+  initializeSuilend,
   initializeSuilendRewards,
+  Side,
+  SuilendClient,
 } from "@suilend/sdk";
-import { LendingPoolProvider } from "../BaseLendingProvider";
-import { LendingPool, LendingProtocol, RewardInfo } from "../LendingPools";
-import { btcPools } from "../config";
+import { LendingPoolProvider } from "./BaseLendingProvider.ts";
+import { btcCoinTypes, LendingProtocol } from "./config.ts";
 import BigNumber from "bignumber.js";
+import { LendingPool, RewardInfo } from "@/services/types.ts";
 
 const mainLendingMarket = {
   name: "Main market",
@@ -27,6 +27,10 @@ export class SuilendPoolProvider extends LendingPoolProvider {
   }
 
   async getPools(): Promise<LendingPool[]> {
+    if (this.pools) {
+      return this.pools;
+    }
+
     const suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, client);
     const { lendingMarket, reserveMap, activeRewardCoinTypes, rewardCoinMetadataMap } = await initializeSuilend(
       client,
@@ -35,8 +39,8 @@ export class SuilendPoolProvider extends LendingPoolProvider {
     const { rewardPriceMap } = await initializeSuilendRewards(reserveMap, activeRewardCoinTypes);
 
     const rewardMap = formatRewards(reserveMap, rewardCoinMetadataMap, rewardPriceMap, []);
-    return lendingMarket.reserves
-      .filter((reserve: any) => Object.values(btcPools).includes(reserve.coinType.slice(2)))
+    this.pools = lendingMarket.reserves
+      .filter((reserve: any) => Object.values(btcCoinTypes).includes(reserve.coinType))
       .map((reserve: any) => {
         // Get supply rewards and calculate APYs
         const supplyRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.DEPOSIT] ?? []);
@@ -88,10 +92,7 @@ export class SuilendPoolProvider extends LendingPoolProvider {
           borrowRewards: borrowRewardInfos,
         };
       });
-  }
 
-  async getPool(id: string): Promise<LendingPool | undefined> {
-    const pools = await this.getPools();
-    return pools.find((pool) => pool.coinType === id);
+    return this.pools;
   }
 }

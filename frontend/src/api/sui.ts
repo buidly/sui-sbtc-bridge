@@ -109,4 +109,29 @@ export const SuiApi = {
       return undefined;
     }
   },
+
+  // TODO: Move usages of this function in backend
+  async getCoinsMetadata(coinTypes: string[]) {
+    try {
+      const result = await Promise.all(
+        coinTypes.map((coinType) =>
+          client.getCoinMetadata({
+            coinType,
+          }),
+        ),
+      );
+
+      return result.reduce<{ [coinType: string]: CoinMetadata }>((acc, metadata, index) => {
+        if (metadata) {
+          acc[coinTypes[index]] = metadata;
+        }
+
+        return acc;
+      }, {});
+    } catch (e) {
+      console.error(e);
+
+      return {};
+    }
+  }
 };

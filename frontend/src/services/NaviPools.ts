@@ -1,7 +1,8 @@
 import axios from "axios";
-import { LendingPoolProvider } from "../BaseLendingProvider";
-import { btcPools } from "../config";
-import { LendingPool, LendingProtocol } from "../LendingPools";
+import { LendingPoolProvider } from "./BaseLendingProvider.ts";
+import { btcCoinTypes, LendingProtocol } from "./config.ts";
+import { LendingPool } from "@/services/types.ts";
+import { NAVISDKClient } from "navi-sdk";
 
 interface NaviPoolResponse {
   data: NaviPool[];
@@ -31,32 +32,42 @@ interface NaviPool {
 }
 
 export class NaviPoolProvider extends LendingPoolProvider {
+  // @ts-ignore
+  private readonly client: NAVISDKClient;
+
   constructor() {
     super(LendingProtocol.NAVI);
+
+    this.client = new NAVISDKClient({
+      networkType: "mainnet",
+    });
   }
 
   async getPools(): Promise<LendingPool[]> {
+    if (this.pools) {
+      return this.pools;
+    }
+
     try {
       const response = await axios.get<NaviPoolResponse>("https://open-api.naviprotocol.io/api/navi/pools");
-      if (!response.data || response.data.code !== 0) return [];
+      if (!response.data || response.data.code !== 0) {
+        return [];
+      }
 
-      return response.data.data
-        .filter((pool) =>
-          Object.values(btcPools).some((type) => pool.coinType.toLowerCase().replace("0x", "") === type.toLowerCase()),
-        )
+      this.pools = response.data.data
+        .filter((pool) => Object.values(btcCoinTypes).some((type) => `0x${pool.coinType}` === type))
         .map((data) => {
-          const name = Object.entries(btcPools).find(([_, type]) => type === data.coinType)?.[0];
+          const name = Object.entries(btcCoinTypes).find(([_, type]) => `0x${data.coinType}` === type)?.[0];
+
           return this.transformToLendingPool(data, name);
         });
+
+      return this.pools;
     } catch (error) {
       console.error("Error fetching Navi pools:", error);
+      this.pools = [];
       return [];
     }
-  }
-
-  async getPool(id: string): Promise<LendingPool | undefined> {
-    const pools = await this.getPools();
-    return pools.find((pool) => pool.coinType === id);
   }
 
   private transformToLendingPool(data: NaviPool, name: string): LendingPool {
@@ -67,8 +78,8 @@ export class NaviPoolProvider extends LendingPoolProvider {
     const borrowApy = Number(data.borrowIncentiveApyInfo.vaultApr) + Number(data.borrowIncentiveApyInfo.boostedApr);
 
     return {
-      name: name,
-      coinType: data.coinType,
+      name,
+      coinType: `0x${data.coinType}`,
       totalSupply,
       totalBorrow,
       supplyApy,
