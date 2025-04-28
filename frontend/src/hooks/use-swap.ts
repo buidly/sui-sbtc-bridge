@@ -7,6 +7,7 @@ import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
 import { useSuiBtcCoins } from "@/hooks/api/use-sui-btc-coins.ts";
+import { toDecimalAmount } from "@/lib/helpers.ts";
 
 export type CoinWithBalance = CoinMetadata & {
   denominatedBalance: number;
@@ -67,7 +68,7 @@ export const useSwap = () => {
             ? metadata.name
             : metadata.symbol, // Don't display duplicate symbols, use names instead
         balance: balances?.[coinType] || 0n,
-        denominatedBalance: Number(balances?.[coinType] || 0n) / 10 ** metadata.decimals,
+        denominatedBalance: toDecimalAmount(balances?.[coinType] || 0n, metadata.decimals),
         coinType,
       };
     });

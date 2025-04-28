@@ -2,7 +2,7 @@ import { request } from "sats-connect";
 
 type Payload = {
   recipient: string;
-  amountInSats: number;
+  amountInSats: bigint;
   network?: "sbtcTestnet" | "mainnet";
 };
 
@@ -25,7 +25,7 @@ export async function sendBTCOther({ amountInSats, recipient }: Payload) {
     recipients: [
       {
         address: recipient,
-        amount: amountInSats,
+        amount: Number(amountInSats),
       },
     ],
   });

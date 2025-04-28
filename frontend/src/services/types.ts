@@ -1,4 +1,8 @@
-import { LendingProtocol } from "@/services/config.ts";
+export enum LendingProtocol {
+  NAVI = "navi",
+  SCALLOP = "scallop",
+  SUILEND = "suilend",
+}
 
 export interface LendingPool {
   name: string;
@@ -26,7 +30,7 @@ export interface RewardInfo {
 export interface AddressLendingInfo {
   name: string;
   coinType: string;
-  supplyBalance: number; // amount of staked coin supplied
-  underlyingBalance: number; // underlying coin supplied
+  supplyBalance: bigint; // amount of staked coin supplied
+  underlyingBalance: bigint; // underlying coin supplied
   protocol: LendingProtocol;
 }

@@ -14,7 +14,7 @@ import { networks } from "bitcoinjs-lib";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { sendBTCLeather, sendBTCOther } from "@/lib/sendBTC.ts";
 import { useEmilyDeposit } from "@/hooks/use-emily-deposit.ts";
-import { formatBalance } from "@/lib/helpers.ts";
+import { formatBalance, toDecimalAmount, toDenominatedAmount } from "@/lib/helpers.ts";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 import { useBalances } from "@/context/balances.context.tsx";
 
@@ -33,7 +33,7 @@ export default function SendBTCForm() {
       return 0;
     }
 
-    return Number(btcBalance) / 10 ** 8;
+    return toDecimalAmount(btcBalance, 8);
   }, [btcBalance]);
 
   if (
@@ -87,7 +87,7 @@ export default function SendBTCForm() {
 
       let txId = "";
 
-      const amountInSats = Number(parseFloat(amount) * 10 ** 8);
+      const amountInSats = toDenominatedAmount(amount, 8);
 
       console.log("amountInSats", amountInSats);
 

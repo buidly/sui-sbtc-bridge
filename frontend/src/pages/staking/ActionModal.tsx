@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button.tsx";
 import DynamicImage from "@/components/DynamicImage.tsx";
 import { getBtcAssetIcon } from "@/services/config.ts";
 import { Loader2 } from "lucide-react";
+import { toDecimalAmount } from "@/lib/helpers.ts";
 
 export default function ActionModal({
   isOpen,
@@ -24,12 +25,8 @@ export default function ActionModal({
   addressLendingInfo: AddressLendingInfo | null;
   coinMetadata: CoinMetadata;
   availableBalance: bigint;
-  handleSupply: (lendingPool: LendingPool, denominatedAmount: number) => Promise<void>;
-  handleWithdraw: (
-    lendingPool: LendingPool,
-    addressLendingInfo: AddressLendingInfo,
-    amount: number,
-  ) => Promise<void>;
+  handleSupply: (lendingPool: LendingPool, amount: number) => Promise<void>;
+  handleWithdraw: (lendingPool: LendingPool, denominatedAmount: bigint) => Promise<void>;
   loading: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<"supply" | "withdraw">("supply");
@@ -37,11 +34,11 @@ export default function ActionModal({
 
   const denominatedBalance = useMemo(() => {
     if (activeTab === "supply") {
-      return Number(availableBalance || 0n) / 10 ** coinMetadata.decimals;
+      return toDecimalAmount(availableBalance || 0n, coinMetadata.decimals);
     }
 
     return Number(
-      ((addressLendingInfo?.underlyingBalance || 0) / 10 ** coinMetadata.decimals).toFixed(coinMetadata.decimals),
+      toDecimalAmount(addressLendingInfo?.underlyingBalance || 0, coinMetadata.decimals).toFixed(coinMetadata.decimals),
     );
   }, [coinMetadata, availableBalance, activeTab, addressLendingInfo]);
 
@@ -57,11 +54,7 @@ export default function ActionModal({
       return;
     }
 
-    await handleWithdraw(
-      lendingPool,
-      addressLendingInfo,
-      addressLendingInfo?.supplyBalance,
-    );
+    await handleWithdraw(lendingPool, addressLendingInfo?.supplyBalance || 0n);
   };
 
   useEffect(() => {

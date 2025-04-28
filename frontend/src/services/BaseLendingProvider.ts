@@ -1,5 +1,4 @@
-import { LendingProtocol } from "./config.ts";
-import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
+import { AddressLendingInfo, LendingPool, LendingProtocol } from "@/services/types.ts";
 
 export abstract class LendingPoolProvider {
   protected pools: LendingPool[];
@@ -8,10 +7,5 @@ export abstract class LendingPoolProvider {
 
   abstract getPools(): Promise<LendingPool[]>;
 
-  abstract getAddressInfo(address: string): Promise<AddressLendingInfo[]>; // TODO: Add return type
-
-  async getPool(id: string): Promise<LendingPool | undefined> {
-    const pools = this.pools || await this.getPools();
-    return pools.find((pool) => pool.coinType === id);
-  }
+  abstract getAddressInfo(address: string): Promise<AddressLendingInfo[]>;
 }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { LendingPoolProvider } from "./BaseLendingProvider.ts";
-import { btcCoinTypes, LendingProtocol } from "./config.ts";
-import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
+import { btcCoinTypes } from "./config.ts";
+import { AddressLendingInfo, LendingPool, LendingProtocol } from "@/services/types.ts";
 import { NAVISDKClient } from "navi-sdk";
 import { getAddressPortfolio } from "navi-sdk/src/libs/CallFunctions";
 import { suiClient } from "@/api/sui.ts";
@@ -34,7 +34,7 @@ interface NaviPool {
   ltv: string;
 }
 
-export class NaviPoolProvider extends LendingPoolProvider {
+class NaviPoolProvider extends LendingPoolProvider {
   // @ts-ignore
   private readonly client: NAVISDKClient;
 
@@ -81,8 +81,6 @@ export class NaviPoolProvider extends LendingPoolProvider {
       "LBTC",
     ]);
 
-    console.log("navi address info", result);
-
     const addressInfo: AddressLendingInfo[] = [];
 
     for (const [key, value] of result.entries()) {
@@ -94,8 +92,8 @@ export class NaviPoolProvider extends LendingPoolProvider {
       addressInfo.push({
         name,
         coinType: poolItem.type,
-        supplyBalance: value.supplyBalance,
-        underlyingBalance: value.supplyBalance,
+        supplyBalance: BigInt(Math.round(value.supplyBalance)),
+        underlyingBalance: BigInt(Math.round(value.supplyBalance)),
         protocol: LendingProtocol.NAVI,
       });
     }
@@ -129,3 +127,7 @@ export class NaviPoolProvider extends LendingPoolProvider {
     };
   }
 }
+
+const naviPoolProvider = new NaviPoolProvider();
+
+export default naviPoolProvider;

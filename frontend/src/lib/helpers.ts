@@ -6,7 +6,7 @@ import { privateKeyToAddress } from "@stacks/transactions";
 
 export const formatTrimmed = (address: string, size: number = 10) => {
   if (!address) {
-    return '';
+    return "";
   }
 
   if (address.length <= size) {
@@ -62,7 +62,7 @@ export const getExplorerUrlTransaction = (type: "BITCOIN" | "STACKS" | "SUI", tr
 
 export const formatBalance = (balance: bigint, decimals: number) => {
   if (!balance) {
-    return '0';
+    return "0";
   }
 
   // Convert the bigint to a string
@@ -120,4 +120,12 @@ export async function createDeterministicStacksWallet(knownString: string, passw
     privateKey,
     stacksAddress: privateKeyToAddress(privateKey, STACKS_NETWORK),
   };
+}
+
+export function toDenominatedAmount(inputAmount: string | number, decimals: number): bigint {
+  return Math.round(parseFloat(inputAmount.toString()) * 10 ** decimals);
+}
+
+export function toDecimalAmount(inputAmount: bigint | number, decimals: number): number {
+  return Number(inputAmount) / 10 ** decimals;
 }

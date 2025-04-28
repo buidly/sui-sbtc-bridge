@@ -1,6 +1,6 @@
-import { NaviPoolProvider } from "@/services/NaviPools.ts";
-import { ScallopPoolProvider } from "@/services/ScallopPools.ts";
-import { SuilendPoolProvider } from "@/services/SuilendPools.ts";
+import naviPoolProvider from "@/services/NaviPools.ts";
+import scallopPoolProvider from "@/services/ScallopPools.ts";
+import suilendPoolProvider from "@/services/SuilendPools.ts";
 
 export const btcCoinTypes = {
   WBTC: "0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN",
@@ -29,10 +29,4 @@ export function getBtcAssetIcon(assetName: string): string {
   return `https://app.naviprotocol.io/imgs/token/${id}${extension}`;
 }
 
-export enum LendingProtocol {
-  NAVI = "navi",
-  SCALLOP = "scallop",
-  SUILEND = "suilend",
-}
-
-export const AllLendingProviders = [new SuilendPoolProvider(), new NaviPoolProvider(), new ScallopPoolProvider()];
+export const AllLendingProviders = [suilendPoolProvider, naviPoolProvider, scallopPoolProvider];

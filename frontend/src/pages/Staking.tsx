@@ -32,8 +32,6 @@ export function Staking() {
       return null;
     }
 
-    console.log("all address info", allLendingAddressInfo);
-
     return (
       allLendingAddressInfo.find(
         (info) => info.protocol === selectedPool.protocol && info.name === selectedPool.name,
@@ -45,65 +43,19 @@ export function Staking() {
     return <Navigate to={ROUTES.home} replace />;
   }
 
-  if (loading) {
-    return <Loader2 className="h-10 w-10 mx-auto animate-spin text-sky-400" />;
-  }
-
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Your Supplies/Borrows Section */}
-      <div className="bg-slate-50/5 border border-slate-700 rounded-lg shadow-xl backdrop-blur-sm">
-        <div className="flex border-b border-slate-700">
-          <div className="flex-1 relative">
-            <button
-              onClick={() => setActiveTab("supplies")}
-              className={`w-full py-4 text-center text-lg font-medium transition-colors ${
-                activeTab === "supplies" ? "text-sky-400" : "text-slate-400 hover:text-slate-300"
-              }`}
-            >
-              Your Supplies
-            </button>
-            {activeTab === "supplies" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400" />}
-          </div>
-          <div className="flex-1 relative">
-            <button
-              onClick={() => setActiveTab("borrows")}
-              className={`w-full py-4 text-center text-lg font-medium transition-colors ${
-                activeTab === "borrows" ? "text-sky-400" : "text-slate-400 hover:text-slate-300"
-              }`}
-            >
-              Your Borrows
-            </button>
-            {activeTab === "borrows" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-400" />}
-          </div>
-        </div>
-
-        <div className="p-6">
-          <table className="w-full text-left text-slate-300">
-            <thead>
-              <tr className="text-slate-400">
-                <th className="py-3">Assets</th>
-                <th className="py-3">Balance</th>
-                <th className="py-3">APR</th>
-                <th className="py-3">Max LTV</th>
-                <th className="py-3"></th>
-              </tr>
-            </thead>
-            <tbody>{/* TODO: Add your supply/borrow items here */}</tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Assets to Supply Section */}
       <div className="bg-slate-50/5 border border-slate-700 rounded-lg p-6 shadow-xl backdrop-blur-sm">
-        <h2 className="text-xl font-semibold text-white mb-4">Assets To Supply</h2>
+        <h2 className="text-2xl font-bold mb-6 text-white">
+          Stake BTC Coins {loading && <Loader2 className="inline-flex h-5 w-5 animate-spin ml-1" />}
+        </h2>
 
-        {/* Assets Table */}
         <table className="w-full text-left text-slate-300">
           <thead>
             <tr className="text-slate-400">
               <th className="py-3">Assets</th>
               <th className="py-3">Wallet Balance</th>
+              <th className="py-3">Staked Balance</th>
               <th className="py-3">APR</th>
               <th className="py-3">Total Value Locked</th>
               <th className="py-3"></th>
@@ -131,7 +83,20 @@ export function Staking() {
                   </div>
                 </td>
                 <td className="py-4">
-                  {formatBalance(balances?.[pool.coinType] || 0n, coinsMetadata?.[pool.coinType]?.decimals)}
+                  <strong>
+                    {formatBalance(balances?.[pool.coinType] || 0n, coinsMetadata?.[pool.coinType]?.decimals)}{" "}
+                    {coinsMetadata?.[pool.coinType]?.symbol}
+                  </strong>
+                </td>
+                <td className="py-4">
+                  <strong>
+                    {formatBalance(
+                      allLendingAddressInfo.find((info) => info.protocol === pool.protocol && info.name === pool.name)
+                        ?.underlyingBalance || 0n,
+                      coinsMetadata?.[pool.coinType]?.decimals,
+                    )}{" "}
+                    {coinsMetadata?.[pool.coinType]?.symbol}
+                  </strong>
                 </td>
                 <td className="py-4">
                   <ApyDisplay baseApy={pool.baseSupplyApy} rewards={pool.supplyRewards} totalApy={pool.supplyApy} />
@@ -156,7 +121,6 @@ export function Staking() {
         </table>
       </div>
 
-      {/* Action Modal */}
       {selectedPool && (
         <ActionModal
           isOpen={!!selectedPool}

@@ -1,11 +1,11 @@
 import { LendingPoolProvider } from "./BaseLendingProvider.ts";
-import { btcCoinTypes, LendingProtocol } from "./config.ts";
-import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
+import { btcCoinTypes } from "./config.ts";
+import { AddressLendingInfo, LendingPool, LendingProtocol } from "@/services/types.ts";
 import { MarketPool, Scallop, ScallopClient } from "@scallop-io/sui-scallop-sdk";
 import { Transaction } from "@mysten/sui/transactions";
 import { SUI_NETWORK } from "@/api/sui.ts";
 
-export class ScallopPoolProvider extends LendingPoolProvider {
+class ScallopPoolProvider extends LendingPoolProvider {
   private readonly client: Scallop;
   private scallopClient: ScallopClient;
 
@@ -34,18 +34,13 @@ export class ScallopPoolProvider extends LendingPoolProvider {
     }
   }
 
-  // TODO:
   async getAddressInfo(address: string): Promise<AddressLendingInfo[]> {
     const utils = await this.client.createScallopUtils();
     const query = (await this.getScallopClient()).query;
 
     const poolCoinNames = Object.values(btcCoinTypes).map((type) => utils.parseCoinNameFromType(type));
 
-    console.log("pool coin names", poolCoinNames);
-
     const lendings = await query.getLendings(poolCoinNames, address);
-
-    console.log("lendings", lendings);
 
     return Object.values(lendings).map((lending) => {
       const name = Object.entries(btcCoinTypes).find(([_, type]) => type === lending.coinType)?.[0];
@@ -53,14 +48,14 @@ export class ScallopPoolProvider extends LendingPoolProvider {
       return {
         name,
         coinType: lending.coinType,
-        supplyBalance: lending.availableStakeAmount,
-        underlyingBalance: lending.availableWithdrawAmount,
+        supplyBalance: BigInt(Math.round(lending.availableStakeAmount)),
+        underlyingBalance: BigInt(Math.round(lending.availableWithdrawAmount)),
         protocol: LendingProtocol.SCALLOP,
       };
     });
   }
 
-  async supplyTx(coinType: string, address: string, amount: number): Promise<Transaction> {
+  async supplyTx(coinType: string, address: string, amount: bigint): Promise<Transaction> {
     const utils = await this.client.createScallopUtils();
     const builder = (await this.getScallopClient()).builder;
 
@@ -69,21 +64,13 @@ export class ScallopPoolProvider extends LendingPoolProvider {
     const txBlock = builder.createTxBlock();
     txBlock.setSender(address);
 
-    const marketCoin = await txBlock.depositQuick(amount, coinName);
+    const marketCoin = await txBlock.depositQuick(Number(amount), coinName);
     txBlock.transferObjects([marketCoin], address);
 
     return txBlock.txBlock;
   }
 
-  private async getScallopClient() {
-    if (!this.scallopClient) {
-      this.scallopClient = await this.client.createScallopClient();
-    }
-
-    return this.scallopClient;
-  }
-
-  async withdrawTx(coinType: string, address: string, amount: number): Promise<Transaction> {
+  async withdrawTx(coinType: string, address: string, amount: bigint): Promise<Transaction> {
     const utils = await this.client.createScallopUtils();
     const builder = (await this.getScallopClient()).builder;
 
@@ -92,7 +79,7 @@ export class ScallopPoolProvider extends LendingPoolProvider {
     const txBlock = builder.createTxBlock();
     txBlock.setSender(address);
 
-    const coin = await txBlock.withdrawQuick(amount, coinName);
+    const coin = await txBlock.withdrawQuick(Number(amount), coinName);
     txBlock.transferObjects([coin], address);
 
     return txBlock.txBlock;
@@ -130,3 +117,7 @@ export class ScallopPoolProvider extends LendingPoolProvider {
     };
   }
 }
+
+const scallopPoolProvider = new ScallopPoolProvider();
+
+export default scallopPoolProvider;

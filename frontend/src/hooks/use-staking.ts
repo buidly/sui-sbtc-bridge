@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
-import { AllLendingProviders, LendingProtocol } from "@/services/config.ts";
+import { AddressLendingInfo, LendingPool, LendingProtocol } from "@/services/types.ts";
+import { AllLendingProviders } from "@/services/config.ts";
 import { CoinMetadata } from "@mysten/sui/client";
 import { SuiApi } from "@/api/sui.ts";
 import { useApp } from "@/context/app.context.tsx";
@@ -10,7 +10,9 @@ import { depositCoin } from "navi-sdk/src/libs/PTB";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
 import { withdrawCoin } from "navi-sdk";
-import { ScallopPoolProvider } from "@/services/ScallopPools.ts";
+import scallopPoolProvider, { ScallopPoolProvider } from "@/services/ScallopPools.ts";
+import suilendPoolProvider from "@/services/SuilendPools.ts";
+import { toDenominatedAmount } from "@/lib/helpers.ts";
 
 export const useStaking = () => {
   const { suiAddress } = useApp();
@@ -48,14 +50,14 @@ export const useStaking = () => {
     }
   };
 
-  const handleSupply = async (lendingPool: LendingPool, denominatedAmount: number) => {
-    if (!denominatedAmount) {
+  const handleSupply = async (lendingPool: LendingPool, amount: number) => {
+    if (!amount) {
       return;
     }
 
     setLoadingTransaction(true);
 
-    const amount = Math.round(denominatedAmount * 10 ** coinsMetadata[lendingPool.coinType].decimals);
+    const denominatedAmount = toDenominatedAmount(amount, coinsMetadata[lendingPool.coinType].decimals);
 
     let tx: Transaction;
     switch (lendingPool.protocol) {
@@ -72,21 +74,21 @@ export const useStaking = () => {
 
         const coin = coinWithBalance({
           type: lendingPool.coinType,
-          balance: amount,
+          balance: denominatedAmount,
         });
 
-        await depositCoin(tx, poolConfig, coin, amount);
+        await depositCoin(tx, poolConfig, coin, denominatedAmount);
 
         break;
       }
       case LendingProtocol.SCALLOP: {
-        const provider = new ScallopPoolProvider();
-
-        tx = await provider.supplyTx(lendingPool.coinType, suiAddress, amount);
+        tx = await scallopPoolProvider.supplyTx(lendingPool.coinType, suiAddress, denominatedAmount);
 
         break;
       }
       case LendingProtocol.SUILEND: {
+        tx = await suilendPoolProvider.supplyTx(lendingPool.coinType, suiAddress, denominatedAmount);
+
         break;
       }
     }
@@ -105,12 +107,8 @@ export const useStaking = () => {
     toast.success("Supply succeeded!");
   };
 
-  const handleWithdraw = async (
-    lendingPool: LendingPool,
-    addressLendingInfo: AddressLendingInfo,
-    amount: number,
-  ) => {
-    if (!amount) {
+  const handleWithdraw = async (lendingPool: LendingPool, denominatedAmount: bigint) => {
+    if (!denominatedAmount) {
       return;
     }
 
@@ -129,20 +127,20 @@ export const useStaking = () => {
         tx = new Transaction();
         tx.setSender(suiAddress);
 
-        const [returnedCoin] = await withdrawCoin(tx, poolConfig, Math.round(amount));
+        const [returnedCoin] = await withdrawCoin(tx, poolConfig, Number(denominatedAmount));
 
         tx.transferObjects([returnedCoin], suiAddress);
 
         break;
       }
       case LendingProtocol.SCALLOP: {
-        const provider = new ScallopPoolProvider();
-
-        tx = await provider.withdrawTx(lendingPool.coinType, suiAddress, amount);
+        tx = await scallopPoolProvider.withdrawTx(lendingPool.coinType, suiAddress, denominatedAmount);
 
         break;
       }
       case LendingProtocol.SUILEND: {
+        tx = await suilendPoolProvider.withdrawTx(lendingPool.coinType, suiAddress, denominatedAmount);
+
         break;
       }
     }
@@ -170,7 +168,7 @@ export const useStaking = () => {
       setTimeout(() => {
         fetchBalances();
         fetchAddressLendingInfo();
-      }, 250);
+      }, 300);
     } else if (status === "error") {
       toast.error("Transaction failed...");
     }
@@ -180,6 +178,8 @@ export const useStaking = () => {
     async function fetchPools() {
       try {
         setLoading(true);
+
+        // TODO: Move this to backend
         const poolsArrays = await Promise.all(AllLendingProviders.map((provider) => provider.getPools()));
         const allPools = poolsArrays.flat().sort((poolA, poolB) => {
           if (poolA.coinType < poolB.coinType) {
