@@ -22,3 +22,10 @@ export interface RewardInfo {
   symbol: string; // Token symbol (e.g. "DEEP", "USDC")
   apy: number; // APY for this reward token
 }
+
+export interface AddressLendingInfo {
+  name: string;
+  coinType: string;
+  supplyBalance: number;
+  protocol: LendingProtocol;
+}

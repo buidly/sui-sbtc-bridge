@@ -10,7 +10,9 @@ export interface StableSwapPool {
   values: bigint[];
 }
 
-export const client = new SuiClient({
+export const SUI_NETWORK = ENV.SUI_CLIENT_URL.includes("testnet") ? "testnet" : "mainnet";
+
+export const suiClient = new SuiClient({
   url: ENV.SUI_CLIENT_URL,
 });
 
@@ -18,7 +20,7 @@ export const SuiApi = {
   async getAddressSuiSbtcBalances(address: string) {
     try {
       // Get all coin objects owned by the address
-      const { data: coins } = await client.getCoins({
+      const { data: coins } = await suiClient.getCoins({
         owner: address,
         coinType: "0x2::sui::SUI", // Specify SUI coin type
         limit: 50,
@@ -30,7 +32,7 @@ export const SuiApi = {
       }, BigInt(0));
 
       // Get all coin objects owned by the address
-      const { data: coinsSbtc } = await client.getCoins({
+      const { data: coinsSbtc } = await suiClient.getCoins({
         owner: address,
         coinType: ENV.SUI_SBTC_COIN_TYPE,
         limit: 50,
@@ -57,7 +59,7 @@ export const SuiApi = {
       const result = await Promise.all(
         coinTypes.map(async (coinType) => {
           // Get all coin objects owned by the address
-          const { data: coinsSbtc } = await client.getCoins({
+          const { data: coinsSbtc } = await suiClient.getCoins({
             owner: address,
             coinType,
             limit: 50,
@@ -84,7 +86,7 @@ export const SuiApi = {
 
   async getObject(objectId: string): Promise<StableSwapPool | undefined> {
     try {
-      const result = await client.getObject({
+      const result = await suiClient.getObject({
         id: objectId,
         options: {
           showContent: true,
@@ -115,7 +117,7 @@ export const SuiApi = {
     try {
       const result = await Promise.all(
         coinTypes.map((coinType) =>
-          client.getCoinMetadata({
+          suiClient.getCoinMetadata({
             coinType,
           }),
         ),
@@ -133,5 +135,5 @@ export const SuiApi = {
 
       return {};
     }
-  }
+  },
 };

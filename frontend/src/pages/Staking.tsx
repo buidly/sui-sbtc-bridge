@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useApp } from "@/context/app.context.tsx";
 import { Navigate } from "react-router-dom";
 import { ROUTES } from "@/lib/routes.ts";
@@ -9,34 +9,24 @@ import ActionModal from "@/pages/staking/ActionModal.tsx";
 import { LendingPool } from "@/services/types.ts";
 import { useStaking } from "@/hooks/use-staking.ts";
 import { formatBalance } from "@/lib/helpers.ts";
-
-const ICON_MAP: Record<string, string> = {
-  WBTC: "wbtc",
-  SUIBTC: "suibtc",
-  LBTC: "lbtc",
-  LORENZOBTC: "stbtc",
-};
-
-function getAssetIcon(assetName: string): string {
-  if (!assetName) {
-    return "";
-  }
-
-  const id = ICON_MAP[assetName.toUpperCase()];
-  let extension = ".png";
-  if (id === "wbtc") {
-    extension = ".svg";
-  }
-  return `https://app.naviprotocol.io/imgs/token/${id}${extension}`;
-}
+import { getBtcAssetIcon } from "@/services/config.ts";
 
 export function Staking() {
   const { suiAddress } = useApp();
 
-  const { pools, loading, coinsMetadata, balances, handleSubmit } = useStaking();
+  const { pools, allLendingAddressInfo, loading, coinsMetadata, balances, handleSupply, handleWithdraw } = useStaking();
 
   const [activeTab, setActiveTab] = useState<"supplies" | "borrows">("supplies");
   const [selectedPool, setSelectedPool] = useState<LendingPool | null>(null);
+  const selectedAddressLendingInfo = useMemo(() => {
+    if (!selectedPool) {
+      return null;
+    }
+
+    console.log('all address info', allLendingAddressInfo);
+
+    return allLendingAddressInfo.find(info => info.protocol === selectedPool.protocol && info.name === selectedPool.name) || null;
+  }, [pools, allLendingAddressInfo, selectedPool]);
 
   if (!suiAddress) {
     return <Navigate to={ROUTES.home} replace />;
@@ -112,7 +102,7 @@ export function Staking() {
                 <td className="py-4 flex items-center gap-2">
                   <div className="relative">
                     <img
-                      src={coinsMetadata?.[pool.coinType]?.iconUrl || getAssetIcon(pool.name)}
+                      src={coinsMetadata?.[pool.coinType]?.iconUrl || getBtcAssetIcon(pool.name)}
                       alt={pool.name}
                       className="w-8 h-8"
                     />
@@ -159,9 +149,11 @@ export function Staking() {
           isOpen={!!selectedPool}
           onClose={() => setSelectedPool(null)}
           lendingPool={selectedPool}
+          addressLendingInfo={selectedAddressLendingInfo}
           coinMetadata={coinsMetadata?.[selectedPool.coinType]}
           availableBalance={balances?.[selectedPool.coinType]}
-          onSubmit={handleSubmit}
+          handleSupply={handleSupply}
+          handleWithdraw={handleWithdraw}
         />
       )}
     </div>

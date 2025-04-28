@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LendingPool } from "@/services/types.ts";
+import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
 import { AllLendingProviders, LendingProtocol } from "@/services/config.ts";
 import { CoinMetadata } from "@mysten/sui/client";
 import { SuiApi } from "@/api/sui.ts";
@@ -9,6 +9,7 @@ import { pool } from "navi-sdk/src/address.ts";
 import { depositCoin } from "navi-sdk/src/libs/PTB";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
+import { withdrawCoin } from "navi-sdk";
 
 export const useStaking = () => {
   const { suiAddress } = useApp();
@@ -16,6 +17,7 @@ export const useStaking = () => {
   const { mutateAsync: signAndExecuteTransaction, status } = useSignAndExecuteTransaction();
 
   const [pools, setPools] = useState<LendingPool[]>([]);
+  const [allLendingAddressInfo, setAllLendingAddressInfo] = useState<AddressLendingInfo[]>([]);
   const [coinsMetadata, setCoinsMetadata] = useState<{ [coinType: string]: CoinMetadata }>({});
   const [balances, setBalances] = useState<{ [coinType: string]: bigint }>({});
   const [loading, setLoading] = useState(true);
@@ -29,13 +31,24 @@ export const useStaking = () => {
     setLoading(false);
   };
 
-  const handleSubmit = async (lendingPool: LendingPool, denominatedAmount: number) => {
+  const fetchAddressLendingInfo = async () => {
+    try {
+      setLoading(true);
+      const addressLendingInfo = await Promise.all(
+        AllLendingProviders.map((provider) => provider.getAddressInfo(suiAddress)),
+      );
+      setAllLendingAddressInfo(addressLendingInfo.flat());
+    } catch (error) {
+      console.error("Error fetching pools:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSupply = async (lendingPool: LendingPool, denominatedAmount: number) => {
     if (!denominatedAmount) {
       return;
     }
-
-    // TODO:
-    console.log("Handle submit!");
 
     const amount = Math.round(denominatedAmount * 10 ** coinsMetadata[lendingPool.coinType].decimals);
 
@@ -56,8 +69,6 @@ export const useStaking = () => {
           return;
         }
 
-        console.log(poolConfig);
-
         await depositCoin(tx, poolConfig, coin, amount);
 
         break;
@@ -73,30 +84,75 @@ export const useStaking = () => {
     const result = await signAndExecuteTransaction({
       transaction: tx,
     });
+    console.log("Staking supply transaction successful:", result);
 
-    console.log("Transaction successful:", result);
+    toast.success("Supply succeeded!");
+  };
+
+  const handleWithdraw = async (
+    lendingPool: LendingPool,
+    addressLendingInfo: AddressLendingInfo,
+    denominatedAmount: number,
+  ) => {
+    if (!denominatedAmount) {
+      return;
+    }
+
+    const amount = Math.round(denominatedAmount * 10 ** coinsMetadata[lendingPool.coinType].decimals);
+
+    const tx = new Transaction();
+    tx.setSender(suiAddress);
+
+    switch (lendingPool.protocol) {
+      case LendingProtocol.NAVI: {
+        const poolConfig = Object.values(pool).find((pool) => pool.type === lendingPool.coinType);
+
+        if (!poolConfig) {
+          console.error("No pool config...");
+          return;
+        }
+
+        const [returnedCoin] = await withdrawCoin(tx, poolConfig, amount);
+
+        tx.transferObjects([returnedCoin], suiAddress);
+
+        break;
+      }
+      case LendingProtocol.SCALLOP: {
+        break;
+      }
+      case LendingProtocol.SUILEND: {
+        break;
+      }
+    }
+
+    const result = await signAndExecuteTransaction({
+      transaction: tx,
+    });
+
+    console.log("Staking withdraw transaction successful:", result);
+
+    toast.success("Withdraw succeeded!");
   };
 
   useEffect(() => {
     if (status === "pending") {
-      toast.warning("Depositing...");
+      toast.warning("Waiting for transaction...");
     } else if (status === "success") {
-      toast.success("Deposit succeeded!");
-
       // Fetch coins with a timeout so rpc reflects changes
       setTimeout(() => {
-        fetchStableSwap();
-
         fetchBalances();
+        fetchAddressLendingInfo();
       }, 250);
     } else if (status === "error") {
-      toast.error("Deposit failed...");
+      toast.error("Transaction failed...");
     }
   }, [status]);
 
   useEffect(() => {
     async function fetchPools() {
       try {
+        setLoading(true);
         const poolsArrays = await Promise.all(AllLendingProviders.map((provider) => provider.getPools()));
         const allPools = poolsArrays.flat().sort((poolA, poolB) => {
           if (poolA.coinType < poolB.coinType) {
@@ -111,7 +167,6 @@ export const useStaking = () => {
         const coinTypes = allPools.map((pool) => pool.coinType);
 
         const result = await SuiApi.getCoinsMetadata(coinTypes);
-        console.log(result);
         setCoinsMetadata(result);
 
         setPools(allPools);
@@ -131,7 +186,8 @@ export const useStaking = () => {
     }
 
     fetchBalances();
+    fetchAddressLendingInfo();
   }, [suiAddress, coinsMetadata]);
 
-  return { pools, loading, coinsMetadata, balances, handleSubmit };
+  return { pools, allLendingAddressInfo, loading, coinsMetadata, balances, handleSupply, handleWithdraw };
 };

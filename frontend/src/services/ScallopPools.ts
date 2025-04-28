@@ -1,6 +1,6 @@
 import { LendingPoolProvider } from "./BaseLendingProvider.ts";
 import { btcCoinTypes, LendingProtocol } from "./config.ts";
-import { LendingPool } from "@/services/types.ts";
+import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
 import { MarketPool, Scallop } from "@scallop-io/sui-scallop-sdk";
 
 export class ScallopPoolProvider extends LendingPoolProvider {
@@ -58,5 +58,10 @@ export class ScallopPoolProvider extends LendingPoolProvider {
       supplyRewards: [],
       borrowRewards: [],
     };
+  }
+
+  // TODO:
+  async getAddressInfo(address: string): Promise<AddressLendingInfo[]> {
+    return [];
   }
 }

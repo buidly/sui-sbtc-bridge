@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react";
+import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -7,12 +7,12 @@ import { createNetworkConfig, SuiClientProvider, WalletProvider } from "@mysten/
 import { getFullnodeUrl } from "@mysten/sui/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProvider } from "@/context/app.context";
-import { STACKS_NETWORK } from "@/api/stacks.ts";
 import { BalancesProvider } from "@/context/balances.context.tsx";
 
 import "@mysten/dapp-kit/dist/index.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import { SUI_NETWORK } from "@/api/sui.ts";
 
 const { networkConfig: suiNetworkConfig } = createNetworkConfig({
   testnet: { url: getFullnodeUrl("testnet") },
@@ -24,10 +24,7 @@ createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <BrowserRouter>
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider
-        networks={suiNetworkConfig}
-        defaultNetwork={STACKS_NETWORK === "testnet" ? "testnet" : "mainnet"}
-      >
+      <SuiClientProvider networks={suiNetworkConfig} defaultNetwork={SUI_NETWORK}>
         <WalletProvider autoConnect={true}>
           <AppProvider>
             <BalancesProvider>

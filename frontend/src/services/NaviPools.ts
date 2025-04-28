@@ -1,8 +1,11 @@
 import axios from "axios";
 import { LendingPoolProvider } from "./BaseLendingProvider.ts";
 import { btcCoinTypes, LendingProtocol } from "./config.ts";
-import { LendingPool } from "@/services/types.ts";
+import { AddressLendingInfo, LendingPool } from "@/services/types.ts";
 import { NAVISDKClient } from "navi-sdk";
+import { getAddressPortfolio } from "navi-sdk/src/libs/CallFunctions";
+import { suiClient } from "@/api/sui.ts";
+import { pool } from "navi-sdk/src/address.ts";
 
 interface NaviPoolResponse {
   data: NaviPool[];
@@ -68,6 +71,35 @@ export class NaviPoolProvider extends LendingPoolProvider {
       this.pools = [];
       return [];
     }
+  }
+
+  async getAddressInfo(address: string): Promise<AddressLendingInfo[]> {
+    const result = await getAddressPortfolio(address, false, suiClient, false, [
+      "WBTC",
+      "LorenzoBTC",
+      "suiBTC",
+      "LBTC",
+    ]);
+
+    console.log("navi address info", result);
+
+    const addressInfo: AddressLendingInfo[] = [];
+
+    for (const [key, value] of result.entries()) {
+      const poolItem = pool[key];
+
+      const nameEntry = Object.entries(btcCoinTypes).find(([_, type]) => poolItem.type === type);
+      const name = nameEntry?.[0];
+
+      addressInfo.push({
+        name,
+        coinType: poolItem.type,
+        supplyBalance: value.supplyBalance,
+        protocol: LendingProtocol.NAVI,
+      });
+    }
+
+    return addressInfo;
   }
 
   private transformToLendingPool(data: NaviPool, name: string): LendingPool {

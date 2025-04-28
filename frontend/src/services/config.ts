@@ -9,6 +9,26 @@ export const btcCoinTypes = {
   LorenzoBTC: "0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN",
 };
 
+const ICON_MAP: Record<string, string> = {
+  WBTC: "wbtc",
+  SUIBTC: "suibtc",
+  LBTC: "lbtc",
+  LORENZOBTC: "stbtc",
+};
+
+export function getBtcAssetIcon(assetName: string): string {
+  if (!assetName) {
+    return "";
+  }
+
+  const id = ICON_MAP[assetName.toUpperCase()];
+  let extension = ".png";
+  if (id === "wbtc") {
+    extension = ".svg";
+  }
+  return `https://app.naviprotocol.io/imgs/token/${id}${extension}`;
+}
+
 export enum LendingProtocol {
   NAVI = "navi",
   SCALLOP = "scallop",

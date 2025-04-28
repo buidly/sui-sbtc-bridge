@@ -96,7 +96,7 @@ export const useSwap = () => {
       transaction: tx,
     });
 
-    console.log("Transaction successful:", result);
+    console.log("Swap transaction successful:", result);
   };
 
   useEffect(() => {

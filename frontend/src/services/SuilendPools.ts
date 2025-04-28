@@ -1,4 +1,4 @@
-import { client } from "@/api/sui.ts";
+import { suiClient } from "@/api/sui.ts";
 import {
   formatRewards,
   getFilteredRewards,
@@ -11,7 +11,7 @@ import {
 import { LendingPoolProvider } from "./BaseLendingProvider.ts";
 import { btcCoinTypes, LendingProtocol } from "./config.ts";
 import BigNumber from "bignumber.js";
-import { LendingPool, RewardInfo } from "@/services/types.ts";
+import { AddressLendingInfo, LendingPool, RewardInfo } from "@/services/types.ts";
 
 const mainLendingMarket = {
   name: "Main market",
@@ -31,9 +31,9 @@ export class SuilendPoolProvider extends LendingPoolProvider {
       return this.pools;
     }
 
-    const suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, client);
+    const suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, suiClient);
     const { lendingMarket, reserveMap, activeRewardCoinTypes, rewardCoinMetadataMap } = await initializeSuilend(
-      client,
+      suiClient,
       suilendClient,
     );
     const { rewardPriceMap } = await initializeSuilendRewards(reserveMap, activeRewardCoinTypes);
@@ -94,5 +94,10 @@ export class SuilendPoolProvider extends LendingPoolProvider {
       });
 
     return this.pools;
+  }
+
+  // TODO:
+  async getAddressInfo(address: string): Promise<AddressLendingInfo[]> {
+    return [];
   }
 }
