@@ -5,6 +5,7 @@ import { CoinMetadata } from "@mysten/sui/client";
 import { Button } from "@/components/ui/button.tsx";
 import DynamicImage from "@/components/DynamicImage.tsx";
 import { getBtcAssetIcon } from "@/services/config.ts";
+import { Loader2 } from "lucide-react";
 
 export default function ActionModal({
   isOpen,
@@ -15,6 +16,7 @@ export default function ActionModal({
   availableBalance,
   handleSupply,
   handleWithdraw,
+  loading,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -26,8 +28,9 @@ export default function ActionModal({
   handleWithdraw: (
     lendingPool: LendingPool,
     addressLendingInfo: AddressLendingInfo,
-    denominatedAmount: number,
+    amount: number,
   ) => Promise<void>;
+  loading: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<"supply" | "withdraw">("supply");
   const [amount, setAmount] = useState("");
@@ -37,10 +40,9 @@ export default function ActionModal({
       return Number(availableBalance || 0n) / 10 ** coinMetadata.decimals;
     }
 
-    console.log("address lending info", addressLendingInfo);
-
-    // TODO: Handle withdraw
-    return ((addressLendingInfo?.supplyBalance || 0) / 10 ** coinMetadata.decimals).toFixed(coinMetadata.decimals);
+    return Number(
+      ((addressLendingInfo?.underlyingBalance || 0) / 10 ** coinMetadata.decimals).toFixed(coinMetadata.decimals),
+    );
   }, [coinMetadata, availableBalance, activeTab, addressLendingInfo]);
 
   const handleSubmit = async (e) => {
@@ -55,12 +57,16 @@ export default function ActionModal({
       return;
     }
 
-    await handleWithdraw(lendingPool, addressLendingInfo, parseFloat(amount));
+    await handleWithdraw(
+      lendingPool,
+      addressLendingInfo,
+      addressLendingInfo?.supplyBalance,
+    );
   };
 
   useEffect(() => {
     if (activeTab === "withdraw" && denominatedBalance > 0) {
-      setAmount(denominatedBalance.toString())
+      setAmount(denominatedBalance.toString());
 
       return;
     }
@@ -178,9 +184,10 @@ export default function ActionModal({
             <Button
               className="w-full p-5 bg-gradient-to-r from-sky-500 to-sky-700 hover:from-sky-600 hover:to-sky-800 text-white font-medium rounded-lg"
               type="submit"
-              disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > denominatedBalance}
+              disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > denominatedBalance || loading}
             >
-              {activeTab === "supply" ? "Supply" : "Withdraw"}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {activeTab === "supply" ? "Supply" : "Withdraw All"}
             </Button>
           </div>
         </form>

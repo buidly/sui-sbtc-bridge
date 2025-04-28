@@ -14,7 +14,16 @@ import { getBtcAssetIcon } from "@/services/config.ts";
 export function Staking() {
   const { suiAddress } = useApp();
 
-  const { pools, allLendingAddressInfo, loading, coinsMetadata, balances, handleSupply, handleWithdraw } = useStaking();
+  const {
+    pools,
+    allLendingAddressInfo,
+    loading,
+    coinsMetadata,
+    balances,
+    handleSupply,
+    handleWithdraw,
+    loadingTransaction,
+  } = useStaking();
 
   const [activeTab, setActiveTab] = useState<"supplies" | "borrows">("supplies");
   const [selectedPool, setSelectedPool] = useState<LendingPool | null>(null);
@@ -23,9 +32,13 @@ export function Staking() {
       return null;
     }
 
-    console.log('all address info', allLendingAddressInfo);
+    console.log("all address info", allLendingAddressInfo);
 
-    return allLendingAddressInfo.find(info => info.protocol === selectedPool.protocol && info.name === selectedPool.name) || null;
+    return (
+      allLendingAddressInfo.find(
+        (info) => info.protocol === selectedPool.protocol && info.name === selectedPool.name,
+      ) || null
+    );
   }, [pools, allLendingAddressInfo, selectedPool]);
 
   if (!suiAddress) {
@@ -154,6 +167,7 @@ export function Staking() {
           availableBalance={balances?.[selectedPool.coinType]}
           handleSupply={handleSupply}
           handleWithdraw={handleWithdraw}
+          loading={loadingTransaction}
         />
       )}
     </div>

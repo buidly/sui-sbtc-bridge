@@ -26,6 +26,7 @@ export interface RewardInfo {
 export interface AddressLendingInfo {
   name: string;
   coinType: string;
-  supplyBalance: number;
+  supplyBalance: number; // amount of staked coin supplied
+  underlyingBalance: number; // underlying coin supplied
   protocol: LendingProtocol;
 }

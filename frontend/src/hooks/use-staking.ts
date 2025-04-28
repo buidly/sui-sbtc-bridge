@@ -10,6 +10,7 @@ import { depositCoin } from "navi-sdk/src/libs/PTB";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
 import { withdrawCoin } from "navi-sdk";
+import { ScallopPoolProvider } from "@/services/ScallopPools.ts";
 
 export const useStaking = () => {
   const { suiAddress } = useApp();
@@ -21,19 +22,21 @@ export const useStaking = () => {
   const [coinsMetadata, setCoinsMetadata] = useState<{ [coinType: string]: CoinMetadata }>({});
   const [balances, setBalances] = useState<{ [coinType: string]: bigint }>({});
   const [loading, setLoading] = useState(true);
+  const [loadingTransaction, setLoadingTransaction] = useState(false);
 
   const fetchBalances = async () => {
-    setLoading(true);
+    setLoadingTransaction(true);
 
     const result = await SuiApi.getAddressCoinsBalances(suiAddress, Object.keys(coinsMetadata));
     setBalances(result);
 
-    setLoading(false);
+    setLoadingTransaction(false);
   };
 
   const fetchAddressLendingInfo = async () => {
+    setLoadingTransaction(true);
+
     try {
-      setLoading(true);
       const addressLendingInfo = await Promise.all(
         AllLendingProviders.map((provider) => provider.getAddressInfo(suiAddress)),
       );
@@ -41,7 +44,7 @@ export const useStaking = () => {
     } catch (error) {
       console.error("Error fetching pools:", error);
     } finally {
-      setLoading(false);
+      setLoadingTransaction(false);
     }
   };
 
@@ -50,16 +53,11 @@ export const useStaking = () => {
       return;
     }
 
+    setLoadingTransaction(true);
+
     const amount = Math.round(denominatedAmount * 10 ** coinsMetadata[lendingPool.coinType].decimals);
 
-    const tx = new Transaction();
-    tx.setSender(suiAddress);
-
-    const coin = coinWithBalance({
-      type: lendingPool.coinType,
-      balance: amount,
-    });
-
+    let tx: Transaction;
     switch (lendingPool.protocol) {
       case LendingProtocol.NAVI: {
         const poolConfig = Object.values(pool).find((pool) => pool.type === lendingPool.coinType);
@@ -69,16 +67,34 @@ export const useStaking = () => {
           return;
         }
 
+        tx = new Transaction();
+        tx.setSender(suiAddress);
+
+        const coin = coinWithBalance({
+          type: lendingPool.coinType,
+          balance: amount,
+        });
+
         await depositCoin(tx, poolConfig, coin, amount);
 
         break;
       }
       case LendingProtocol.SCALLOP: {
+        const provider = new ScallopPoolProvider();
+
+        tx = await provider.supplyTx(lendingPool.coinType, suiAddress, amount);
+
         break;
       }
       case LendingProtocol.SUILEND: {
         break;
       }
+    }
+
+    setLoadingTransaction(false);
+
+    if (!tx) {
+      return;
     }
 
     const result = await signAndExecuteTransaction({
@@ -92,17 +108,15 @@ export const useStaking = () => {
   const handleWithdraw = async (
     lendingPool: LendingPool,
     addressLendingInfo: AddressLendingInfo,
-    denominatedAmount: number,
+    amount: number,
   ) => {
-    if (!denominatedAmount) {
+    if (!amount) {
       return;
     }
 
-    const amount = Math.round(denominatedAmount * 10 ** coinsMetadata[lendingPool.coinType].decimals);
+    setLoadingTransaction(true);
 
-    const tx = new Transaction();
-    tx.setSender(suiAddress);
-
+    let tx: Transaction;
     switch (lendingPool.protocol) {
       case LendingProtocol.NAVI: {
         const poolConfig = Object.values(pool).find((pool) => pool.type === lendingPool.coinType);
@@ -112,18 +126,31 @@ export const useStaking = () => {
           return;
         }
 
-        const [returnedCoin] = await withdrawCoin(tx, poolConfig, amount);
+        tx = new Transaction();
+        tx.setSender(suiAddress);
+
+        const [returnedCoin] = await withdrawCoin(tx, poolConfig, Math.round(amount));
 
         tx.transferObjects([returnedCoin], suiAddress);
 
         break;
       }
       case LendingProtocol.SCALLOP: {
+        const provider = new ScallopPoolProvider();
+
+        tx = await provider.withdrawTx(lendingPool.coinType, suiAddress, amount);
+
         break;
       }
       case LendingProtocol.SUILEND: {
         break;
       }
+    }
+
+    setLoadingTransaction(false);
+
+    if (!tx) {
+      return;
     }
 
     const result = await signAndExecuteTransaction({
@@ -189,5 +216,14 @@ export const useStaking = () => {
     fetchAddressLendingInfo();
   }, [suiAddress, coinsMetadata]);
 
-  return { pools, allLendingAddressInfo, loading, coinsMetadata, balances, handleSupply, handleWithdraw };
+  return {
+    pools,
+    allLendingAddressInfo,
+    loading,
+    coinsMetadata,
+    balances,
+    handleSupply,
+    handleWithdraw,
+    loadingTransaction: loadingTransaction || status === "pending",
+  };
 };

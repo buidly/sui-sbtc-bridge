@@ -95,6 +95,7 @@ export class NaviPoolProvider extends LendingPoolProvider {
         name,
         coinType: poolItem.type,
         supplyBalance: value.supplyBalance,
+        underlyingBalance: value.supplyBalance,
         protocol: LendingProtocol.NAVI,
       });
     }
