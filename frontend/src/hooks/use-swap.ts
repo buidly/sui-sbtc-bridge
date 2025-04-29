@@ -28,7 +28,7 @@ export const useSwap = () => {
   const fetchStableSwap = async () => {
     setIsLoading(true);
 
-    const result = await SuiApi.getObject(ENV.STABLE_SWAP_POOL_OBJECT);
+    const result = await SuiApi.getStableSwapPool(ENV.STABLE_SWAP_POOL_OBJECT);
     setStableSwapObject(result);
 
     setIsLoading(false);
@@ -88,12 +88,14 @@ export const useSwap = () => {
       module: "stableswap",
       function: "exchange_coin",
       typeArguments: [inputCoinType, outputCoinType],
+      // @ts-ignore
       arguments: [tx.pure("u64", minOutput), coin, tx.object(ENV.STABLE_SWAP_POOL_OBJECT)],
     });
 
     tx.transferObjects([outputCoin], suiAddress);
 
     const result = await signAndExecuteTransaction({
+      // @ts-ignore
       transaction: tx,
     });
 

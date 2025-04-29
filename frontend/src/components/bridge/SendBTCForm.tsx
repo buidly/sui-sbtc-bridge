@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -12,7 +12,7 @@ import { createDepositAddress, createDepositScript, createReclaimScript } from "
 import { bytesToHex as uint8ArrayToHexString, hexToBytes as hexToUint8Array } from "@stacks/common";
 import { networks } from "bitcoinjs-lib";
 import { storageHelper } from "@/lib/storageHelper.ts";
-import { sendBTCLeather, sendBTCOther } from "@/lib/sendBTC.ts";
+import { Payload, sendBTCLeather, sendBTCOther } from '@/lib/sendBTC.ts';
 import { useEmilyDeposit } from "@/hooks/use-emily-deposit.ts";
 import { formatBalance, toDecimalAmount, toDenominatedAmount } from "@/lib/helpers.ts";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
@@ -95,7 +95,7 @@ export default function SendBTCForm() {
         const params = {
           recipient: p2trAddress,
           amountInSats,
-          network: STACKS_NETWORK === "testnet" ? "sbtcTestnet" : "mainnet",
+          network: (STACKS_NETWORK === "testnet" ? "sbtcTestnet" : "mainnet") as Payload['network'],
         };
         console.log({
           preSendParams: {

@@ -10,9 +10,10 @@ import { depositCoin } from "navi-sdk/src/libs/PTB";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
 import { withdrawCoin } from "navi-sdk";
-import scallopPoolProvider, { ScallopPoolProvider } from "@/services/ScallopPools.ts";
+import scallopPoolProvider from "@/services/ScallopPools.ts";
 import suilendPoolProvider from "@/services/SuilendPools.ts";
 import { toDenominatedAmount } from "@/lib/helpers.ts";
+import { MicroserviceApi } from "@/api/microservice.ts";
 
 export const useStaking = () => {
   const { suiAddress } = useApp();
@@ -29,7 +30,7 @@ export const useStaking = () => {
   const fetchBalances = async () => {
     setLoadingTransaction(true);
 
-    const result = await SuiApi.getAddressCoinsBalances(suiAddress, Object.keys(coinsMetadata));
+    const result = await SuiApi.getAddressCoinsBalances(suiAddress, Object.keys(coinsMetadata), true);
     setBalances(result);
 
     setLoadingTransaction(false);
@@ -77,7 +78,7 @@ export const useStaking = () => {
           balance: denominatedAmount,
         });
 
-        await depositCoin(tx, poolConfig, coin, denominatedAmount);
+        await depositCoin(tx, poolConfig, coin, Number(denominatedAmount));
 
         break;
       }
@@ -100,6 +101,7 @@ export const useStaking = () => {
     }
 
     const result = await signAndExecuteTransaction({
+      // @ts-ignore
       transaction: tx,
     });
     console.log("Staking supply transaction successful:", result);
@@ -152,6 +154,7 @@ export const useStaking = () => {
     }
 
     const result = await signAndExecuteTransaction({
+      // @ts-ignore
       transaction: tx,
     });
 
@@ -179,24 +182,10 @@ export const useStaking = () => {
       try {
         setLoading(true);
 
-        // TODO: Move this to backend
-        const poolsArrays = await Promise.all(AllLendingProviders.map((provider) => provider.getPools()));
-        const allPools = poolsArrays.flat().sort((poolA, poolB) => {
-          if (poolA.coinType < poolB.coinType) {
-            return -1; // poolA should come before poolB
-          }
-          if (poolA.coinType > poolB.coinType) {
-            return 1; // poolA should come after poolB
-          }
-          return 0; // poolA and poolB have the same coinType (order doesn't matter for grouping)
-        });
+        const { pools, coinsMetadata } = await MicroserviceApi.getLendingBtcPools();
 
-        const coinTypes = allPools.map((pool) => pool.coinType);
-
-        const result = await SuiApi.getCoinsMetadata(coinTypes);
-        setCoinsMetadata(result);
-
-        setPools(allPools);
+        setCoinsMetadata(coinsMetadata);
+        setPools(pools);
       } catch (error) {
         console.error("Error fetching pools:", error);
       } finally {

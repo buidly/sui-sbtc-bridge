@@ -1,26 +1,20 @@
-import { suiClient } from "@/api/sui.ts";
 import {
-  formatRewards,
-  getFilteredRewards,
-  getTotalAprPercent,
   initializeObligations,
   initializeSuilend,
-  initializeSuilendRewards,
   LENDING_MARKETS,
   sendObligationToUser,
-  Side,
   SuilendClient,
 } from "@suilend/sdk";
 import { LendingPoolProvider } from "./BaseLendingProvider.ts";
 import { btcCoinTypes } from "./config.ts";
-import BigNumber from "bignumber.js";
-import { AddressLendingInfo, LendingPool, LendingProtocol, RewardInfo } from "@/services/types.ts";
+import { AddressLendingInfo, LendingProtocol } from "@/services/types.ts";
 import { Reserve } from "@suilend/sdk/_generated/suilend/reserve/structs";
 import { ParsedReserve } from "@suilend/sdk/parsers";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { createObligationIfNoneExists } from "@suilend/sdk/lib/transactions";
 import { ObligationOwnerCap } from "@suilend/sdk/_generated/suilend/lending-market/structs";
 import { toDenominatedAmount } from "@/lib/helpers.ts";
+import { suiClientMainnet } from '@/api/sui.ts';
 
 const mainLendingMarket = {
   name: "Main market",
@@ -40,84 +34,18 @@ class SuilendPoolProvider extends LendingPoolProvider {
     super(LendingProtocol.SUILEND);
   }
 
-  async getPools(): Promise<LendingPool[]> {
-    if (this.pools) {
-      return this.pools;
-    }
-
-    const suilendClient = await this.getSuilendClient();
-    const { lendingMarket, reserveMap, activeRewardCoinTypes, rewardCoinMetadataMap, refreshedRawReserves } =
-      await initializeSuilend(suiClient, suilendClient);
-
-    this.refreshedRawReserves = refreshedRawReserves;
-    this.reserveMap = reserveMap;
-
-    const { rewardPriceMap } = await initializeSuilendRewards(reserveMap, activeRewardCoinTypes);
-
-    const rewardMap = formatRewards(reserveMap, rewardCoinMetadataMap, rewardPriceMap, []);
-    this.pools = lendingMarket.reserves
-      .filter((reserve: any) => Object.values(btcCoinTypes).includes(reserve.coinType))
-      .map((reserve: any) => {
-        // Get supply rewards and calculate APYs
-        const supplyRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.DEPOSIT] ?? []);
-        const supplyRewardInfos: RewardInfo[] = supplyRewards.map((reward) => ({
-          symbol: reward.stats.symbol,
-          apy: reward.stats.aprPercent.toNumber(),
-        }));
-
-        const stakingYieldAprPercent = new BigNumber(0);
-
-        const baseSupplyApy = reserve.depositAprPercent;
-        const baseRewardApy = supplyRewards.reduce(
-          (total, reward) => total.plus(reward.stats.aprPercent || 0),
-          new BigNumber(0),
-        );
-        const totalSupplyApy = getTotalAprPercent(Side.DEPOSIT, baseSupplyApy, supplyRewards, stakingYieldAprPercent);
-
-        // Get borrow rewards and calculate APYs
-        const borrowRewards = getFilteredRewards(rewardMap[reserve.coinType]?.[Side.BORROW] ?? []);
-        const borrowRewardInfos: RewardInfo[] = borrowRewards.map((reward) => ({
-          symbol: reward.stats.symbol,
-          apy: reward.stats.aprPercent.toNumber(),
-        }));
-
-        const baseBorrowApy = reserve.borrowAprPercent;
-        const borrowRewardApy = borrowRewards.reduce(
-          (total, reward) => total.plus(reward.stats.aprPercent || 0),
-          new BigNumber(0),
-        );
-        const totalBorrowApy = getTotalAprPercent(Side.BORROW, baseBorrowApy, borrowRewards, undefined);
-
-        const name = Object.entries(btcCoinTypes).find(([_, type]) => type === reserve.coinType)?.[0];
-
-        return {
-          name,
-          coinType: reserve.coinType,
-          totalSupply: reserve.depositedAmount.toNumber(),
-          totalBorrow: reserve.borrowedAmount.toNumber(),
-          supplyApy: totalSupplyApy.toNumber(),
-          borrowApy: totalBorrowApy.toNumber(),
-          baseSupplyApy: baseSupplyApy.toNumber(),
-          baseRewardApy: baseRewardApy.toNumber(),
-          baseBorrowApy: baseBorrowApy.toNumber(),
-          borrowRewardApy: borrowRewardApy.toNumber(),
-          price: reserve.price.toNumber(),
-          tvl: reserve.depositedAmountUsd.toNumber(),
-          ltv: reserve.config.openLtvPct / 100,
-          liquidationThreshold: reserve.config.closeLtvPct / 100,
-          protocol: this.protocol,
-          supplyRewards: supplyRewardInfos,
-          borrowRewards: borrowRewardInfos,
-        };
-      });
-
-    return this.pools;
-  }
-
   async getAddressInfo(address: string): Promise<AddressLendingInfo[]> {
     const suilendClient = await this.getSuilendClient();
+
+    if (!this.refreshedRawReserves) {
+      const { reserveMap, refreshedRawReserves } = await initializeSuilend(suiClientMainnet, suilendClient);
+
+      this.refreshedRawReserves = refreshedRawReserves;
+      this.reserveMap = reserveMap;
+    }
+
     const result = await initializeObligations(
-      suiClient,
+      suiClientMainnet,
       suilendClient,
       this.refreshedRawReserves,
       this.reserveMap,
@@ -186,14 +114,21 @@ class SuilendPoolProvider extends LendingPoolProvider {
       (obligation) => obligation.$typeArgs[0] === LENDING_MARKETS.find((market) => market.slug === "main").type,
     );
 
-    await suilendClient.withdrawAndSendToUser(address, obligationOwnerCap.id, obligationOwnerCap.obligationId, coinType, amount.toString(), tx);
+    await suilendClient.withdrawAndSendToUser(
+      address,
+      obligationOwnerCap.id,
+      obligationOwnerCap.obligationId,
+      coinType,
+      amount.toString(),
+      tx,
+    );
 
     return tx;
   }
 
   private async getSuilendClient() {
     if (!this.suilendClient) {
-      this.suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, suiClient);
+      this.suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, suiClientMainnet);
     }
 
     return this.suilendClient;

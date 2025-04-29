@@ -1,12 +1,13 @@
 import { request } from "sats-connect";
 
-type Payload = {
+export type Payload = {
   recipient: string;
   amountInSats: bigint;
   network?: "sbtcTestnet" | "mainnet";
 };
 
 export async function sendBTCLeather({ amountInSats, recipient, network }: Payload) {
+  // @ts-ignore
   const response = await window.LeatherProvider.request("sendTransfer", {
     recipients: [
       {
@@ -34,5 +35,5 @@ export async function sendBTCOther({ amountInSats, recipient }: Payload) {
     throw new Error(response.error.message);
   }
 
-  return result.txid;
+  return response.result.txid;
 }

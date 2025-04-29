@@ -17,4 +17,6 @@ export const ENV = {
 
   STABLE_SWAP_PACKAGE_ID: import.meta.env.VITE_STABLE_SWAP_PACKAGE_ID,
   STABLE_SWAP_POOL_OBJECT: import.meta.env.VITE_STABLE_SWAP_POOL_OBJECT,
+
+  SUI_CLIENT_URL_MAINNET: 'https://fullnode.mainnet.sui.io',
 };

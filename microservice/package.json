@@ -26,7 +26,7 @@
     "test:migrate": "dotenv -e .env.test -- prisma migrate deploy"
   },
   "dependencies": {
-    "@mysten/sui": "^1.17.0",
+    "@mysten/sui": "^1.20.0",
     "@nestjs/common": "^10.3.9",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.3.9",
@@ -37,6 +37,8 @@
     "@nestjs/swagger": "^7.4.2",
     "@nestjs/throttler": "^6.2.1",
     "@prisma/client": "^6.5.0",
+    "@scallop-io/sui-scallop-sdk": "^2.0.12",
+    "@suilend/sdk": "^1.1.51",
     "@stacks/blockchain-api-client": "^8.7.0",
     "@stacks/common": "^7.0.2",
     "@stacks/network": "^7.0.2",

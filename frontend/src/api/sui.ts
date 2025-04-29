@@ -1,4 +1,4 @@
-import { CoinMetadata, SuiClient } from "@mysten/sui/client";
+import { SuiClient } from "@mysten/sui/client";
 import { ENV } from "@/lib/env.ts";
 
 export interface StableSwapPool {
@@ -14,6 +14,10 @@ export const SUI_NETWORK = ENV.SUI_CLIENT_URL.includes("testnet") ? "testnet" : 
 
 export const suiClient = new SuiClient({
   url: ENV.SUI_CLIENT_URL,
+});
+
+export const suiClientMainnet = new SuiClient({
+  url: ENV.SUI_CLIENT_URL_MAINNET,
 });
 
 export const SuiApi = {
@@ -54,12 +58,12 @@ export const SuiApi = {
     }
   },
 
-  async getAddressCoinsBalances(address: string, coinTypes: string[]) {
+  async getAddressCoinsBalances(address: string, coinTypes: string[], useMainnet = false) {
     try {
       const result = await Promise.all(
         coinTypes.map(async (coinType) => {
           // Get all coin objects owned by the address
-          const { data: coinsSbtc } = await suiClient.getCoins({
+          const { data: coinsSbtc } = await (useMainnet ? suiClientMainnet : suiClient).getCoins({
             owner: address,
             coinType,
             limit: 50,
@@ -84,7 +88,7 @@ export const SuiApi = {
     }
   },
 
-  async getObject(objectId: string): Promise<StableSwapPool | undefined> {
+  async getStableSwapPool(objectId: string): Promise<StableSwapPool | undefined> {
     try {
       const result = await suiClient.getObject({
         id: objectId,
@@ -109,31 +113,6 @@ export const SuiApi = {
       console.error(e);
 
       return undefined;
-    }
-  },
-
-  // TODO: Move usages of this function in backend
-  async getCoinsMetadata(coinTypes: string[]) {
-    try {
-      const result = await Promise.all(
-        coinTypes.map((coinType) =>
-          suiClient.getCoinMetadata({
-            coinType,
-          }),
-        ),
-      );
-
-      return result.reduce<{ [coinType: string]: CoinMetadata }>((acc, metadata, index) => {
-        if (metadata) {
-          acc[coinTypes[index]] = metadata;
-        }
-
-        return acc;
-      }, {});
-    } catch (e) {
-      console.error(e);
-
-      return {};
     }
   },
 };

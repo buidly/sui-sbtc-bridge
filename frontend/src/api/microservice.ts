@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ENV } from "@/lib/env.ts";
 import { CoinMetadata } from "@mysten/sui/client";
+import { LendingPool } from "@/services/types.ts";
 
 export const SponsoredTransactionStatus = {
   PENDING: "PENDING",
@@ -59,6 +60,22 @@ export const MicroserviceApi = {
       return result.data;
     } catch (e) {
       return {};
+    }
+  },
+
+  async getLendingBtcPools(): Promise<{
+    pools: LendingPool[];
+    coinsMetadata: { [coinType: string]: CoinMetadata };
+  }> {
+    try {
+      const result = await client.get(`/lending/btc-pools`);
+
+      return result.data;
+    } catch (e) {
+      return {
+        pools: [],
+        coinsMetadata: {},
+      };
     }
   },
 };

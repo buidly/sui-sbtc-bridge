@@ -123,7 +123,7 @@ export async function createDeterministicStacksWallet(knownString: string, passw
 }
 
 export function toDenominatedAmount(inputAmount: string | number, decimals: number): bigint {
-  return Math.round(parseFloat(inputAmount.toString()) * 10 ** decimals);
+  return BigInt(Math.round(parseFloat(inputAmount.toString()) * 10 ** decimals));
 }
 
 export function toDecimalAmount(inputAmount: bigint | number, decimals: number): number {

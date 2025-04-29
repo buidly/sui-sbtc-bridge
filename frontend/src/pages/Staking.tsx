@@ -10,6 +10,7 @@ import { LendingPool } from "@/services/types.ts";
 import { useStaking } from "@/hooks/use-staking.ts";
 import { formatBalance } from "@/lib/helpers.ts";
 import { getBtcAssetIcon } from "@/services/config.ts";
+import { SUI_NETWORK } from '@/api/sui.ts';
 
 export function Staking() {
   const { suiAddress } = useApp();
@@ -25,7 +26,6 @@ export function Staking() {
     loadingTransaction,
   } = useStaking();
 
-  const [activeTab, setActiveTab] = useState<"supplies" | "borrows">("supplies");
   const [selectedPool, setSelectedPool] = useState<LendingPool | null>(null);
   const selectedAddressLendingInfo = useMemo(() => {
     if (!selectedPool) {
@@ -47,7 +47,7 @@ export function Staking() {
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="bg-slate-50/5 border border-slate-700 rounded-lg p-6 shadow-xl backdrop-blur-sm">
         <h2 className="text-2xl font-bold mb-6 text-white">
-          Stake BTC Coins {loading && <Loader2 className="inline-flex h-5 w-5 animate-spin ml-1" />}
+          Stake BTC Coins {SUI_NETWORK === "testnet" && '(MAINNET ONLY!)'} {loading && <Loader2 className="inline-flex h-5 w-5 animate-spin ml-1" />}
         </h2>
 
         <table className="w-full text-left text-slate-300">
