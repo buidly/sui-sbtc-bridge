@@ -26,6 +26,7 @@ export const useStaking = () => {
   const [balances, setBalances] = useState<{ [coinType: string]: bigint }>({});
   const [loading, setLoading] = useState(true);
   const [loadingTransaction, setLoadingTransaction] = useState(false);
+  const [isAdvanced, setIsAdvanced] = useState(true);
 
   const fetchBalances = async () => {
     setLoadingTransaction(true);
@@ -61,6 +62,10 @@ export const useStaking = () => {
     const denominatedAmount = toDenominatedAmount(amount, coinsMetadata[lendingPool.coinType].decimals);
 
     let tx: Transaction;
+    if (!isAdvanced) {
+      // TODO: Do swaps if needed
+    }
+
     switch (lendingPool.protocol) {
       case LendingProtocol.NAVI: {
         const poolConfig = Object.values(pool).find((pool) => pool.type === lendingPool.coinType);
@@ -214,5 +219,7 @@ export const useStaking = () => {
     handleSupply,
     handleWithdraw,
     loadingTransaction: loadingTransaction || status === "pending",
+    isAdvanced,
+    setIsAdvanced,
   };
 };
