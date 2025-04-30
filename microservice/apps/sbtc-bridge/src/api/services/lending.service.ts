@@ -23,7 +23,8 @@ export class LendingService {
       this.allPoolsProviders.map(async (provider) => {
         try {
           let result = this.cache.get<LendingPool[]>(CacheInfo.LendingBtcPools(provider.protocol).key);
-          if (!result) {
+
+          if (!result?.length) {
             result = await provider.getPools();
             this.cache.set(
               CacheInfo.LendingBtcPools(provider.protocol).key,
