@@ -5,8 +5,11 @@ import { SponsoredController } from './sponsored.controller';
 import { SponsoredService } from './services/sponsored.service';
 import { HelpersModule } from '@monorepo/common/helpers/helpers.module';
 import { DatabaseModule } from '@monorepo/common/database/database.module';
-import { GeneralService } from "./services/general.service";
-import { GeneralController } from "./general.controller";
+import { GeneralService } from './services/general.service';
+import { GeneralController } from './general.controller';
+import { LendingService } from './services/lending.service';
+import { LendingController } from './lending.controller';
+import { ServicesModule } from '@monorepo/common/services/services.module';
 
 @Module({
   imports: [
@@ -19,9 +22,10 @@ import { GeneralController } from "./general.controller";
         limit: 6,
       },
     ]),
+    ServicesModule,
   ],
-  providers: [SponsoredService, GeneralService],
-  controllers: [SponsoredController, GeneralController],
+  providers: [SponsoredService, GeneralService, LendingService],
+  controllers: [SponsoredController, GeneralController, LendingController],
   exports: [],
 })
 export class ApiModule {}

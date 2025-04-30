@@ -3,7 +3,7 @@ import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { SponsoredService } from './services/sponsored.service';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
-@ApiTags('general')
+@ApiTags('sponsored-transactions')
 @Controller('/sponsored-transactions')
 export class SponsoredController {
   constructor(private readonly sponsoredService: SponsoredService) {}

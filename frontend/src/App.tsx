@@ -1,4 +1,3 @@
-import React from "react";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import { Route, Routes } from "react-router-dom";
@@ -7,6 +6,7 @@ import { ROUTES } from "@/lib/routes.ts";
 import Swap from "@/pages/Swap.tsx";
 import { useAutoConnectWallet } from "@mysten/dapp-kit";
 import { Loader2 } from "lucide-react";
+import { Staking } from "@/pages/Staking.tsx";
 
 function App() {
   const suiAutoConnectionStatus = useAutoConnectWallet();
@@ -17,11 +17,12 @@ function App() {
         <Navbar />
 
         {suiAutoConnectionStatus === "idle" ? (
-          <Loader2 className="h-10 w-10 mx-auto animate-spin" />
+          <Loader2 className="h-10 w-10 mx-auto animate-spin text-sky-400" />
         ) : (
           <Routes>
             <Route path={ROUTES.home} element={<Bridge />} />
             <Route path={ROUTES.swap} element={<Swap />} />
+            <Route path={ROUTES.staking} element={<Staking />} />
           </Routes>
         )}
       </div>

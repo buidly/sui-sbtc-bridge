@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { BitcoinApi } from "@/api/bitcoin.ts";
 import { useApp } from "@/context/app.context.tsx";
 import { StacksApi } from "@/api/stacks.ts";

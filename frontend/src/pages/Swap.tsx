@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDown, Loader2, RefreshCw } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/context/app.context.tsx";
 import { ROUTES } from "@/lib/routes.ts";
 import { Navigate } from "react-router-dom";
 import { CoinWithBalance, useSwap } from "@/hooks/use-swap.ts";
-import { formatBalance } from "@/lib/helpers.ts";
+import { formatBalance, toDenominatedAmount } from "@/lib/helpers.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { applySlippage, getOutputAmount } from "@/lib/stableswap.ts";
 
@@ -42,7 +42,7 @@ export default function Swap() {
     }
 
     if (inputAmount && !isNaN(parseFloat(inputAmount))) {
-      const denominatedInputAmount = BigInt(Math.round(parseFloat(inputAmount) * 10 ** inputCoin.decimals));
+      const denominatedInputAmount = toDenominatedAmount(inputAmount, inputCoin.decimals);
 
       try {
         let outputAmount = getOutputAmount(
@@ -94,8 +94,8 @@ export default function Swap() {
 
     setIsSubmitting(true);
 
-    const denominatedInputAmount = BigInt(Math.round(parseFloat(inputAmount) * 10 ** inputCoin.decimals));
-    const denominatedOutputAmount = BigInt(Math.round(parseFloat(outputAmount) * 10 ** outputCoin.decimals));
+    const denominatedInputAmount = toDenominatedAmount(inputAmount, inputCoin.decimals);
+    const denominatedOutputAmount = toDenominatedAmount(outputAmount, outputCoin.decimals);
 
     try {
       await doSwap(inputCoin.coinType, outputCoin.coinType, denominatedInputAmount, denominatedOutputAmount);

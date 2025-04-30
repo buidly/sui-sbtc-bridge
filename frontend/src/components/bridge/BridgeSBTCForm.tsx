@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
@@ -8,7 +8,7 @@ import { useApp } from "@/context/app.context.tsx";
 import suiLogo from "@/assets/images/sui_logo.svg";
 import stacksLogo from "@/assets/images/stacks_logo.svg";
 import { SBTC_TOKEN_CONTRACT, STACKS_NETWORK, StacksApi } from "@/api/stacks.ts";
-import { formatBalance } from "@/lib/helpers.ts";
+import { formatBalance, toDenominatedAmount } from "@/lib/helpers.ts";
 import sbtcLogo from "@/assets/images/sbtc_logo.png";
 import {
   makeContractCall,
@@ -37,7 +37,7 @@ export default function BridgeSBTCForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const denominatedAmount = Math.round(parseFloat(amount) * 10 ** 8);
+    const denominatedAmount = toDenominatedAmount(amount, 8);
 
     await handleSubmitRaw(denominatedAmount);
   };

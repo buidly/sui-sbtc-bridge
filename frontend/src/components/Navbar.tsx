@@ -13,11 +13,10 @@ function Navbar() {
   const { suiAddress } = useApp();
 
   const location = useLocation();
-  const isStableSwapPage = location.pathname === ROUTES.swap;
+  const isMinimizedSuiConnect = location.pathname === ROUTES.swap || location.pathname === ROUTES.staking;
 
   return (
     <div className="mb-8 mx-auto">
-      {/* Title */}
       <div className="text-center mb-4">
         <h1 className="text-3xl font-bold">
           <em className="text-sky-400">Sui</em>
@@ -37,7 +36,7 @@ function Navbar() {
 
         {suiAddress && (
           <AnimatePresence mode="wait">
-            {isStableSwapPage ? (
+            {isMinimizedSuiConnect ? (
               <>
                 <motion.div
                   key="navbar-back-link"
@@ -67,21 +66,38 @@ function Navbar() {
                 </motion.div>
               </>
             ) : (
-              <motion.div
-                key="navbar-swap-link"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 50 }}
-                className="absolute right-0 top-1/2 -translate-y-1/2"
-                transition={{ duration: 0.2 }}
-              >
-                <Link
-                  to={ROUTES.swap}
-                  className="border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white font-semibold py-2 px-4 rounded-full shadow-md transition-colors duration-200 flex items-center"
+              <>
+                <motion.div
+                  key="navbar-earn-link"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 50 }}
+                  className="absolute left-0 top-1/2 -translate-y-1/2"
+                  transition={{ duration: 0.2 }}
                 >
-                  Go to StableSwap <ArrowRight className="h-5 w-5 ml-1" />
-                </Link>
-              </motion.div>
+                  <Link
+                    to={ROUTES.staking}
+                    className="border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white font-semibold py-2 px-4 rounded-full shadow-md transition-colors duration-200 flex items-center"
+                  >
+                    <ArrowLeft className="h-5 w-5 mr-1" /> Go to Staking
+                  </Link>
+                </motion.div>
+                <motion.div
+                  key="navbar-swap-link"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 50 }}
+                  className="absolute right-0 top-1/2 -translate-y-1/2"
+                  transition={{ duration: 0.2 }}
+                >
+                  <Link
+                    to={ROUTES.swap}
+                    className="border-2 border-sky-500 text-sky-500 hover:bg-sky-500 hover:text-white font-semibold py-2 px-4 rounded-full shadow-md transition-colors duration-200 flex items-center"
+                  >
+                    Go to StableSwap <ArrowRight className="h-5 w-5 ml-1" />
+                  </Link>
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
         )}

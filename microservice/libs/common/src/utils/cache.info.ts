@@ -10,4 +10,18 @@ export class CacheInfo {
       ttl: Constants.oneDay(),
     };
   }
+
+  static LendingBtcPools(protocol: string): CacheInfo {
+    return {
+      key: `lendingBtcPools:${protocol}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static CoinMetadata(coinType: string): CacheInfo {
+    return {
+      key: `coinMetadata:${coinType}`,
+      ttl: Constants.oneDay(),
+    };
+  }
 }

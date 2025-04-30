@@ -1,4 +1,4 @@
-import { CoinMetadata, SuiClient } from "@mysten/sui/client";
+import { SuiClient } from "@mysten/sui/client";
 import { ENV } from "@/lib/env.ts";
 
 export interface StableSwapPool {
@@ -10,15 +10,21 @@ export interface StableSwapPool {
   values: bigint[];
 }
 
-const client = new SuiClient({
+export const SUI_NETWORK = ENV.SUI_CLIENT_URL.includes("testnet") ? "testnet" : "mainnet";
+
+export const suiClient = new SuiClient({
   url: ENV.SUI_CLIENT_URL,
+});
+
+export const suiClientMainnet = new SuiClient({
+  url: ENV.SUI_CLIENT_URL_MAINNET,
 });
 
 export const SuiApi = {
   async getAddressSuiSbtcBalances(address: string) {
     try {
       // Get all coin objects owned by the address
-      const { data: coins } = await client.getCoins({
+      const { data: coins } = await suiClient.getCoins({
         owner: address,
         coinType: "0x2::sui::SUI", // Specify SUI coin type
         limit: 50,
@@ -30,7 +36,7 @@ export const SuiApi = {
       }, BigInt(0));
 
       // Get all coin objects owned by the address
-      const { data: coinsSbtc } = await client.getCoins({
+      const { data: coinsSbtc } = await suiClient.getCoins({
         owner: address,
         coinType: ENV.SUI_SBTC_COIN_TYPE,
         limit: 50,
@@ -52,12 +58,12 @@ export const SuiApi = {
     }
   },
 
-  async getAddressCoinsBalances(address: string, coinTypes: string[]) {
+  async getAddressCoinsBalances(address: string, coinTypes: string[], useMainnet = false) {
     try {
       const result = await Promise.all(
         coinTypes.map(async (coinType) => {
           // Get all coin objects owned by the address
-          const { data: coinsSbtc } = await client.getCoins({
+          const { data: coinsSbtc } = await (useMainnet ? suiClientMainnet : suiClient).getCoins({
             owner: address,
             coinType,
             limit: 50,
@@ -82,9 +88,9 @@ export const SuiApi = {
     }
   },
 
-  async getObject(objectId: string): Promise<StableSwapPool | undefined> {
+  async getStableSwapPool(objectId: string): Promise<StableSwapPool | undefined> {
     try {
-      const result = await client.getObject({
+      const result = await suiClient.getObject({
         id: objectId,
         options: {
           showContent: true,
