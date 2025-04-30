@@ -38,16 +38,15 @@ class ScallopPoolProvider extends LendingPoolProvider {
     });
   }
 
-  async supplyTx(coinType: string, address: string, amount: bigint): Promise<Transaction> {
+  async supplyTx(tx: Transaction, inputCoin: any, coinType: string, address: string): Promise<Transaction> {
     const builder = (await this.getScallopClient()).builder;
     const utils = await this.client.createScallopUtils();
 
     const coinName = utils.parseCoinNameFromType(coinType);
 
-    const txBlock = builder.createTxBlock();
-    txBlock.setSender(address);
+    const txBlock = builder.createTxBlock(tx);
 
-    const marketCoin = await txBlock.depositQuick(Number(amount), coinName);
+    const marketCoin = await txBlock.deposit(inputCoin, coinName);
     txBlock.transferObjects([marketCoin], address);
 
     return txBlock.txBlock;

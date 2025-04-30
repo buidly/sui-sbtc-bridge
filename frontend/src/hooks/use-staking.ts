@@ -6,14 +6,15 @@ import { SuiApi } from "@/api/sui.ts";
 import { useApp } from "@/context/app.context.tsx";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { pool } from "navi-sdk/src/address.ts";
-import { depositCoin } from "navi-sdk/src/libs/PTB";
 import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
-import { withdrawCoin } from "navi-sdk";
+import { depositCoin, withdrawCoin } from 'navi-sdk';
 import scallopPoolProvider from "@/services/ScallopPools.ts";
 import suilendPoolProvider from "@/services/SuilendPools.ts";
 import { toDenominatedAmount } from "@/lib/helpers.ts";
 import { MicroserviceApi } from "@/api/microservice.ts";
+import { ENV } from "@/lib/env.ts";
+import { applySlippage, getOutputAmount, stableSwapTransaction } from "@/lib/stableswap.ts";
 
 export const useStaking = () => {
   const { suiAddress } = useApp();
@@ -26,7 +27,8 @@ export const useStaking = () => {
   const [balances, setBalances] = useState<{ [coinType: string]: bigint }>({});
   const [loading, setLoading] = useState(true);
   const [loadingTransaction, setLoadingTransaction] = useState(false);
-  const [isAdvanced, setIsAdvanced] = useState(true);
+  // TODO: Simple mode does not yet work on mainnet since we have no contract there, re-test after contract is created
+  const [isAdvanced, setIsAdvanced] = useState(false);
 
   const fetchBalances = async () => {
     setLoadingTransaction(true);
@@ -61,9 +63,82 @@ export const useStaking = () => {
 
     const denominatedAmount = toDenominatedAmount(amount, coinsMetadata[lendingPool.coinType].decimals);
 
-    let tx: Transaction;
-    if (!isAdvanced) {
-      // TODO: Do swaps if needed
+    let tx: Transaction = new Transaction();
+    tx.setSender(suiAddress);
+
+    let inputCoin: any = null;
+
+    const outputCoinType = lendingPool.coinType;
+    const balance = balances[outputCoinType];
+
+    if (balance > 0n) {
+      inputCoin = coinWithBalance({
+        type: outputCoinType,
+        balance: balance >= denominatedAmount ? denominatedAmount : balance,
+      });
+    }
+
+    // If we don't have enough balance of current BTC coin, do required swaps
+    if (!isAdvanced && balance < denominatedAmount) {
+      const stableSwapObject = await SuiApi.getStableSwapPool(ENV.STABLE_SWAP_POOL_OBJECT);
+
+      const neededCoins: { type: string; balance: bigint; outputAmount: bigint }[] = [];
+      let neededBalance = denominatedAmount - balance;
+
+      // Go through BTC coins in descending order and swap the minimum that is needed
+      for (let [coinType, value] of Object.entries(balances).sort(([, value1], [, value2]) =>
+        value1 > value2 ? -1 : 1,
+      )) {
+        if (coinType === lendingPool.coinType) {
+          continue;
+        }
+
+        if (neededBalance <= 0n) {
+          break;
+        }
+
+        const tempAmount = value < neededBalance ? value : neededBalance;
+
+        // Calculate the amount the swap gives us, but consider input amount as the one we want
+        let outputAmount = getOutputAmount(coinType, outputCoinType, tempAmount, stableSwapObject);
+        outputAmount = applySlippage(outputAmount, 50n); // Apply 0.5% slippage since pool contents change with each swap
+
+        neededBalance -= tempAmount;
+        neededCoins.push({
+          type: coinType,
+          balance: tempAmount,
+          outputAmount,
+        });
+      }
+
+      if (neededBalance != 0n) {
+        throw new Error("Not enough BTC balance");
+      }
+
+      // Do how many swaps are required
+      const swapOutputCoins = [];
+      for (const coin of neededCoins) {
+        const tempCoin = coinWithBalance(coin);
+
+        const outputCoin = stableSwapTransaction(tx, coin.type, outputCoinType, coin.outputAmount, tempCoin);
+
+        swapOutputCoins.push(outputCoin);
+      }
+
+      const coinsToMerge = [...swapOutputCoins.slice(1)];
+      if (inputCoin) {
+        coinsToMerge.push(inputCoin);
+      }
+
+      if (coinsToMerge.length > 0) {
+        tx.mergeCoins(swapOutputCoins[0], coinsToMerge);
+      }
+
+      inputCoin = swapOutputCoins[0];
+    }
+
+    if (!inputCoin) {
+      throw new Error('Not enough balance');
     }
 
     switch (lendingPool.protocol) {
@@ -75,25 +150,17 @@ export const useStaking = () => {
           return;
         }
 
-        tx = new Transaction();
-        tx.setSender(suiAddress);
-
-        const coin = coinWithBalance({
-          type: lendingPool.coinType,
-          balance: denominatedAmount,
-        });
-
-        await depositCoin(tx, poolConfig, coin, Number(denominatedAmount));
+        await depositCoin(tx, poolConfig, inputCoin, Number(denominatedAmount));
 
         break;
       }
       case LendingProtocol.SCALLOP: {
-        tx = await scallopPoolProvider.supplyTx(lendingPool.coinType, suiAddress, denominatedAmount);
+        tx = await scallopPoolProvider.supplyTx(tx, inputCoin, lendingPool.coinType, suiAddress);
 
         break;
       }
       case LendingProtocol.SUILEND: {
-        tx = await suilendPoolProvider.supplyTx(lendingPool.coinType, suiAddress, denominatedAmount);
+        tx = await suilendPoolProvider.supplyTx(tx, inputCoin, lendingPool.coinType, suiAddress);
 
         break;
       }
@@ -109,7 +176,6 @@ export const useStaking = () => {
       // @ts-ignore
       transaction: tx,
     });
-    console.log("Staking supply transaction successful:", result);
 
     toast.success("Supply succeeded!");
   };
@@ -162,8 +228,6 @@ export const useStaking = () => {
       // @ts-ignore
       transaction: tx,
     });
-
-    console.log("Staking withdraw transaction successful:", result);
 
     toast.success("Withdraw succeeded!");
   };

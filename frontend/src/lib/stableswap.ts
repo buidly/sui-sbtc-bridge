@@ -1,4 +1,6 @@
 import { StableSwapPool } from "@/api/sui";
+import { Transaction, TransactionResult } from "@mysten/sui/transactions";
+import { ENV } from "@/lib/env.ts";
 
 export const MAX_PERCENTAGE = 10_000n;
 export const DEFAULT_SLIPPAGE = 10n; // 0.1%
@@ -226,6 +228,14 @@ export function getOutputAmount(
   const i = pool.types.indexOf(inputCoinType);
   const j = pool.types.indexOf(outputCoinType);
 
+  if (i === -1 || j === -1) {
+    throw new Error(
+      `Coin types not found, inputType: ${inputCoinType}, outputType: ${outputCoinType}, pool types: ${pool.types.join(
+        ", ",
+      )}`,
+    );
+  }
+
   const y_new = exchange(i, j, inputAmount, pool);
   const y_value = pool.values[j];
 
@@ -240,4 +250,21 @@ export function applySlippage(expectedAmount: bigint, slippageBps: bigint = DEFA
   const multiplier = MAX_PERCENTAGE - slippageBps;
 
   return (expectedAmount * multiplier) / MAX_PERCENTAGE;
+}
+
+export function stableSwapTransaction(
+  tx: Transaction,
+  inputCoinType: string,
+  outputCoinType: string,
+  minOutput: bigint,
+  coin: (tx: Transaction) => TransactionResult,
+) {
+  return tx.moveCall({
+    package: ENV.STABLE_SWAP_PACKAGE_ID,
+    module: "stableswap",
+    function: "exchange_coin",
+    typeArguments: [inputCoinType, outputCoinType],
+    // @ts-ignore
+    arguments: [tx.pure("u64", minOutput), coin, tx.object(ENV.STABLE_SWAP_POOL_OBJECT)],
+  });
 }
