@@ -5,6 +5,7 @@ import { BasePoolsProvider } from '@monorepo/common/services/base.pools.provider
 import { CacheInfo } from '@monorepo/common/utils/cache.info';
 import { LendingPool } from '@monorepo/common/services/types';
 import { SuiApiHelper } from '@monorepo/common/helpers/sui.api.helper';
+import { btcCoinTypes } from '@monorepo/common/services/config';
 
 @Injectable()
 export class LendingService {
@@ -52,7 +53,7 @@ export class LendingService {
     });
 
     const coinsMetadata = await this.suiApiHelper.getCoinsMetadata(
-      pools.map((pool) => pool.coinType),
+      Object.values(btcCoinTypes),
       true,
     );
 

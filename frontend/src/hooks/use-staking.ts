@@ -14,6 +14,7 @@ import scallopPoolProvider from "@/services/ScallopPools.ts";
 import suilendPoolProvider from "@/services/SuilendPools.ts";
 import { toDenominatedAmount } from "@/lib/helpers.ts";
 import { MicroserviceApi } from "@/api/microservice.ts";
+import naviPoolProvider from '@/services/NaviPools.ts';
 
 export const useStaking = () => {
   const { suiAddress } = useApp();
@@ -182,7 +183,18 @@ export const useStaking = () => {
       try {
         setLoading(true);
 
-        const { pools, coinsMetadata } = await MicroserviceApi.getLendingBtcPools();
+        const naviPools = await naviPoolProvider.getPools();
+        const { pools: apiPools, coinsMetadata } = await MicroserviceApi.getLendingBtcPools();
+
+        const pools = [...naviPools, ...apiPools].sort((poolA, poolB) => {
+          if (poolA.coinType < poolB.coinType) {
+            return -1; // poolA should come before poolB
+          }
+          if (poolA.coinType > poolB.coinType) {
+            return 1; // poolA should come after poolB
+          }
+          return 0; // poolA and poolB have the same coinType (order doesn't matter for grouping)
+        });
 
         setCoinsMetadata(coinsMetadata);
         setPools(pools);

@@ -1,5 +1,4 @@
 export enum LendingProtocol {
-  NAVI = "navi",
   SCALLOP = "scallop",
   SUILEND = "suilend",
 }

@@ -5,6 +5,4 @@ export const btcCoinTypes = {
   LorenzoBTC: '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN',
 };
 
-export const NAVI_API_POOLS = 'https://open-api.naviprotocol.io/api/navi/pools';
-
 export const SUI_CLIENT_URL_MAINNET = 'https://fullnode.mainnet.sui.io';
