@@ -46,7 +46,7 @@ export const getExplorerUrlTransaction = (type: "BITCOIN" | "STACKS" | "SUI", tr
       case "STACKS":
         return `https://explorer.hiro.so/txid/${transaction}?chain=testnet`;
       case "SUI":
-        return `https://testnet.suivision.xyz/tx/${transaction}`;
+        return `https://testnet.suivision.xyz/txblock/${transaction}`;
     }
   }
 
@@ -56,7 +56,7 @@ export const getExplorerUrlTransaction = (type: "BITCOIN" | "STACKS" | "SUI", tr
     case "STACKS":
       return `https://explorer.hiro.so/txid/${transaction}`;
     case "SUI":
-      return `https://suivision.xyz/tx/${transaction}`;
+      return `https://suivision.xyz/txblock/${transaction}`;
   }
 };
 
