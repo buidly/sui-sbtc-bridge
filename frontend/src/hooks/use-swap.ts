@@ -8,6 +8,7 @@ import { useSignAndExecuteTransaction } from "@mysten/dapp-kit";
 import { toast } from "react-toastify";
 import { useSuiBtcCoins } from "@/hooks/api/use-sui-btc-coins.ts";
 import { toDecimalAmount } from "@/lib/helpers.ts";
+import { stableSwapTransaction } from "@/lib/stableswap.ts";
 
 export type CoinWithBalance = CoinMetadata & {
   denominatedBalance: number;
@@ -83,14 +84,7 @@ export const useSwap = () => {
       balance: inputAmount,
     });
 
-    const outputCoin = tx.moveCall({
-      package: ENV.STABLE_SWAP_PACKAGE_ID,
-      module: "stableswap",
-      function: "exchange_coin",
-      typeArguments: [inputCoinType, outputCoinType],
-      // @ts-ignore
-      arguments: [tx.pure("u64", minOutput), coin, tx.object(ENV.STABLE_SWAP_POOL_OBJECT)],
-    });
+    const outputCoin = stableSwapTransaction(tx, inputCoinType, outputCoinType, minOutput, coin);
 
     tx.transferObjects([outputCoin], suiAddress);
 

@@ -10,11 +10,11 @@ import { btcCoinTypes } from "./config.ts";
 import { AddressLendingInfo, LendingProtocol } from "@/services/types.ts";
 import { Reserve } from "@suilend/sdk/_generated/suilend/reserve/structs";
 import { ParsedReserve } from "@suilend/sdk/parsers";
-import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { createObligationIfNoneExists } from "@suilend/sdk/lib/transactions";
 import { ObligationOwnerCap } from "@suilend/sdk/_generated/suilend/lending-market/structs";
 import { toDenominatedAmount } from "@/lib/helpers.ts";
-import { suiClientMainnet } from '@/api/sui.ts';
+import { suiClientMainnet } from "@/api/sui.ts";
 
 const mainLendingMarket = {
   name: "Main market",
@@ -76,15 +76,7 @@ class SuilendPoolProvider extends LendingPoolProvider {
     });
   }
 
-  async supplyTx(coinType: string, address: string, amount: bigint): Promise<Transaction> {
-    const tx = new Transaction();
-    tx.setSender(address);
-
-    const coin = coinWithBalance({
-      type: coinType,
-      balance: amount,
-    });
-
+  async supplyTx(tx: Transaction, inputCoin: any, coinType: string, address: string): Promise<Transaction> {
     const suilendClient = await this.getSuilendClient();
 
     const { obligationOwnerCapId, didCreate } = createObligationIfNoneExists(
@@ -95,7 +87,7 @@ class SuilendPoolProvider extends LendingPoolProvider {
       ),
     );
 
-    suilendClient.deposit(coin, coinType, obligationOwnerCapId, tx);
+    suilendClient.deposit(inputCoin, coinType, obligationOwnerCapId, tx);
 
     if (didCreate) {
       sendObligationToUser(obligationOwnerCapId, address, tx);
@@ -128,7 +120,11 @@ class SuilendPoolProvider extends LendingPoolProvider {
 
   private async getSuilendClient() {
     if (!this.suilendClient) {
-      this.suilendClient = await SuilendClient.initialize(mainLendingMarket.id, mainLendingMarket.type, suiClientMainnet);
+      this.suilendClient = await SuilendClient.initialize(
+        mainLendingMarket.id,
+        mainLendingMarket.type,
+        suiClientMainnet,
+      );
     }
 
     return this.suilendClient;
