@@ -11,6 +11,8 @@ const alertVariants = cva(
         default: "bg-background text-foreground",
         destructive:
           "text-destructive-foreground [&>svg]:text-current *:data-[slot=alert-description]:text-destructive-foreground/80",
+        warning:
+          "bg-orange-200 border-orange-300 text-orange-900 [&>svg]:text-current *:data-[slot=alert-description]:text-orange-900/80",
       },
     },
     defaultVariants: {

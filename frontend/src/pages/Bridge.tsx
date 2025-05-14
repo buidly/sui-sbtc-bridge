@@ -1,10 +1,10 @@
+import React from "react";
 import { useApp } from "@/context/app.context.tsx";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import SendBTCForm from "@/components/bridge/SendBTCForm.tsx";
 import BTCTxStatus from "@/components/bridge/BTCTxStatus.tsx";
 import BridgeSBTCForm from "@/components/bridge/BridgeSBTCForm.tsx";
 import BridgeTxStatus from "@/components/bridge/BridgeTxStatus.tsx";
-import React from "react";
 import BitcoinConnect from "@/components/BitcoinConnect.tsx";
 import SuiConnect from "@/components/SuiConnect.tsx";
 import StacksConnect from "@/components/StacksConnect.tsx";
@@ -14,7 +14,7 @@ export default function Bridge() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="flex gap-4 mb-8">
         <BitcoinConnect />
         <SuiConnect />
         <StacksConnect />
