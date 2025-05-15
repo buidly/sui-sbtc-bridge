@@ -16,9 +16,9 @@ function Navbar() {
     <div className="container mx-auto flex items-center justify-between bg-white/30 backdrop-blur-lg px-8 py-6 rounded-3xl">
       <div className="flex items-center gap-6 min-w-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">
-            <em className="text-sky-400">tide</em>
-            <em className="text-orange-400">flow</em>
+          <h1 className="text-3xl font-bold tracking-wide">
+            <span className="text-sky-600">tide</span>
+            <span className="text-orange-400">flow</span>
           </h1>
         </div>
       </div>
