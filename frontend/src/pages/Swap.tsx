@@ -131,7 +131,7 @@ export default function Swap() {
         exit={{ opacity: 0, x: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="container max-w-xl contain mx-auto bg-white/30 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
+        <div className="container max-w-xl contain mx-auto bg-white/60 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
           <h2 className="text-3xl font-bold text-slate-700 text-center">
             BTC StableSwap
           </h2>
@@ -144,7 +144,7 @@ export default function Swap() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               {/* Input coin selection and amount */}
               <div className="">
-                <div className="bg-slate-200 rounded-2xl p-4 flex flex-col gap-2">
+                <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
                   <div className="flex justify-between items-center mb-2 cursor-pointer">
                     <label className="text-sm text-slate-400">From</label>
                   </div>
@@ -166,10 +166,10 @@ export default function Swap() {
 
                     <div className="flex flex-col gap-2 items-end-safe">
                       <Select value={inputCoin?.id} onValueChange={(value) => setInputCoin(coins.find((c) => c.id === value))}>
-                        <SelectTrigger className="w-[180px] bg-slate-100 rounded-2xl outline-none shadow-none border-none px-4 py-6 text-lg">
+                        <SelectTrigger className="w-[180px] bg-white rounded-2xl outline-none shadow-none border-none px-4 py-6 text-lg">
                           <SelectValue placeholder="Theme" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-100">
+                        <SelectContent className="bg-white">
                           {coins.map((coin) => (
                             <SelectItem key={coin.id} value={coin.id}>
                               <div className="flex items-center gap-2">
@@ -270,28 +270,36 @@ export default function Swap() {
               </div>
 
               {/* Exchange rate display */}
-              <div className="text-center text-sm text-slate-400 mb-3 flex items-center justify-center">
-                <RefreshCw
-                  className="h-3 w-3 mr-1 mt-1 cursor-pointer"
-                  onClick={() => setExchangeRateInversed(!exchangeRateInversed)}
-                />
-                <span>
-                  Rate: 1{" "}
-                  {!exchangeRateInversed ? (
-                    <>
-                      {inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}
-                    </>
-                  ) : (
-                    <>
-                      {outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}
-                    </>
-                  )}
-                </span>
+              <div className="flex flex-col gap-2 my-4 px-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-slate-500">Rate</div>
+                  <div className="text-black flex items-center gap-1">
+                    <RefreshCw
+                      className="h-4 w-4 cursor-pointer mr-1"
+                      onClick={() => setExchangeRateInversed(!exchangeRateInversed)}
+                    />
+                    1{" "}
+                    {!exchangeRateInversed ? (
+                      <>{inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}</>
+                    ) : (
+                      <>{outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}</>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-slate-500">Network fee</div>
+                  <div className="text-black">~0.0025 SUI</div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-slate-500">Estimated completion</div>
+                  <div className="text-black">3 seconds</div>
+                </div>
               </div>
 
               {/* Submit button */}
               <Button
                 variant="default"
+                size="xl"
                 className="w-full"
                 type="submit"
                 disabled={
@@ -312,10 +320,6 @@ export default function Swap() {
                   `Swap ${inputCoin?.symbol} to ${outputCoin?.symbol}`
                 )}
               </Button>
-
-              <div className="mt-2 text-center text-xs text-slate-400">
-                Network fee: ~0.0025 SUI • Estimated completion: 3 seconds
-              </div>
             </form>
           )}
         </div>

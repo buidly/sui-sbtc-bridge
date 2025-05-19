@@ -13,11 +13,11 @@ function Navbar() {
   const { mutate: disconnectWallet } = useDisconnectWallet();
 
   return (
-    <div className="container mx-auto flex items-center justify-between bg-white/30 backdrop-blur-lg px-8 py-6 rounded-3xl">
+    <div className="container mx-auto flex items-center justify-between bg-white/40 backdrop-blur-lg px-8 py-6 rounded-3xl shadow">
       <div className="flex items-center gap-6 min-w-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-wide">
-            <span className="text-sky-600">tide</span>
+            <span className="text-black">tide</span>
             <span className="text-orange-400">flow</span>
           </h1>
         </div>
@@ -25,7 +25,7 @@ function Navbar() {
 
       <div className="flex items-center justify-center gap-6">
         <NavigationMenu>
-          <NavigationMenuList>
+          <NavigationMenuList className="flex gap-2">
             <NavigationMenuItem>
               <NavigationMenuLink to={ROUTES.home} className={({ isActive }: any) => navigationMenuTriggerStyle({ isActive })}>
                 Bridge
@@ -38,7 +38,7 @@ function Navbar() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink to={ROUTES.staking} className={({ isActive }) => navigationMenuTriggerStyle({ isActive })}>
-                Stake
+                Lending
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>

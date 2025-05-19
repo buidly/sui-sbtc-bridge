@@ -20,7 +20,7 @@ function SuiConnect() {
 
   return (
     <WalletCard
-      title="Connect Sui Wallet"
+      title="Sui Wallet"
       icon={<img src={suiLogo} alt={"Sui Logo"} className="h-6 w-6" />}
       isConnected={!!suiAddress}
       notConnectedElement={
@@ -42,19 +42,16 @@ function SuiConnect() {
       disconnectWallet={disconnectWallet}
       loading={loading}
     >
-      <div className="flex items-end justify-between">
-        <div>
-          <div className="text-xs text-slate-400 mb-1">sBTC Balance:</div>
-          <div className="flex items-center gap-2">
-            <span className="text-white text-lg font-medium">{formatBalance(suiBalances?.sbtcBalance, 8)}</span>
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <div className="text-slate-500 text-sm">sBTC Balance</div>
+          <div className="flex items-center">
+            <span className="text-gray-800 text-lg font-medium mr-2">{formatBalance(suiBalances?.sbtcBalance, 8)}</span>
             <span className="text-orange-400">sBTC</span>
+            <span className="text-lg">
+              <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
+            </span>
           </div>
-        </div>
-
-        <div className={`w-8 h-8 flex items-center justify-center`}>
-          <span className="text-lg">
-            <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-          </span>
         </div>
       </div>
     </WalletCard>

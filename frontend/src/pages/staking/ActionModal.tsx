@@ -18,6 +18,7 @@ export default function ActionModal({
   handleSupply,
   handleWithdraw,
   loading,
+  selectedAction,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -28,8 +29,9 @@ export default function ActionModal({
   handleSupply: (lendingPool: LendingPool, amount: number) => Promise<void>;
   handleWithdraw: (lendingPool: LendingPool, denominatedAmount: bigint) => Promise<void>;
   loading: boolean;
+  selectedAction: "supply" | "withdraw";
 }) {
-  const [activeTab, setActiveTab] = useState<"supply" | "withdraw">("supply");
+  const [activeTab, setActiveTab] = useState<"supply" | "withdraw">(selectedAction || "supply");
   const [amount, setAmount] = useState("");
 
   const denominatedBalance = useMemo(() => {
@@ -77,29 +79,27 @@ export default function ActionModal({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center"
       onClick={handleBackdropClick}
     >
-      <div className="bg-[#0F172A] border border-slate-700 rounded-lg w-[480px] min-h-[320px] overflow-hidden shadow-xl">
+      <div className="bg-white/80 backdrop-blur-lg rounded-2xl w-[480px] overflow-hidden shadow-xl">
         <form onSubmit={handleSubmit}>
           <div className="flex">
             <button
-              className={`flex-1 py-4 text-center text-lg font-medium ${
-                activeTab === "supply"
-                  ? "bg-gradient-to-r from-sky-400 to-sky-700 text-white"
-                  : "text-slate-400 hover:text-white"
-              }`}
+              className={`flex-1 py-4 text-center text-lg font-medium ${activeTab === "supply"
+                ? "bg-primary text-white"
+                : "text-slate-400 hover:text-primary"
+                }`}
               onClick={() => setActiveTab("supply")}
               type="button"
             >
               SUPPLY
             </button>
             <button
-              className={`flex-1 py-4 text-center text-lg font-medium ${
-                activeTab === "withdraw"
-                  ? "bg-gradient-to-r from-sky-400 to-sky-700 text-white"
-                  : "text-slate-400 hover:text-white"
-              }`}
+              className={`flex-1 py-4 text-center text-lg font-medium ${activeTab === "withdraw"
+                ? "bg-primary text-white"
+                : "text-slate-400 hover:text-primary"
+                }`}
               onClick={() => setActiveTab("withdraw")}
               type="button"
             >
@@ -109,61 +109,91 @@ export default function ActionModal({
 
           <div className="p-6 space-y-6">
             <div className="relative">
-              <div className="text-right mb-2">
-                <div className="text-2xl font-mono text-white flex justify-end">
-                  <div className="relative mr-1">
-                    <img
-                      src={coinMetadata?.iconUrl || getBtcAssetIcon(lendingPool.name)}
-                      alt={lendingPool.name}
-                      className="w-8 h-8"
-                    />
-                    <DynamicImage
-                      path={`lending/${lendingPool.protocol}.png`}
-                      alt={`${lendingPool.protocol}`}
-                      className="absolute bottom-0 right-0 translate-y-1/4 w-4 h-4 bg-slate-700 rounded-4xl"
-                    />
+
+              <div className="">
+                <div className="bg-slate-200 rounded-2xl p-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-center mb-2 cursor-pointer">
+                    <label className="text-sm text-slate-400">Amount</label>
                   </div>
-                  {lendingPool.name}
-                </div>
-                <div className="text-gray-400">${lendingPool.price.toFixed(2)}</div>
-              </div>
-              <div className="relative rounded-lg bg-gray-800/50 p-4">
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    step="0.00000001"
-                    min="0.00000001"
-                    max={denominatedBalance}
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full bg-transparent text-2xl text-white outline-none placeholder:text-gray-600 pr-20"
-                    disabled={activeTab === "withdraw"}
-                  />
-                  {activeTab === "supply" && (
-                    <button
-                      type="button"
-                      onClick={() => setAmount(denominatedBalance.toString())}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs bg-slate-500 hover:bg-slate-400 text-white rounded"
-                    >
-                      MAX
-                    </button>
-                  )}
-                </div>
-                <div className="flex justify-between items-center mt-2 text-sm">
-                  <span className="text-gray-400">
-                    Balance: {denominatedBalance} {lendingPool.name}
-                  </span>
-                  <span className="text-gray-400">≈ ${(denominatedBalance * lendingPool.price).toFixed(2)}</span>
+
+                  <div className="flex items-center">
+                    <div className="relative flex-grow text-slate-800 text-4xl font-bold">
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        step="0.00000001"
+                        min="0.00000001"
+                        max={denominatedBalance}
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className="w-full p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        disabled={activeTab === "withdraw"}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 items-end-safe">
+                      <div className="w-[150px] bg-slate-100 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <img src={coinMetadata?.iconUrl || getBtcAssetIcon(lendingPool.name)} alt={lendingPool.name} className="w-7 h-7" />
+                            <DynamicImage
+                              path={`lending/${lendingPool.protocol}.png`}
+                              alt={`${lendingPool.protocol}`}
+                              className="absolute bottom-0 -right-0.5 w-3 h-3 bg-slate-700 rounded-4xl"
+                            />
+                          </div>
+                          <span>{lendingPool.name}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-slate-400">
+                    <div>
+                      ${(denominatedBalance * lendingPool.price).toFixed(2)}
+                    </div>
+                    <div className="text-sm flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        Balance: {denominatedBalance} {lendingPool.name}
+                        {activeTab === "supply" && (
+                          <Button variant="outline" size="sm" className="text-xs bg-slate-100 shadow-none" onClick={() => setAmount(denominatedBalance.toString())}>
+                            MAX
+                          </Button>
+                        )}
+                      </div>
+                      {/* <span className="text-gray-400">≈ ${(denominatedBalance * lendingPool.price).toFixed(2)}</span> */}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
 
-            {activeTab === "supply" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-gray-400">
+            <div className="flex flex-col gap-2 text-gray-500">
+              <div className="flex items-start justify-between">
+                <div>Market</div>
+                <div className="text-primary flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1">
+                    <div className="relative mr-1">
+                      <img
+                        src={coinMetadata?.iconUrl || getBtcAssetIcon(lendingPool.name)}
+                        alt={lendingPool.name}
+                        className="w-5 h-5"
+                      />
+                      <DynamicImage
+                        path={`lending/${lendingPool.protocol}.png`}
+                        alt={`${lendingPool.protocol}`}
+                        className="absolute bottom-0 right-0 translate-y-1/4 w-2 h-2 bg-slate-700 rounded-4xl"
+                      />
+                    </div>
+                    {lendingPool.name}
+                  </div>
+                  <div className="text-gray-500 text-sm">${lendingPool.price.toFixed(2)}</div>
+                </div>
+              </div>
+              {activeTab === "supply" && (
+                <div className="flex items-center justify-between">
                   <div>Supply APR</div>
-                  <div>
+                  <div className="text-primary">
                     <ApyDisplay
                       baseApy={lendingPool.baseSupplyApy}
                       rewards={lendingPool.supplyRewards}
@@ -171,11 +201,13 @@ export default function ActionModal({
                     />
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <Button
-              className="w-full p-5 bg-gradient-to-r from-sky-500 to-sky-700 hover:from-sky-600 hover:to-sky-800 text-white font-medium rounded-lg"
+              variant="default"
+              size="xl"
+              className="w-full"
               type="submit"
               disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > denominatedBalance || loading}
             >

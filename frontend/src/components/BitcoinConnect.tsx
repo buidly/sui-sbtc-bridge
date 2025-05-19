@@ -50,7 +50,7 @@ function BitcoinConnect() {
 
   return (
     <WalletCard
-      title="Connect Bitcoin Wallet"
+      title="Bitcoin Wallet"
       icon={<img src={bitcoinLogo} alt={"Bitcoin Logo"} className="h-6 w-6" />}
       isConnected={!!btcAddressInfo}
       notConnectedElement={
@@ -58,9 +58,9 @@ function BitcoinConnect() {
           <Button onClick={connectWalletLeather} variant="default">
             <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
           </Button>
-          <Button onClick={connectWalletOther} variant="default">
+          {/* <Button onClick={connectWalletOther} variant="default">
             Other Wallet (Mainnet only)
-          </Button>
+          </Button> */}
         </div>
       }
       address={btcAddressInfo?.address}

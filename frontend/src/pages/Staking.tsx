@@ -34,6 +34,7 @@ export function Staking() {
   } = useStaking();
 
   const [selectedPool, setSelectedPool] = useState<LendingPool | null>(null);
+  const [selectedAction, setSelectedAction] = useState<"supply" | "withdraw" | null>('supply');
   const selectedAddressLendingInfo = useMemo(() => {
     if (!selectedPool) {
       return null;
@@ -60,7 +61,7 @@ export function Staking() {
 
   return (
     <>
-      <div className="container max-w-5xl contain mx-auto bg-white/30 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
+      <div className="container max-w-5xl contain mx-auto bg-white/40 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
         {SUI_NETWORK === "testnet" && (
           <Alert variant="warning">
             <TriangleAlert className="h-4 w-4" />
@@ -72,7 +73,7 @@ export function Staking() {
         )}
         <div className="flex items-center justify-center">
           <h1 className="text-3xl font-bold text-slate-700">
-            Market
+            Lending
           </h1>
         </div>
         {loading ? (
@@ -107,18 +108,18 @@ export function Staking() {
               <table className="w-full text-left text-slate-800">
                 <thead>
                   <tr className="">
-                    <th className="py-3">Assets</th>
-                    {isAdvanced && <th className="py-3">Wallet Balance</th>}
-                    <th className="py-3">Staked Balance</th>
-                    <th className="py-3">APR</th>
-                    <th className="py-3">Total Value Locked</th>
-                    <th className="py-3"></th>
+                    <th className="p-3">Assets</th>
+                    {isAdvanced && <th className="p-3">Wallet Balance</th>}
+                    <th className="p-3">Staked Balance</th>
+                    <th className="p-3">APR</th>
+                    <th className="p-3">Total Value Locked</th>
+                    <th className="p-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {pools.map((pool) => (
                     <tr key={`${pool.protocol}-${pool.coinType}`} className="border-t border-slate-400/50">
-                      <td className="py-4 flex items-center gap-2">
+                      <td className="p-3 flex items-center gap-2">
                         <div className="relative">
                           <img
                             src={coinsMetadata?.[pool.coinType]?.iconUrl || getBtcAssetIcon(pool.name)}
@@ -137,14 +138,14 @@ export function Staking() {
                         </div>
                       </td>
                       {isAdvanced && (
-                        <td className="py-4">
+                        <td className="p-3">
                           <strong>
                             {formatBalance(balances?.[pool.coinType] || 0n, coinsMetadata?.[pool.coinType]?.decimals)}{" "}
                             {coinsMetadata?.[pool.coinType]?.symbol}
                           </strong>
                         </td>
                       )}
-                      <td className="py-4">
+                      <td className="p-3">
                         <strong>
                           {formatBalance(
                             allLendingAddressInfo.find((info) => info.protocol === pool.protocol && info.name === pool.name)
@@ -154,21 +155,23 @@ export function Staking() {
                           {coinsMetadata?.[pool.coinType]?.symbol}
                         </strong>
                       </td>
-                      <td className="py-4">
+                      <td className="p-3">
                         <ApyDisplay baseApy={pool.baseSupplyApy} rewards={pool.supplyRewards} totalApy={pool.supplyApy} />
                       </td>
-                      <td className="py-4">
-                        ${pool.tvl.toLocaleString()}{" "}
-                        <small>
-                          ({pool.totalSupply.toFixed(2)} {coinsMetadata?.[pool.coinType]?.symbol})
-                        </small>
+                      <td className="p-3">
+                        <div className="flex flex-col">
+                          ${pool.tvl.toLocaleString()}{" "}
+                          <small>
+                            ({pool.totalSupply.toFixed(2)} {coinsMetadata?.[pool.coinType]?.symbol})
+                          </small>
+                        </div>
                       </td>
-                      <td className="py-4 flex justify-end">
-                        <Button
-                          variant="default"
-                          onClick={() => setSelectedPool(pool)}
-                        >
+                      <td className="p-3 flex justify-end gap-2">
+                        <Button variant="default" onClick={() => { setSelectedPool(pool); setSelectedAction('supply') }}>
                           Supply
+                        </Button>
+                        <Button variant="outline" onClick={() => { setSelectedPool(pool); setSelectedAction('withdraw') }}>
+                          Withdraw
                         </Button>
                       </td>
                     </tr>
@@ -186,7 +189,7 @@ export function Staking() {
         {selectedPool && (
           <ActionModal
             isOpen={!!selectedPool}
-            onClose={() => setSelectedPool(null)}
+            onClose={() => { setSelectedPool(null); setSelectedAction('supply') }}
             lendingPool={selectedPool}
             addressLendingInfo={selectedAddressLendingInfo}
             coinMetadata={coinsMetadata?.[selectedPool.coinType]}
@@ -194,6 +197,7 @@ export function Staking() {
             handleSupply={handleSupply}
             handleWithdraw={handleWithdraw}
             loading={loadingTransaction}
+            selectedAction={selectedAction}
           />
         )}
       </div>

@@ -167,7 +167,7 @@ export default function SendBTCForm() {
   };
 
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm relative">
+    <Card className="bg-slate-200 rounded-2xl p-6 relative">
       {stacksAddressInfo && suiAddress && stacksBalances?.sbtcBalance > 0 && (
         <button
           className="absolute top-3 right-3 text-slate-300 hover:text-white transition-colors bg-slate-800 rounded-sm cursor-pointer"
@@ -177,26 +177,26 @@ export default function SendBTCForm() {
         </button>
       )}
       <CardHeader className="space-y-1">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center">
           <div className="bg-amber-500/20 rounded-full p-4">
             <Bitcoin className="h-10 w-10 text-orange-500" />
           </div>
         </div>
 
-        <CardTitle className="text-2xl font-bold text-center text-white">
+        <CardTitle className="text-2xl font-bold text-center text-slate-800">
           Step 1 - Bridge Bitcoin
           {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
         </CardTitle>
         <CardDescription className="text-center text-slate-400">Convert BTC tokens to sBTC</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 text-slate-300">
+      <CardContent className="p-0 max-w-md mx-auto w-full">
+        {/* <div className="grid gap-3 text-slate-300">
           <p className="mb-2 flex items-center">
             <strong className="mr-1">BTC Balance:</strong> {formatBalance(btcBalance, 8)}
             <span className="text-amber-500 ml-1">BTC</span>
             <img src={bitcoinLogo} alt={"BTC Logo"} className="ml-1 h-4 w-4" />
           </p>
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-3">
@@ -245,9 +245,11 @@ export default function SendBTCForm() {
           </div>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-0 max-w-md mx-auto w-full">
         <Button
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+          variant="default"
+          size="xl"
+          className="w-full"
           type="submit"
           onClick={handleSubmit}
           disabled={isSubmitting || !amount || parseFloat(amount) < 0.001 || parseFloat(amount) > denominatedBtcBalance}

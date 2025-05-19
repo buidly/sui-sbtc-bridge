@@ -148,7 +148,7 @@ function StacksConnect() {
 
   return (
     <WalletCard
-      title="Connect Stacks Wallet"
+      title="Stacks Wallet"
       icon={<img src={stacksLogo} alt={"Stacks Logo"} className="h-6 w-6" />}
       isConnected={!!stacksAddressInfo}
       notConnectedElement={
@@ -173,10 +173,10 @@ function StacksConnect() {
         stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey
           ? formElement
           : stacksAddressInfo?.type === "GENERATED" && (
-              <div>
-                <em className="text-sm text-slate-50">Authenticated</em>
-              </div>
-            )
+            <div>
+              {/* <em className="text-sm text-slate-50">Authenticated</em> */}
+            </div>
+          )
       }
       address={stacksAddressInfo?.address}
       addressType="STACKS"
@@ -187,19 +187,17 @@ function StacksConnect() {
       disconnectWallet={disconnectWallet}
       loading={loading}
     >
-      <div className="flex items-end justify-between">
-        <div>
-          <div className="text-xs text-slate-400 mb-1">sBTC Balance:</div>
-          <div className="flex items-center gap-2">
-            <span className="text-white text-lg font-medium">{formatBalance(stacksBalances?.sbtcBalance, 8)}</span>
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-center">
+          <div className="text-slate-500 text-sm">sBTC Balance</div>
+          <div className="flex items-center">
+            <span className="text-gray-800 text-lg font-medium mr-2">{formatBalance(stacksBalances?.sbtcBalance, 8)}</span>
             <span className="text-orange-400">sBTC</span>
-          </div>
-        </div>
+            <span className="text-lg">
+              <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
 
-        <div className={`w-8 h-8 flex items-center justify-center`}>
-          <span className="text-lg">
-            <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-          </span>
+            </span>
+          </div>
         </div>
       </div>
     </WalletCard>
