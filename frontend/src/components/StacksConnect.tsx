@@ -125,10 +125,10 @@ function StacksConnect() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter a strong password"
-          className={`w-full p-4 bg-slate-800 border ${!isValid ? "border-red-500" : "border-slate-700"} rounded-lg text-slate-300 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          className={`w-full py-2 px-4 bg-white/50 border ${!isValid ? "border-red-500" : ""} rounded-2xl text-gray-600 placeholder-gray-500 focus:outline-none focus:ring-0`}
         />
         {!isValid && (
-          <div className="mt-2 text-sm text-red-500">
+          <div className="mt-2 text-xs text-red-500">
             Password must be at least 8 characters with lowercase, uppercase, numbers and special characters.
           </div>
         )}
@@ -156,11 +156,11 @@ function StacksConnect() {
           <div className="w-full space-y-4">
             {suiAddress && formElement}
             <div className="text-center">
-              <p>
-                {!suiAddress && <span className="mt-2 text-sm text-white">Connect a Sui Wallet first or </span>}
+              <p className="text-sm">
+                {!suiAddress && <span className="text-gray-600 block">Connect a Sui Wallet first or </span>}
                 <a
                   onClick={connectUserWallet}
-                  className="text-blue-400 hover:text-blue-300 text-sm transition-colors cursor-pointer"
+                  className="text-[#f7931a] hover:text-gray-600 font-bold transition-colors cursor-pointer"
                 >
                   Use an existing wallet
                 </a>
@@ -169,15 +169,15 @@ function StacksConnect() {
           </div>
         </>
       }
-      extraElement={
-        stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey
-          ? formElement
-          : stacksAddressInfo?.type === "GENERATED" && (
-            <div>
-              {/* <em className="text-sm text-slate-50">Authenticated</em> */}
-            </div>
-          )
-      }
+      // extraElement={
+      //   stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey
+      //     ? formElement
+      //     : stacksAddressInfo?.type === "GENERATED" && (
+      //       <div>
+      //         {/* <em className="text-sm text-slate-50">Authenticated</em> */}
+      //       </div>
+      //     )
+      // }
       address={stacksAddressInfo?.address}
       addressType="STACKS"
       balance={formatBalance(stacksBalances?.stxBalance, 6)}
@@ -189,7 +189,7 @@ function StacksConnect() {
     >
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
-          <div className="text-slate-500 text-sm">sBTC Balance</div>
+          <div className="text-gray-500 text-sm">sBTC Balance</div>
           <div className="flex items-center">
             <span className="text-gray-800 text-lg font-medium mr-2">{formatBalance(stacksBalances?.sbtcBalance, 8)}</span>
             <span className="text-orange-400">sBTC</span>

@@ -88,7 +88,7 @@ export default function ActionModal({
             <button
               className={`flex-1 py-4 text-center text-lg font-medium ${activeTab === "supply"
                 ? "bg-primary text-white"
-                : "text-slate-400 hover:text-primary"
+                : "text-gray-500 hover:text-primary"
                 }`}
               onClick={() => setActiveTab("supply")}
               type="button"
@@ -98,7 +98,7 @@ export default function ActionModal({
             <button
               className={`flex-1 py-4 text-center text-lg font-medium ${activeTab === "withdraw"
                 ? "bg-primary text-white"
-                : "text-slate-400 hover:text-primary"
+                : "text-gray-500 hover:text-primary"
                 }`}
               onClick={() => setActiveTab("withdraw")}
               type="button"
@@ -111,13 +111,13 @@ export default function ActionModal({
             <div className="relative">
 
               <div className="">
-                <div className="bg-slate-200 rounded-2xl p-4 flex flex-col gap-2">
+                <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
                   <div className="flex justify-between items-center mb-2 cursor-pointer">
-                    <label className="text-sm text-slate-400">Amount</label>
+                    <label className="text-sm text-gray-500">Amount</label>
                   </div>
 
                   <div className="flex items-center">
-                    <div className="relative flex-grow text-slate-800 text-4xl font-bold">
+                    <div className="relative flex-grow text-gray-800 text-4xl font-bold">
                       <input
                         type="number"
                         placeholder="0.00"
@@ -131,23 +131,23 @@ export default function ActionModal({
                       />
                     </div>
                     <div className="flex flex-col gap-2 items-end-safe">
-                      <div className="w-[150px] bg-slate-100 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
+                      <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
                         <div className="flex items-center gap-2">
                           <div className="relative">
                             <img src={coinMetadata?.iconUrl || getBtcAssetIcon(lendingPool.name)} alt={lendingPool.name} className="w-7 h-7" />
                             <DynamicImage
                               path={`lending/${lendingPool.protocol}.png`}
                               alt={`${lendingPool.protocol}`}
-                              className="absolute bottom-0 -right-0.5 w-3 h-3 bg-slate-700 rounded-4xl"
+                              className="absolute bottom-0 -right-0.5 w-3 h-3 bg-gray-700 rounded-4xl"
                             />
                           </div>
-                          <span>{lendingPool.name}</span>
+                          <span className="font-semibold">{lendingPool.name}</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center text-slate-400">
+                  <div className="flex justify-between items-center text-gray-500">
                     <div>
                       ${(denominatedBalance * lendingPool.price).toFixed(2)}
                     </div>
@@ -155,7 +155,7 @@ export default function ActionModal({
                       <div className="flex items-center gap-2">
                         Balance: {denominatedBalance} {lendingPool.name}
                         {activeTab === "supply" && (
-                          <Button variant="outline" size="sm" className="text-xs bg-slate-100 shadow-none" onClick={() => setAmount(denominatedBalance.toString())}>
+                          <Button variant="outline" size="sm" className="text-xs bg-white/80 shadow-none" onClick={() => setAmount(denominatedBalance.toString())}>
                             MAX
                           </Button>
                         )}
@@ -168,7 +168,7 @@ export default function ActionModal({
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 text-gray-500">
+            <div className="flex flex-col gap-2 text-gray-600 font-semibold">
               <div className="flex items-start justify-between">
                 <div>Market</div>
                 <div className="text-primary flex flex-col items-end gap-1">
@@ -187,7 +187,7 @@ export default function ActionModal({
                     </div>
                     {lendingPool.name}
                   </div>
-                  <div className="text-gray-500 text-sm">${lendingPool.price.toFixed(2)}</div>
+                  <div className="text-gray-500 text-sm font-normal">${lendingPool.price.toFixed(2)}</div>
                 </div>
               </div>
               {activeTab === "supply" && (

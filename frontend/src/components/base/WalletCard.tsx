@@ -23,7 +23,7 @@ export function WalletCard({
   className = undefined,
 }) {
   return (
-    <Card className={cn("bg-slate-200 rounded-2xl p-4 overflow-hidden shadow-none w-full gap-4", className)}>
+    <Card className={cn("bg-white/50 rounded-2xl p-4 overflow-hidden shadow-none w-full gap-4", className)}>
       <CardHeader className="p-0 flex flex-row justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center`}>
@@ -52,7 +52,7 @@ export function WalletCard({
                   "flex bg-slate-100 rounded-2xl outline-none px-4 py-2 truncate"
                 }
               >
-                {formatTrimmed(address, 12)}
+                {formatTrimmed(address, 11)}
               </a>
             </div>
 
@@ -60,7 +60,7 @@ export function WalletCard({
 
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <div className="text-slate-500 text-sm">Balance</div>
+                <div className="text-gray-500 text-sm">Balance</div>
                 <div className="flex items-center">
                   {loading ? <Loader2 className="inline-flex h-4 w-4 animate-spin mr-2" /> : <span className="text-gray-800 text-lg font-medium mr-2">{balance}</span>}
                   <span className={`${currencyColor}`}>{currency}</span>

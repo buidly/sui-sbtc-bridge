@@ -26,7 +26,7 @@ function SuiConnect() {
       notConnectedElement={
         <ConnectModal
           trigger={
-            <Button variant="outline" className={"flex mx-auto"}>
+            <Button variant="default" className={"flex w-full bg-black hover:bg-black/80 text-white"}>
               Connect Sui Wallet
               {suiAutoConnectionStatus === "idle" && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
             </Button>
@@ -44,7 +44,7 @@ function SuiConnect() {
     >
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center">
-          <div className="text-slate-500 text-sm">sBTC Balance</div>
+          <div className="text-gray-500 text-sm">sBTC Balance</div>
           <div className="flex items-center">
             <span className="text-gray-800 text-lg font-medium mr-2">{formatBalance(suiBalances?.sbtcBalance, 8)}</span>
             <span className="text-orange-400">sBTC</span>

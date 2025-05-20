@@ -61,30 +61,30 @@ export function Staking() {
 
   return (
     <>
-      <div className="container max-w-5xl contain mx-auto bg-white/40 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
+      <div className="container max-w-5xl contain mx-auto bg-white/50 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
         {SUI_NETWORK === "testnet" && (
-          <Alert variant="warning">
+          <Alert variant="warning" className="opacity-90 bg-white/50 border-none text-[#f7931a]">
             <TriangleAlert className="h-4 w-4" />
-            <AlertTitle>Warning</AlertTitle>
-            <AlertDescription>
+            <AlertTitle className="font-semibold">Warning</AlertTitle>
+            <AlertDescription className="text-gray-600!">
               This is a testnet version of the platform. Please use the mainnet version if you want to stake BTC.
             </AlertDescription>
           </Alert>
         )}
         <div className="flex items-center justify-center">
-          <h1 className="text-3xl font-bold text-slate-700">
+          <h2 className="text-3xl font-bold text-black text-center">
             Lending
-          </h1>
+          </h2>
         </div>
         {loading ? (
-          <div className="flex justify-center items-center w-full flex-col gap-2 p-4">
-            <Loader2 className="inline-flex h-10 w-10 animate-spin ml-1 text-slate-500" />
-            <div className="text-slate-500">Loading</div>
+          <div className="flex justify-center items-center w-full flex-col gap-2 p-6">
+            <Loader2 className="inline-flex h-10 w-10 animate-spin ml-1 text-gray-500" />
+            <div className="text-gray-500">Loading</div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="bg-slate-200 rounded-2xl p-4">
-              <h3 className="text-xl text-slate-800">
+          <div className="flex flex-col gap-6">
+            <div className="bg-white/50 rounded-2xl p-6">
+              <h3 className="text-xl text-gray-800">
                 <strong>Wallet Balance:</strong> {formatBalance(aggregatedBalance, 8)} BTC
               </h3>
             </div>
@@ -99,13 +99,13 @@ export function Staking() {
                     )
                   }
                 >
-                  <Label htmlFor="advanced" className="text-sm text-slate-400">
+                  <Label htmlFor="advanced" className="text-sm text-gray-500">
                     {isAdvanced ? "Advanced view" : "Simple view"}
                   </Label>
                 </Tooltip>
                 <Switch id="advanced" checked={isAdvanced} onCheckedChange={() => setIsAdvanced(!isAdvanced)} />
               </div>
-              <table className="w-full text-left text-slate-800">
+              <table className="w-full text-left text-gray-800">
                 <thead>
                   <tr className="">
                     <th className="p-3">Assets</th>
@@ -118,7 +118,7 @@ export function Staking() {
                 </thead>
                 <tbody>
                   {pools.map((pool) => (
-                    <tr key={`${pool.protocol}-${pool.coinType}`} className="border-t border-slate-400/50">
+                    <tr key={`${pool.protocol}-${pool.coinType}`} className="border-t border-gray-600/20">
                       <td className="p-3 flex items-center gap-2">
                         <div className="relative">
                           <img
@@ -129,24 +129,24 @@ export function Staking() {
                           <DynamicImage
                             path={`lending/${pool.protocol}.png`}
                             alt={`${pool.protocol}`}
-                            className="absolute bottom-0 right-0 translate-y-1/4 w-4 h-4 bg-slate-700 rounded-4xl"
+                            className="absolute bottom-0 right-0 translate-y-1/4 w-4 h-4 bg-gray-700 rounded-4xl"
                           />
                         </div>
                         <div>
-                          <div className="font-medium text-slate-800">{coinsMetadata?.[pool.coinType]?.symbol}</div>
-                          <div className="text-sm text-slate-800">${pool.price.toFixed(2)}</div>
+                          <div className="font-semibold text-gray-800">{coinsMetadata?.[pool.coinType]?.symbol}</div>
+                          <div className="text-sm text-gray-800">${pool.price.toFixed(2)}</div>
                         </div>
                       </td>
                       {isAdvanced && (
                         <td className="p-3">
-                          <strong>
+                          <strong className="font-semibold">
                             {formatBalance(balances?.[pool.coinType] || 0n, coinsMetadata?.[pool.coinType]?.decimals)}{" "}
                             {coinsMetadata?.[pool.coinType]?.symbol}
                           </strong>
                         </td>
                       )}
                       <td className="p-3">
-                        <strong>
+                        <strong className="font-semibold">
                           {formatBalance(
                             allLendingAddressInfo.find((info) => info.protocol === pool.protocol && info.name === pool.name)
                               ?.underlyingBalance || 0n,
@@ -155,22 +155,22 @@ export function Staking() {
                           {coinsMetadata?.[pool.coinType]?.symbol}
                         </strong>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 font-semibold">
                         <ApyDisplay baseApy={pool.baseSupplyApy} rewards={pool.supplyRewards} totalApy={pool.supplyApy} />
                       </td>
                       <td className="p-3">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col font-semibold">
                           ${pool.tvl.toLocaleString()}{" "}
-                          <small>
+                          <small className="font-normal">
                             ({pool.totalSupply.toFixed(2)} {coinsMetadata?.[pool.coinType]?.symbol})
                           </small>
                         </div>
                       </td>
                       <td className="p-3 flex justify-end gap-2">
-                        <Button variant="default" onClick={() => { setSelectedPool(pool); setSelectedAction('supply') }}>
+                        <Button variant="default" className="text-sm" onClick={() => { setSelectedPool(pool); setSelectedAction('supply') }}>
                           Supply
                         </Button>
-                        <Button variant="outline" onClick={() => { setSelectedPool(pool); setSelectedAction('withdraw') }}>
+                        <Button variant="default" className="text-sm bg-black hover:bg-black/80" onClick={() => { setSelectedPool(pool); setSelectedAction('withdraw') }}>
                           Withdraw
                         </Button>
                       </td>

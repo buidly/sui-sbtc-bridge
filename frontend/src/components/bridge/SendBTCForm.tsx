@@ -167,7 +167,7 @@ export default function SendBTCForm() {
   };
 
   return (
-    <Card className="bg-slate-200 rounded-2xl p-6 relative">
+    <Card className="bg-white/50 rounded-2xl p-6 relative">
       {stacksAddressInfo && suiAddress && stacksBalances?.sbtcBalance > 0 && (
         <button
           className="absolute top-3 right-3 text-slate-300 hover:text-white transition-colors bg-slate-800 rounded-sm cursor-pointer"
@@ -185,9 +185,9 @@ export default function SendBTCForm() {
 
         <CardTitle className="text-2xl font-bold text-center text-slate-800">
           Step 1 - Bridge Bitcoin
-          {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
+          {loading && <Loader2 className="inline-flex h-6 w-6 ml-2 animate-spin text-gray-400" />}
         </CardTitle>
-        <CardDescription className="text-center text-slate-400">Convert BTC tokens to sBTC</CardDescription>
+        <CardDescription className="text-center text-gray-500">Convert BTC tokens to sBTC</CardDescription>
       </CardHeader>
       <CardContent className="p-0 max-w-md mx-auto w-full">
         {/* <div className="grid gap-3 text-slate-300">
@@ -200,46 +200,61 @@ export default function SendBTCForm() {
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-slate-300">
-                Amount
-              </Label>
-              <div className="relative">
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="0.00"
-                  step="0.00000001"
-                  min="0.001"
-                  max={String(denominatedBtcBalance)}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="pr-28 text-slate-300"
-                  required
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center">
-                  <span className="pr-2 text-slate-400 font-medium">BTC</span>
-                  <button
-                    type="button"
-                    onClick={() => setAmount(String(denominatedBtcBalance))}
-                    className="px-2 py-1 mr-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded cursor-pointer"
-                  >
-                    Max
-                  </button>
+            <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
+              <div className="flex justify-between items-center mb-2 cursor-pointer">
+                <label className="text-sm text-gray-500">Amount</label>
+              </div>
+              <div className="flex items-center">
+                <div className="relative flex-grow text-gray-800 text-4xl font-bold">
+                  <input
+                    id="amount"
+                    type="number"
+                    placeholder="0.00"
+                    step="0.00000001"
+                    min="0.001"
+                    max={String(denominatedBtcBalance)}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-2 items-end-safe">
+                  <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <img src={bitcoinLogo} alt={'bitcoin logo'} className="w-7 h-7" />
+                      </div>
+                      <span className="font-semibold">BTC</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-gray-500">
+                <div>
+                  {/* $0.0 */}
+                </div>
+                <div className="text-sm flex items-center gap-2">
+                  Balance:{" "}
+                  {denominatedBtcBalance}
+                  {/* {inputCoin && (<>{formatBalance(inputCoin.balance, inputCoin.decimals)} {inputCoin.symbol}</>)} */}
+                  <Button variant="outline" size="sm" className="text-xs bg-white/80 shadow-none" onClick={() => setAmount(String(denominatedBtcBalance))}>
+                    MAX
+                  </Button>
                 </div>
               </div>
             </div>
 
             {parseFloat(amount) < 0.001 && (
-              <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+              <Alert variant="default" className="bg-white/50 text-[#f7931a] border-[#f7931a]">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>Minimum deposit amount is 0.001 BTC</AlertDescription>
+                <AlertDescription className="text-gray-600">Minimum deposit amount is 0.001 BTC</AlertDescription>
               </Alert>
             )}
             {parseFloat(amount) > denominatedBtcBalance && (
-              <Alert variant="default" className="bg-amber-50 text-amber-800 border-amber-200">
+              <Alert variant="default" className="bg-white/50 text-[#f7931a] border-[#f7931a]">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>You don't have enough BTC in your wallet</AlertDescription>
+                <AlertDescription className="text-gray-600">You don't have enough BTC in your wallet</AlertDescription>
               </Alert>
             )}
           </div>
@@ -266,6 +281,6 @@ export default function SendBTCForm() {
           )}
         </Button>
       </CardFooter>
-    </Card>
+    </Card >
   );
 }

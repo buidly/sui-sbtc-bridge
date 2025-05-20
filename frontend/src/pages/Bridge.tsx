@@ -13,8 +13,8 @@ export default function Bridge() {
   const { stacksAddressInfo, btcAddressInfo, bridgeStepInfo } = useApp();
 
   return (
-    <div className="container max-w-5xl contain mx-auto bg-white/30 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
-      <h2 className="text-3xl font-bold text-slate-700 text-center">
+    <div className="container max-w-5xl contain mx-auto bg-white/50 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
+      <h2 className="text-3xl font-bold text-black text-center">
         BTC Bridge
       </h2>
 
@@ -32,9 +32,9 @@ export default function Bridge() {
               ((!bridgeStepInfo?.step || bridgeStepInfo?.step === "BTC_COMPLETED") &&
                 stacksAddressInfo?.type === "GENERATED" &&
                 !stacksAddressInfo?.privateKey)) && (
-              <Card className="bg-slate-200 rounded-2xl p-4">
-                <CardHeader className="space-y-1">
-                  <CardTitle className="text-2xl font-bold text-center text-white">
+              <Card className="bg-white/50 rounded-2xl p-4">
+                <CardHeader className="space-y-1 max-w-lg mx-auto">
+                  <CardTitle className="text-xl font-bold text-center text-gray-600">
                     Connect a Bitcoin & Stacks wallet first
                   </CardTitle>
                 </CardHeader>

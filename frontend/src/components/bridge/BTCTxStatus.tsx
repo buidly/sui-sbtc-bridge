@@ -21,9 +21,9 @@ export default function BTCTxStatus() {
 
   if (!stacksAddressInfo) {
     return (
-      <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-white">
+      <Card className="bg-white/50 rounded-2xl p-4">
+        <CardHeader className="space-y-1 max-w-lg mx-auto">
+          <CardTitle className="text-xl font-bold text-center text-gray-600">
             Connect a Stacks wallet first
           </CardTitle>
         </CardHeader>
@@ -32,41 +32,43 @@ export default function BTCTxStatus() {
   }
 
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm gap-4">
+    <Card className="bg-white/50 rounded-2xl p-6 relative">
       <CardHeader className="space-y-1">
         <div className="flex justify-center mb-6">
           <div className="bg-amber-500/20 rounded-full p-4">
             <Bitcoin className="h-10 w-10 text-orange-500" />
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold text-center text-white">
+        <CardTitle className="text-2xl font-bold text-center text-gray-800">
           Step 1 - Bridge Bitcoin Status
-          {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-orange-500" />}
+          {loading && <Loader2 className="inline-flex h-6 w-6 ml-2 animate-spin text-gray-500" />}
         </CardTitle>
         {(bridgeStepInfo.step === "BTC_SENT_PENDING" || bridgeStepInfo.step === "BTC_SENT_MINTING") && (
-          <CardDescription className="text-center text-slate-400">Waiting for sBTC to arrive on Stacks</CardDescription>
+          <CardDescription className="text-center text-gray-500">Waiting for sBTC to arrive on Stacks</CardDescription>
         )}
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 text-slate-300">
-          <div className="space-y-2">
-            <p className="mb-0 flex items-center">
-              <strong className="mr-1 ">Amount:</strong> {formatBalance(btcAmount, 8)}
-              <span className="text-amber-400 ml-1">BTC</span>
+      <CardContent className="p-0 max-w-md mx-auto w-full">
+        <div className="flex flex-col gap-2 text-gray-500 font-semibold">
+          <div className="flex justify-between items-center">
+            <div>Amount</div>
+            <div className="flex items-center">
+              <span className="text-gray-800 font-bold">{formatBalance(btcAmount, 8)}</span>
+              <span className="text-amber-400 ml-2">BTC</span>
               <img src={bitcoinLogo} alt={"Bitcoin Logo"} className="ml-1 h-4 w-4" />
-            </p>
-
-            <p>
-              <strong>Stacks Address:</strong>{" "}
+            </div>
+          </div>
+          <div className="flex justify-between items-center">
+            <div>Stacks Address</div>
+            <div className="flex items-center">
               <a href={getExplorerUrlAddress("STACKS", recipient)} target="_blank" className="underline">
                 {formatTrimmed(recipient)}
               </a>
-            </p>
+            </div>
           </div>
         </div>
 
         {(bridgeStepInfo.step === "BTC_SENT_PENDING" || bridgeStepInfo.step === "BTC_SENT_MINTING") && (
-          <Alert variant="default" className="bg-amber-50 border-amber-200 mt-3">
+          <Alert variant="default" className="bg-white/50 border-gray-200 mt-3">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Waiting for BTC transaction to be confirmed
@@ -80,35 +82,37 @@ export default function BTCTxStatus() {
                   {formatTrimmed(bridgeStepInfo.btcTxId)}
                 </a>
               </p>
-              <p className="text-red-500">To avoid losing your progress, please keep this page open.</p>
+              <p className="text-red-500 font-semibold">To avoid losing your progress, please keep this page open.</p>
             </AlertDescription>
           </Alert>
         )}
 
         {bridgeStepInfo.step === "BTC_FAILED" && (
-          <Alert variant="destructive" className="bg-red-50 border-red-200 mt-3">
+          <Alert variant="destructive" className="bg-white/50 border-gray-200 mt-3">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="font-semibold">
               There was a problem confirming your BTC deposit. Please check the official Stacks dApp
             </AlertDescription>
           </Alert>
         )}
       </CardContent>
-      <CardFooter className="flex-col">
-        <div className="w-full flex-row flex justify-between items-center">
+      <CardFooter className="p-0 max-w-md mx-auto w-full flex-col">
+        <div className="w-full justify-between items-center mb-4">
           <a
             href={`https://bridge.sbtc-emily-dev.com/?txId=${bridgeStepInfo.btcTxId}&step=3&amount=${btcAmount}`}
             target="_blank"
           >
             <Button
+              variant="default"
+              size="lg"
               className={cn(
-                "cursor-pointer w-full bg-gradient-to-r",
-                bridgeStepInfo.step === "BTC_FAILED"
-                  ? "from-red-400 to-red-600 hover:from-red-400/90 hover:to-red-600/90"
-                  : "from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+                "cursor-pointer w-full",
+                // bridgeStepInfo.step === "BTC_FAILED"
+                //   ? "from-red-400 to-red-600 hover:from-red-400/90 hover:to-red-600/90"
+                //   : "from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
               )}
             >
-              View on Stacks Bridge dApp
+              View on Stacks Bridge
             </Button>
           </a>
         </div>
@@ -122,10 +126,10 @@ export default function BTCTxStatus() {
         )}
 
         {stacksTxId && (
-          <div className="w-full flex-row flex justify-between items-center">
+          <div className="w-full justify-between items-center">
             <a href={getExplorerUrlTransaction("STACKS", stacksTxId)} target="_blank">
-              <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700">
-                View Stacks tx
+              <Button variant="default" size="xl" className="w-full">
+                View Stacks transaction
               </Button>
             </a>
           </div>

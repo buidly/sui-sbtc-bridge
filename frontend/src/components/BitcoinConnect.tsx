@@ -54,8 +54,8 @@ function BitcoinConnect() {
       icon={<img src={bitcoinLogo} alt={"Bitcoin Logo"} className="h-6 w-6" />}
       isConnected={!!btcAddressInfo}
       notConnectedElement={
-        <div className={"flex flex-col gap-2 w-50 mx-auto"}>
-          <Button onClick={connectWalletLeather} variant="default">
+        <div className={"flex flex-col gap-2 mb-0 w-full"}>
+          <Button onClick={connectWalletLeather} variant="default" className="bg-black hover:bg-black/80">
             <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
           </Button>
           {/* <Button onClick={connectWalletOther} variant="default">
