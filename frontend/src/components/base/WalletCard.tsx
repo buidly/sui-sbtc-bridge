@@ -49,7 +49,7 @@ export function WalletCard({
                 href={getExplorerUrlAddress(addressType, address)}
                 target={"_blank"}
                 className={
-                  "flex bg-slate-100 rounded-2xl outline-none px-4 py-2 truncate"
+                  "flex bg-white/80 rounded-2xl outline-none px-4 py-2 truncate"
                 }
               >
                 {formatTrimmed(address, 11)}

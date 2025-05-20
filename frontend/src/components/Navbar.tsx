@@ -13,7 +13,7 @@ function Navbar() {
   const { mutate: disconnectWallet } = useDisconnectWallet();
 
   return (
-    <div className="container mx-auto flex items-center justify-between bg-white/50 backdrop-blur-lg px-8 py-6 rounded-3xl shadow">
+    <div className="container mx-auto flex items-center justify-between bg-white/40 backdrop-blur-lg px-8 py-6 rounded-3xl shadow">
       <div className="flex items-center gap-6 min-w-md">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-wide">

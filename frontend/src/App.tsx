@@ -12,7 +12,7 @@ function App() {
   const suiAutoConnectionStatus = useAutoConnectWallet();
 
   return (
-    <div className="min-h-screen p-6 flex flex-col gap-10 bg-[url(/bg_blue.jpg)] bg-cover bg-center bg-fixed bg-no-repeat">
+    <div className="min-h-screen p-6 flex flex-col gap-10 bg-[url(/bg_orange_2.jpg)] bg-cover bg-center bg-fixed bg-no-repeat">
       <Navbar />
       <div>
         {suiAutoConnectionStatus === "idle" ? (
