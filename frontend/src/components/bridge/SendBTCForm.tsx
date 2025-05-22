@@ -170,7 +170,7 @@ export default function SendBTCForm() {
     <Card className="bg-white/50 rounded-2xl p-6 relative">
       {stacksAddressInfo && suiAddress && stacksBalances?.sbtcBalance > 0 && (
         <button
-          className="absolute top-3 right-3 text-slate-300 hover:text-white transition-colors bg-slate-800 rounded-sm cursor-pointer"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-400 cursor-pointer"
           onClick={() => bridgeSBTC()}
         >
           Bridge sBTC <ArrowRight className="h-5 w-5 inline" />
@@ -190,14 +190,6 @@ export default function SendBTCForm() {
         <CardDescription className="text-center text-gray-500">Convert BTC tokens to sBTC</CardDescription>
       </CardHeader>
       <CardContent className="p-0 max-w-md mx-auto w-full">
-        {/* <div className="grid gap-3 text-slate-300">
-          <p className="mb-2 flex items-center">
-            <strong className="mr-1">BTC Balance:</strong> {formatBalance(btcBalance, 8)}
-            <span className="text-amber-500 ml-1">BTC</span>
-            <img src={bitcoinLogo} alt={"BTC Logo"} className="ml-1 h-4 w-4" />
-          </p>
-        </div> */}
-
         <form onSubmit={handleSubmit}>
           <div className="grid gap-3">
             <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
@@ -219,8 +211,8 @@ export default function SendBTCForm() {
                     required
                   />
                 </div>
-                <div className="flex flex-col gap-2 items-end-safe">
-                  <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
+                <div className="flex flex-col gap-2">
+                  <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg justify-items-center">
                     <div className="flex items-center gap-2">
                       <div className="relative">
                         <img src={bitcoinLogo} alt={'bitcoin logo'} className="w-7 h-7" />

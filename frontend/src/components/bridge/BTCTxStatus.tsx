@@ -107,9 +107,9 @@ export default function BTCTxStatus() {
               size="lg"
               className={cn(
                 "cursor-pointer w-full",
-                // bridgeStepInfo.step === "BTC_FAILED"
-                //   ? "from-red-400 to-red-600 hover:from-red-400/90 hover:to-red-600/90"
-                //   : "from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700",
+                bridgeStepInfo.step === "BTC_FAILED"
+                  ? "from-red-400 to-red-600 hover:from-red-400/90 hover:to-red-600/90"
+                  : "",
               )}
             >
               View on Stacks Bridge

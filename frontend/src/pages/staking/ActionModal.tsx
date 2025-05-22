@@ -7,6 +7,7 @@ import DynamicImage from "@/components/DynamicImage.tsx";
 import { getBtcAssetIcon } from "@/services/config.ts";
 import { Loader2 } from "lucide-react";
 import { toDecimalAmount } from "@/lib/helpers.ts";
+import { useApp } from "@/context/app.context.tsx";
 
 export default function ActionModal({
   isOpen,
@@ -31,6 +32,8 @@ export default function ActionModal({
   loading: boolean;
   selectedAction: "supply" | "withdraw";
 }) {
+  const { suiAddress } = useApp();
+
   const [activeTab, setActiveTab] = useState<"supply" | "withdraw">(selectedAction || "supply");
   const [amount, setAmount] = useState("");
 
@@ -86,20 +89,18 @@ export default function ActionModal({
         <form onSubmit={handleSubmit}>
           <div className="flex">
             <button
-              className={`flex-1 py-4 text-center text-lg font-medium ${activeTab === "supply"
-                ? "bg-primary text-white"
-                : "text-gray-500 hover:text-primary"
-                }`}
+              className={`flex-1 py-4 text-center text-lg font-medium ${
+                activeTab === "supply" ? "bg-primary text-white" : "text-gray-500 hover:text-primary"
+              }`}
               onClick={() => setActiveTab("supply")}
               type="button"
             >
               SUPPLY
             </button>
             <button
-              className={`flex-1 py-4 text-center text-lg font-medium ${activeTab === "withdraw"
-                ? "bg-primary text-white"
-                : "text-gray-500 hover:text-primary"
-                }`}
+              className={`flex-1 py-4 text-center text-lg font-medium ${
+                activeTab === "withdraw" ? "bg-primary text-white" : "text-gray-500 hover:text-primary"
+              }`}
               onClick={() => setActiveTab("withdraw")}
               type="button"
             >
@@ -109,7 +110,6 @@ export default function ActionModal({
 
           <div className="p-6 space-y-6">
             <div className="relative">
-
               <div className="">
                 <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
                   <div className="flex justify-between items-center mb-2 cursor-pointer">
@@ -134,7 +134,11 @@ export default function ActionModal({
                       <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
                         <div className="flex items-center gap-2">
                           <div className="relative">
-                            <img src={coinMetadata?.iconUrl || getBtcAssetIcon(lendingPool.name)} alt={lendingPool.name} className="w-7 h-7" />
+                            <img
+                              src={coinMetadata?.iconUrl || getBtcAssetIcon(lendingPool.name)}
+                              alt={lendingPool.name}
+                              className="w-7 h-7"
+                            />
                             <DynamicImage
                               path={`lending/${lendingPool.protocol}.png`}
                               alt={`${lendingPool.protocol}`}
@@ -148,14 +152,17 @@ export default function ActionModal({
                   </div>
 
                   <div className="flex justify-between items-center text-gray-500">
-                    <div>
-                      ${(denominatedBalance * lendingPool.price).toFixed(2)}
-                    </div>
+                    <div>${(denominatedBalance * lendingPool.price).toFixed(2)}</div>
                     <div className="text-sm flex items-center gap-2">
                       <div className="flex items-center gap-2">
                         Balance: {denominatedBalance} {lendingPool.name}
                         {activeTab === "supply" && (
-                          <Button variant="outline" size="sm" className="text-xs bg-white/80 shadow-none" onClick={() => setAmount(denominatedBalance.toString())}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs bg-white/80 shadow-none"
+                            onClick={() => setAmount(denominatedBalance.toString())}
+                          >
                             MAX
                           </Button>
                         )}
@@ -163,7 +170,6 @@ export default function ActionModal({
                       {/* <span className="text-gray-400">≈ ${(denominatedBalance * lendingPool.price).toFixed(2)}</span> */}
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -212,7 +218,7 @@ export default function ActionModal({
               disabled={!amount || parseFloat(amount) <= 0 || parseFloat(amount) > denominatedBalance || loading}
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {activeTab === "supply" ? "Supply" : "Withdraw All"}
+              {!suiAddress ? <>Please connect a wallet</> : activeTab === "supply" ? "Supply" : "Withdraw All"}
             </Button>
           </div>
         </form>

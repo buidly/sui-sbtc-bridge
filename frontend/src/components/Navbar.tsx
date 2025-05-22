@@ -47,7 +47,7 @@ function Navbar() {
 
       <div className="flex items-center justify-end gap-6 min-w-md">
         {isConnected ? (
-          <Button variant="outline" onClick={() => disconnectWallet()}>
+          <Button variant="outline" onClick={() => disconnectWallet()} className="cursor-pointer">
             <img src={`https://api.dicebear.com/9.x/thumbs/svg?seed=${suiAddress}7&flip=false&scale=80&backgroundType=gradientLinear`} alt="Sui Logo" className="w-6 h-6 mr-2 rounded-full" />
             {formatTrimmed(suiAddress, 6)}
           </Button>

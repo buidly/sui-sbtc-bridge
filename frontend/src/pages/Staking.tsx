@@ -1,8 +1,5 @@
 import { useMemo, useState } from "react";
-import { useApp } from "@/context/app.context.tsx";
-import { Navigate } from "react-router-dom";
-import { ROUTES } from "@/lib/routes.ts";
-import { TriangleAlert, Loader2 } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 import DynamicImage from "@/components/DynamicImage.tsx";
 import { ApyDisplay } from "@/pages/staking/ApyDisplay.tsx";
 import ActionModal from "@/pages/staking/ActionModal.tsx";
@@ -18,8 +15,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 export function Staking() {
-  const { suiAddress } = useApp();
-
   const {
     pools,
     allLendingAddressInfo,
@@ -34,7 +29,7 @@ export function Staking() {
   } = useStaking();
 
   const [selectedPool, setSelectedPool] = useState<LendingPool | null>(null);
-  const [selectedAction, setSelectedAction] = useState<"supply" | "withdraw" | null>('supply');
+  const [selectedAction, setSelectedAction] = useState<"supply" | "withdraw" | null>("supply");
   const selectedAddressLendingInfo = useMemo(() => {
     if (!selectedPool) {
       return null;
@@ -55,10 +50,6 @@ export function Staking() {
     }, 0n);
   }, [balances]);
 
-  if (!suiAddress) {
-    return <Navigate to={ROUTES.home} replace />;
-  }
-
   return (
     <>
       <div className="container max-w-5xl contain mx-auto bg-white/50 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
@@ -72,9 +63,7 @@ export function Staking() {
           </Alert>
         )}
         <div className="flex items-center justify-center">
-          <h2 className="text-3xl font-bold text-black text-center">
-            Lending
-          </h2>
+          <h2 className="text-3xl font-bold text-black text-center">Lending</h2>
         </div>
         {loading ? (
           <div className="flex justify-center items-center w-full flex-col gap-2 p-6">
@@ -148,15 +137,20 @@ export function Staking() {
                       <td className="p-3">
                         <strong className="font-semibold">
                           {formatBalance(
-                            allLendingAddressInfo.find((info) => info.protocol === pool.protocol && info.name === pool.name)
-                              ?.underlyingBalance || 0n,
+                            allLendingAddressInfo.find(
+                              (info) => info.protocol === pool.protocol && info.name === pool.name,
+                            )?.underlyingBalance || 0n,
                             coinsMetadata?.[pool.coinType]?.decimals,
                           )}{" "}
                           {coinsMetadata?.[pool.coinType]?.symbol}
                         </strong>
                       </td>
                       <td className="p-3 font-semibold">
-                        <ApyDisplay baseApy={pool.baseSupplyApy} rewards={pool.supplyRewards} totalApy={pool.supplyApy} />
+                        <ApyDisplay
+                          baseApy={pool.baseSupplyApy}
+                          rewards={pool.supplyRewards}
+                          totalApy={pool.supplyApy}
+                        />
                       </td>
                       <td className="p-3">
                         <div className="flex flex-col font-semibold">
@@ -167,10 +161,24 @@ export function Staking() {
                         </div>
                       </td>
                       <td className="p-3 flex justify-end gap-2">
-                        <Button variant="default" className="text-sm" onClick={() => { setSelectedPool(pool); setSelectedAction('supply') }}>
+                        <Button
+                          variant="default"
+                          className="text-sm"
+                          onClick={() => {
+                            setSelectedPool(pool);
+                            setSelectedAction("supply");
+                          }}
+                        >
                           Supply
                         </Button>
-                        <Button variant="default" className="text-sm bg-black hover:bg-black/80" onClick={() => { setSelectedPool(pool); setSelectedAction('withdraw') }}>
+                        <Button
+                          variant="default"
+                          className="text-sm bg-black hover:bg-black/80"
+                          onClick={() => {
+                            setSelectedPool(pool);
+                            setSelectedAction("withdraw");
+                          }}
+                        >
                           Withdraw
                         </Button>
                       </td>
@@ -185,11 +193,13 @@ export function Staking() {
 
       {/* OLD UI */}
       <div className="container mx-auto px-4 py-8 space-y-8">
-
         {selectedPool && (
           <ActionModal
             isOpen={!!selectedPool}
-            onClose={() => { setSelectedPool(null); setSelectedAction('supply') }}
+            onClose={() => {
+              setSelectedPool(null);
+              setSelectedAction("supply");
+            }}
             lendingPool={selectedPool}
             addressLendingInfo={selectedAddressLendingInfo}
             coinMetadata={coinsMetadata?.[selectedPool.coinType]}

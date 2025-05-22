@@ -31,13 +31,11 @@ export function WalletCard({
           </div>
           <CardTitle className="text-lg text-slate-800">{title}</CardTitle>
         </div>
-        <Button
-          variant="ghost"
-          className=" text-slate-500 hover:text-black"
-          onClick={disconnectWallet}
-        >
-          <UnplugIcon />
-        </Button>
+        {isConnected && (
+          <Button variant="ghost" className=" text-slate-500 hover:text-black" onClick={disconnectWallet}>
+            <UnplugIcon />
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="p-0">
         {!isConnected ? (
@@ -48,9 +46,7 @@ export function WalletCard({
               <a
                 href={getExplorerUrlAddress(addressType, address)}
                 target={"_blank"}
-                className={
-                  "flex bg-white/80 rounded-2xl outline-none px-4 py-2 truncate"
-                }
+                className={"flex bg-white/80 rounded-2xl outline-none px-4 py-2 truncate"}
               >
                 {formatTrimmed(address, 11)}
               </a>
@@ -62,7 +58,11 @@ export function WalletCard({
               <div className="flex justify-between items-center">
                 <div className="text-gray-500 text-sm">Balance</div>
                 <div className="flex items-center">
-                  {loading ? <Loader2 className="inline-flex h-4 w-4 animate-spin mr-2" /> : <span className="text-gray-800 text-lg font-medium mr-2">{balance}</span>}
+                  {loading ? (
+                    <Loader2 className="inline-flex h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <span className="text-gray-800 text-lg font-medium mr-2">{balance}</span>
+                  )}
                   <span className={`${currencyColor}`}>{currency}</span>
                   <span className="text-lg">{currencyIcon}</span>
                 </div>

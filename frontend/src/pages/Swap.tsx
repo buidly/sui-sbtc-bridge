@@ -38,6 +38,10 @@ export default function Swap() {
       return;
     }
 
+    if (!inputCoin || !outputCoin || !inputAmount) {
+      return;
+    }
+
     if (parseFloat(inputAmount) > inputCoin.denominatedBalance) {
       setInputAmount(inputCoin.denominatedBalance.toString());
       return;
@@ -85,6 +89,7 @@ export default function Swap() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
+      !suiAddress ||
       !inputCoin ||
       !outputCoin ||
       !inputAmount ||
@@ -114,13 +119,10 @@ export default function Swap() {
   // Swap input and output coins
   const handleSwapCoins = () => {
     const tempCoin = inputCoin;
+
     setInputCoin(outputCoin);
     setOutputCoin(tempCoin);
   };
-
-  if (!suiAddress) {
-    return <Navigate to={ROUTES.home} replace />;
-  }
 
   return (
     <AnimatePresence mode="wait">
@@ -132,9 +134,7 @@ export default function Swap() {
         transition={{ duration: 0.2 }}
       >
         <div className="container max-w-xl contain mx-auto bg-white/50 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
-          <h2 className="text-3xl font-bold text-black text-center">
-            BTC StableSwap
-          </h2>
+          <h2 className="text-3xl font-bold text-black text-center">BTC StableSwap</h2>
           {isLoading ? (
             <div className="flex justify-center items-center w-full flex-col gap-2 p-4">
               <Loader2 className="inline-flex h-10 w-10 animate-spin ml-1 text-gray-500" />
@@ -165,7 +165,10 @@ export default function Swap() {
                     </div>
 
                     <div className="flex flex-col gap-2 items-end-safe">
-                      <Select value={inputCoin?.id} onValueChange={(value) => setInputCoin(coins.find((c) => c.id === value))}>
+                      <Select
+                        value={inputCoin?.id || ""}
+                        onValueChange={(value) => setInputCoin(coins.find((c) => c.id === value))}
+                      >
                         <SelectTrigger className="w-[180px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-4 py-6 text-lg">
                           <SelectValue placeholder="Theme" />
                         </SelectTrigger>
@@ -189,13 +192,20 @@ export default function Swap() {
                   </div>
 
                   <div className="flex justify-between items-center text-gray-500">
-                    <div>
-                      {/* $0.0 */}
-                    </div>
+                    <div>{/* $0.0 */}</div>
                     <div className="text-sm flex items-center gap-2">
                       Balance:{" "}
-                      {inputCoin && (<>{formatBalance(inputCoin.balance, inputCoin.decimals)} {inputCoin.symbol}</>)}
-                      <Button variant="outline" size="sm" className="text-xs bg-white/80 shadow-none" onClick={() => setInputAmount(inputCoin.denominatedBalance.toString())}>
+                      {inputCoin && (
+                        <>
+                          {formatBalance(inputCoin.balance, inputCoin.decimals)} {inputCoin.symbol}
+                        </>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs bg-white/80 shadow-none"
+                        onClick={() => setInputAmount(inputCoin.denominatedBalance.toString())}
+                      >
                         MAX
                       </Button>
                     </div>
@@ -234,8 +244,14 @@ export default function Swap() {
 
                     <div className="flex flex-col gap-2 items-end-safe">
                       <Select
-                        value={outputCoin?.id}
-                        onValueChange={(value) => setOutputCoin(coins.find((c) => c.id === value))}
+                        value={outputCoin?.id || ""}
+                        onValueChange={(value) => {
+                          if (!value) {
+                            return;
+                          }
+
+                          setOutputCoin(coins.find((c) => c.id === value));
+                        }}
                       >
                         <SelectTrigger className="w-[180px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-4 py-6 text-lg">
                           <SelectValue placeholder="Theme" />
@@ -262,9 +278,7 @@ export default function Swap() {
                   </div>
 
                   <div className="flex justify-between items-center text-gray-500">
-                    <div className="opacity-0">
-                      $0.0
-                    </div>
+                    <div className="opacity-0">$0.0</div>
                   </div>
                 </div>
               </div>
@@ -280,9 +294,13 @@ export default function Swap() {
                     />
                     1{" "}
                     {!exchangeRateInversed ? (
-                      <>{inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}</>
+                      <>
+                        {inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}
+                      </>
                     ) : (
-                      <>{outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}</>
+                      <>
+                        {outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}
+                      </>
                     )}
                   </div>
                 </div>
@@ -311,7 +329,9 @@ export default function Swap() {
                   parseFloat(inputAmount) > inputCoin.denominatedBalance
                 }
               >
-                {isSubmitting ? (
+                {!suiAddress ? <>
+                  Please connect a wallet
+                </> : isSubmitting ? (
                   <div className="flex items-center justify-center">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     Processing Swap...
