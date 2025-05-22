@@ -8,6 +8,8 @@ import { CoinWithBalance, useSwap } from "@/hooks/use-swap.ts";
 import { formatBalance, toDenominatedAmount } from "@/lib/helpers.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { applySlippage, getOutputAmount } from "@/lib/stableswap.ts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
 
 export default function Swap() {
   const { suiAddress } = useApp();
@@ -129,167 +131,197 @@ export default function Swap() {
         exit={{ opacity: 0, x: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-lg">
-            <div className="bg-slate-800 border border-slate-700 shadow-xl backdrop-blur-sm text-white relative rounded-lg w-full max-w-md p-6">
-              <h2 className="text-2xl font-bold text-center mb-6">
-                Swap BTC Coins {isLoading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
-              </h2>
+        <div className="container max-w-xl contain mx-auto bg-white/50 backdrop-blur-lg rounded-2xl p-6 shadow flex flex-col gap-6">
+          <h2 className="text-3xl font-bold text-black text-center">
+            BTC StableSwap
+          </h2>
+          {isLoading ? (
+            <div className="flex justify-center items-center w-full flex-col gap-2 p-4">
+              <Loader2 className="inline-flex h-10 w-10 animate-spin ml-1 text-gray-500" />
+              <div className="text-gray-500">Loading</div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {/* Input coin selection and amount */}
+              <div className="">
+                <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-center mb-2 cursor-pointer">
+                    <label className="text-sm text-gray-500">From</label>
+                  </div>
 
-              <form onSubmit={handleSubmit}>
-                {/* Input coin selection and amount */}
-                <div className="mb-4">
-                  <div className="bg-slate-700 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm text-slate-400">From</label>
-                      <span className="text-sm text-slate-400">
-                        Balance:{" "}
-                        {inputCoin && (
-                          <>
-                            {formatBalance(inputCoin.balance, inputCoin.decimals)} {inputCoin.symbol}
-                          </>
-                        )}
-                      </span>
+                  <div className="flex items-center">
+                    <div className="relative flex-grow text-gray-800 text-4xl font-bold">
+                      <input
+                        type="number"
+                        placeholder="0"
+                        step="0.00000001"
+                        min="0.00000001"
+                        max={inputCoin?.denominatedBalance}
+                        value={inputAmount}
+                        onChange={(e) => setInputAmount(e.target.value)}
+                        className="w-full p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        required
+                      />
                     </div>
 
-                    <div className="flex space-x-2">
-                      <div className="relative flex-grow">
-                        <input
-                          type="number"
-                          placeholder="0.00000000"
-                          step="0.00000001"
-                          min="0.00000001"
-                          max={inputCoin?.denominatedBalance}
-                          value={inputAmount}
-                          onChange={(e) => setInputAmount(e.target.value)}
-                          className="w-full p-3 bg-slate-600 border border-slate-500 rounded-lg text-white"
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setInputAmount(inputCoin.denominatedBalance.toString())}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs bg-slate-500 hover:bg-slate-400 text-white rounded"
-                        >
-                          MAX
-                        </button>
-                      </div>
+                    <div className="flex flex-col gap-2 items-end-safe">
+                      <Select value={inputCoin?.id} onValueChange={(value) => setInputCoin(coins.find((c) => c.id === value))}>
+                        <SelectTrigger className="w-[180px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-4 py-6 text-lg">
+                          <SelectValue placeholder="Theme" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          {coins.map((coin) => (
+                            <SelectItem key={coin.id} value={coin.id}>
+                              <div className="flex items-center gap-2">
+                                <div className="relative">
+                                  <img src={bitcoinLogo} alt={coin.symbol} className="w-7 h-7" />
+                                  <span className="absolute bottom-0 -right-1 text-[8px] bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center">
+                                    {coin.symbol.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <span className="font-semibold">{coin.symbol}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                      <select
-                        value={inputCoin?.id}
-                        onChange={(e) => setInputCoin(coins.find((c) => c.id === e.target.value))}
-                        className="bg-slate-600 border border-slate-500 rounded-lg p-3 min-w-24"
-                      >
-                        {coins.map((coin) => (
-                          <option key={coin.id} value={coin.id}>
-                            {coin.symbol}
-                          </option>
-                        ))}
-                      </select>
+                  <div className="flex justify-between items-center text-gray-500">
+                    <div>
+                      {/* $0.0 */}
+                    </div>
+                    <div className="text-sm flex items-center gap-2">
+                      Balance:{" "}
+                      {inputCoin && (<>{formatBalance(inputCoin.balance, inputCoin.decimals)} {inputCoin.symbol}</>)}
+                      <Button variant="outline" size="sm" className="text-xs bg-white/80 shadow-none" onClick={() => setInputAmount(inputCoin.denominatedBalance.toString())}>
+                        MAX
+                      </Button>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Swap direction button */}
-                <div className="flex justify-center -my-6 relative z-10">
-                  <button
-                    type="button"
-                    onClick={handleSwapCoins}
-                    className="bg-sky-600 hover:bg-sky-700 rounded-full p-2 transform transition-transform hover:rotate-180"
-                  >
-                    <ArrowDown className="h-5 w-5" />
-                  </button>
-                </div>
+              {/* Swap direction button */}
+              <div className="flex justify-center -my-8 relative z-10">
+                <button
+                  type="button"
+                  onClick={handleSwapCoins}
+                  className="bg-[#f7931a] text-white rounded-full p-2 transform transition-transform hover:rotate-180"
+                >
+                  <ArrowDown className="h-8 w-8" />
+                </button>
+              </div>
 
-                {/* Output coin selection and amount */}
-                <div className="mb-1 mt-4">
-                  <div className="bg-slate-700 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm text-slate-400">To</label>
-                      <span className="text-sm text-slate-400">
-                        Balance:{" "}
-                        {outputCoin && (
-                          <>
-                            {formatBalance(outputCoin.balance, outputCoin.decimals)} {outputCoin.symbol}
-                          </>
-                        )}
-                      </span>
-                    </div>
+              {/* Output coin selection and amount */}
+              <div className="">
+                <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
+                  <div className="flex justify-between items-center mb-2 cursor-pointer">
+                    <label className="text-sm text-gray-500">To</label>
+                  </div>
 
-                    <div className="flex space-x-2">
+                  <div className="flex items-center">
+                    <div className="relative flex-grow text-gray-800 text-4xl font-bold">
                       <input
                         type="text"
-                        placeholder="0.00000000"
+                        placeholder="0"
                         value={outputAmount}
                         readOnly
-                        className="w-full p-3 bg-slate-600 border border-slate-500 rounded-lg text-white cursor-not-allowed"
+                        className="w-full p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
+                    </div>
 
-                      <select
+                    <div className="flex flex-col gap-2 items-end-safe">
+                      <Select
                         value={outputCoin?.id}
-                        onChange={(e) => setOutputCoin(coins.find((c) => c.id === e.target.value))}
-                        className="bg-slate-600 border border-slate-500 rounded-lg p-3 min-w-24"
+                        onValueChange={(value) => setOutputCoin(coins.find((c) => c.id === value))}
                       >
-                        {coins
-                          .filter((coin) => coin.id !== inputCoin?.id)
-                          .map((coin) => (
-                            <option key={coin.id} value={coin.id}>
-                              {coin.symbol}
-                            </option>
-                          ))}
-                      </select>
+                        <SelectTrigger className="w-[180px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-4 py-6 text-lg">
+                          <SelectValue placeholder="Theme" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          {coins
+                            .filter((coin) => coin.id !== inputCoin?.id)
+                            .map((coin) => (
+                              <SelectItem key={coin.id} value={coin.id}>
+                                <div className="flex items-center gap-2">
+                                  <div className="relative">
+                                    <img src={bitcoinLogo} alt={coin.symbol} className="w-7 h-7" />
+                                    <span className="absolute bottom-0 -right-1 text-[8px] bg-primary text-white rounded-full w-4 h-4 flex items-center justify-center">
+                                      {coin.symbol.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <span className="font-semibold">{coin.symbol}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-gray-500">
+                    <div className="opacity-0">
+                      $0.0
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Exchange rate display */}
-                <div className="text-center text-sm text-slate-400 mb-3 flex items-center justify-center">
-                  <RefreshCw
-                    className="h-3 w-3 mr-1 mt-1 cursor-pointer"
-                    onClick={() => setExchangeRateInversed(!exchangeRateInversed)}
-                  />
-                  <span>
-                    Rate: 1{" "}
+              {/* Exchange rate display */}
+              <div className="flex flex-col gap-2 my-4 px-2">
+                <div className="flex items-center justify-between font-semibold">
+                  <div className="text-gray-600">Rate</div>
+                  <div className="text-black flex items-center gap-1">
+                    <RefreshCw
+                      className="h-4 w-4 cursor-pointer mr-1"
+                      onClick={() => setExchangeRateInversed(!exchangeRateInversed)}
+                    />
+                    1{" "}
                     {!exchangeRateInversed ? (
-                      <>
-                        {inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}
-                      </>
+                      <>{inputCoin?.symbol} = {exchangeRate} {outputCoin?.symbol}</>
                     ) : (
-                      <>
-                        {outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}
-                      </>
+                      <>{outputCoin?.symbol} = {exchangeRate} {inputCoin?.symbol}</>
                     )}
-                  </span>
+                  </div>
                 </div>
-
-                {/* Submit button */}
-                <Button
-                  className="w-full p-3 bg-gradient-to-r from-sky-500 to-sky-700 hover:from-sky-600 hover:to-sky-800 text-white font-medium rounded-lg"
-                  type="submit"
-                  disabled={
-                    !inputCoin ||
-                    !outputCoin ||
-                    isSubmitting ||
-                    !inputAmount ||
-                    parseFloat(inputAmount) <= 0 ||
-                    parseFloat(inputAmount) > inputCoin.denominatedBalance
-                  }
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Processing Swap...
-                    </div>
-                  ) : (
-                    `Swap ${inputCoin?.symbol} to ${outputCoin?.symbol}`
-                  )}
-                </Button>
-
-                <div className="mt-2 text-center text-xs text-slate-400">
-                  Network fee: ~0.0025 SUI • Estimated completion: 3 seconds
+                <div className="flex items-center justify-between font-semibold">
+                  <div className="text-gray-600">Network fee</div>
+                  <div className="text-black">~0.0025 SUI</div>
                 </div>
-              </form>
-            </div>
-          </div>
+                <div className="flex items-center justify-between font-semibold">
+                  <div className="text-gray-600">Estimated completion</div>
+                  <div className="text-black">3 seconds</div>
+                </div>
+              </div>
+
+              {/* Submit button */}
+              <Button
+                variant="default"
+                size="xl"
+                className="w-full"
+                type="submit"
+                disabled={
+                  !inputCoin ||
+                  !outputCoin ||
+                  isSubmitting ||
+                  !inputAmount ||
+                  parseFloat(inputAmount) <= 0 ||
+                  parseFloat(inputAmount) > inputCoin.denominatedBalance
+                }
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Processing Swap...
+                  </div>
+                ) : (
+                  `Swap ${inputCoin?.symbol} to ${outputCoin?.symbol}`
+                )}
+              </Button>
+            </form>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>

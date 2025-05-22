@@ -32,44 +32,46 @@ export default function BridgeTxStatus() {
   }, [stacksResponse?.post_conditions, sponsoredTxResponse?.sbtcAmount]);
 
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm gap-4 text-white">
+    <Card className="bg-white/50 rounded-2xl p-6 relative">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-center mb-2">
           <img src={stacksLogo} alt={"Stacks Logo"} className="h-8 w-8" /> <ArrowRight className="h-5 w-5 mx-1" />
           <img src={suiLogo} alt={"Sui Logo"} className="h-8 w-8" />
         </div>
-        <CardTitle className="text-2xl font-bold text-center text-white">
+        <CardTitle className="text-2xl font-bold text-center text-gray-800">
           Step 2 - Bridge sBTC Status
           {(loading || loadingSponsoredTx) && (
             <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />
           )}
         </CardTitle>
         {(bridgeStepInfo.step === "SBTC_SENT_PENDING" || bridgeStepInfo.step === "SBTC_SENT_BRIDGING") && (
-          <CardDescription className="text-center text-slate-400">Waiting for sBTC to arrive on Sui</CardDescription>
+          <CardDescription className="text-center text-gray-500">Waiting for sBTC to arrive on Sui</CardDescription>
         )}
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 text-slate-300">
-          <div className="space-y-2">
-            <p className="mb-0 flex items-center">
-              <strong className="mr-1">Amount:</strong> {formatBalance(sbtcAmount, 8)}
-              <span className="text-orange-400 ml-1">sBTC</span>
+      <CardContent className="p-0 max-w-md mx-auto w-full">
+        <div className="flex flex-col gap-2 text-gray-500 font-semibold">
+          <div className="flex justify-between items-center">
+            <div>Amount</div>
+            <div className="flex items-center">
+              <span className="text-gray-800 font-bold">{formatBalance(sbtcAmount, 8)}</span>
+              <span className="text-amber-400 ml-2">sBTC</span>
               <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-            </p>
-
-            {suiRecipientAddress && (
-              <p>
-                <strong>Sui Address:</strong>{" "}
+            </div>
+          </div>
+          {suiRecipientAddress && (
+            <div className="flex justify-between items-center">
+              <div>Sui Address</div>
+              <div className="flex items-center">
                 <a href={getExplorerUrlAddress("SUI", suiRecipientAddress)} target="_blank" className="underline">
                   {formatTrimmed(suiRecipientAddress)}
                 </a>
-              </p>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {(bridgeStepInfo.step === "SBTC_SENT_PENDING" || bridgeStepInfo.step === "SBTC_SENT_BRIDGING") && (
-          <Alert variant="default" className="bg-amber-50 border-amber-200 mt-3">
+          <Alert variant="default" className="bg-white/50 border-gray-200 mt-3">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               Waiting for sBTC transaction to be confirmed
@@ -97,23 +99,23 @@ export default function BridgeTxStatus() {
                   </a>
                 </p>
               )}
-              <p className="text-red-500">To avoid losing your progress, please keep this page open.</p>
+              <p className="text-red-500 font-semibold">To avoid losing your progress, please keep this page open.</p>
             </AlertDescription>
           </Alert>
         )}
 
         {bridgeStepInfo.step === "SBTC_COMPLETED" && (
-          <Alert variant="default" className="bg-sky-50 border-sky-200 mt-3">
+          <Alert variant="default" className="bg-white/50 border-gray-200 mt-3">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>Transaction was succesfully confirmed and sBTC was bridged to Sui!</AlertDescription>
+            <AlertDescription className="font-semibold">Transaction was succesfully confirmed and sBTC was bridged to Sui!</AlertDescription>
           </Alert>
         )}
       </CardContent>
-      <CardFooter className="flex-col">
+      <CardFooter className="p-0 max-w-md mx-auto w-full flex-col">
         {bridgeStepInfo.step !== "SBTC_SENT_PENDING" && (
-          <div className="w-full flex-row flex justify-between items-center">
+          <div className="w-full justify-between items-center">
             <a href={`https://devnet-amplifier.axelarscan.io/gmp/${bridgeStepInfo.stacksTxId}`} target="_blank">
-              <Button className="cursor-pointer w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90">
+              <Button variant="default" size="lg" className="cursor-pointer w-full bg-sky-500">
                 View on Axelar Explorer
               </Button>
             </a>
@@ -124,23 +126,25 @@ export default function BridgeTxStatus() {
           currentStep={
             bridgeStepInfo.step === "SBTC_SENT_PENDING" ? 1 : bridgeStepInfo.step === "SBTC_SENT_BRIDGING" ? 2 : 3
           }
-          steps={["Pending on Stacks", "Bridging", "Confirmed on Sui"]}
+          steps={["Pending", "Bridging", "Completed"]}
           accentColor="sky"
         />
 
         {bridgeStepInfo.step === "SBTC_COMPLETED" && (
-          <div className="w-full flex-row flex justify-between items-center">
+          <div className="w-full flex-row flex justify-between items-center gap-4">
             {suiTxHash && (
-              <a href={getExplorerUrlTransaction("SUI", suiTxHash)} target="_blank">
-                <Button className="w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90">
+              <a href={getExplorerUrlTransaction("SUI", suiTxHash)} target="_blank" className="basis-1/2">
+                <Button variant="default" size="xl" className="w-full bg-sky-500">
                   View Sui tx
                 </Button>
               </a>
             )}
 
             <Button
+              variant="default"
+              size="xl"
               className={
-                "cursor-pointer bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+                `cursor-pointer ${suiTxHash ? 'basis-1/2' : 'w-full'}`
               }
               onClick={() => updateBridgeStepInfo()}
             >

@@ -168,9 +168,9 @@ export default function BridgeSBTCForm() {
 
   if (!stacksAddressInfo || !suiAddress || (stacksAddressInfo.type === "GENERATED" && !stacksAddressInfo.privateKey)) {
     return (
-      <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-white">
+      <Card className="bg-white/50 rounded-2xl p-4">
+        <CardHeader className="space-y-1 max-w-lg mx-auto">
+          <CardTitle className="text-xl font-bold text-center text-gray-600">
             Connect a Stacks and Sui wallet first
           </CardTitle>
         </CardHeader>
@@ -179,62 +179,70 @@ export default function BridgeSBTCForm() {
   }
 
   return (
-    <Card className="bg-slate-50/5 border-slate-700 shadow-xl backdrop-blur-sm text-white relative">
-      {!bridgeStepInfo.btcTxId && (
-        <button
-          className="absolute top-3 left-3 text-slate-300 hover:text-white transition-colors bg-slate-800 rounded-sm cursor-pointer"
-          onClick={() => updateBridgeStepInfo(null)}
-        >
-          <ArrowLeft className="h-5 w-5 inline" /> Bridge Bitcoin
-        </button>
-      )}
+    <Card className="bg-white/50 rounded-2xl p-6 relative">
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-center mb-2">
           <img src={stacksLogo} alt={"Stacks Logo"} className="h-8 w-8" /> <ArrowRight className="h-5 w-5 mx-1" />
           <img src={suiLogo} alt={"Sui Logo"} className="h-8 w-8" />
         </div>
-        <CardTitle className="text-2xl font-bold text-center">
+        <CardTitle className="text-2xl font-bold text-center text-slate-800">
           Step 2 - Bridge sBTC
-          {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 animate-spin text-sky-400" />}
+          {loading && <Loader2 className="inline-flex h-6 w-6 ml-1 -mt-1 animate-spin text-sky-500" />}
         </CardTitle>
         <CardDescription className="text-center text-slate-300">Send sBTC from Stacks to Sui</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 text-slate-300">
+      <CardContent className="p-0 max-w-md mx-auto w-full">
+        {/* <div className="grid gap-3 text-slate-300">
           <p className="mb-2 flex items-center">
             <strong className="mr-1">sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 8)}
             <span className="text-orange-400 ml-1">sBTC</span>
             <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
           </p>
-        </div>
+        </div> */}
 
         {!isGeneratedSubmitting && (
           <form onSubmit={handleSubmit}>
             <div className="grid gap-3 text-slate-300">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
-                <div className="relative">
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="0.00"
-                    step="0.00000001"
-                    min="0.00000001"
-                    max={formatBalance(stacksBalances?.sbtcBalance, 8)}
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="pr-28 text-slate-300"
-                    required
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center">
-                    <span className="pr-2 text-slate-400">sBTC</span>
-                    <button
-                      type="button"
-                      onClick={() => setAmount(formatBalance(stacksBalances?.sbtcBalance, 8))}
-                      className="px-2 py-1 mr-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded cursor-pointer"
-                    >
-                      Max
-                    </button>
+              <div className="bg-white/50 rounded-2xl p-4 flex flex-col gap-2">
+                <div className="flex justify-between items-center mb-2 cursor-pointer">
+                  <label className="text-sm text-gray-500">Amount</label>
+                </div>
+                <div className="flex items-center">
+                  <div className="relative flex-grow text-gray-800 text-4xl font-bold">
+                    <input
+                      id="amount"
+                      type="number"
+                      placeholder="0.00"
+                      step="0.00000001"
+                      min="0.001"
+                      max={formatBalance(stacksBalances?.sbtcBalance, 8)}
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="w-full p-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 items-end-safe">
+                    <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <img src={sbtcLogo} alt={'bitcoin logo'} className="w-7 h-7" />
+                        </div>
+                        <span className="font-semibold text-gray-800">sBTC</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-gray-500">
+                  <div>
+                    {/* $0.0 */}
+                  </div>
+                  <div className="text-sm flex items-center gap-2">
+                    Balance:{" "}
+                    {formatBalance(stacksBalances?.sbtcBalance, 8)}
+                    <Button variant="outline" size="sm" className="text-xs bg-white/80 shadow-none" onClick={() => setAmount(formatBalance(stacksBalances?.sbtcBalance, 8))}>
+                      MAX
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -242,9 +250,11 @@ export default function BridgeSBTCForm() {
           </form>
         )}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-0 max-w-md mx-auto w-full flex-col gap-4">
         <Button
-          className="cursor-pointer w-full bg-gradient-to-r from-sky-400 to-sky-700 hover:from-sky-400/90 hover:to-sky-700/90"
+          variant="default"
+          size="xl"
+          className="w-full bg-sky-500"
           type="submit"
           onClick={handleSubmit}
           disabled={
@@ -265,6 +275,16 @@ export default function BridgeSBTCForm() {
             </div>
           )}
         </Button>
+        {!bridgeStepInfo.btcTxId && (
+          <div className="max-w-md mx-auto w-full flex justify-center">
+            <button
+              className="text-gray-500 cursor-pointer"
+              onClick={() => updateBridgeStepInfo(null)}
+            >
+              <ArrowLeft className="h-5 w-5 -mt-1 inline" /> Bridge Bitcoin
+            </button>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

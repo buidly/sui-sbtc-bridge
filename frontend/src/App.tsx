@@ -12,10 +12,9 @@ function App() {
   const suiAutoConnectionStatus = useAutoConnectWallet();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        <Navbar />
-
+    <div className="min-h-screen p-6 flex flex-col gap-10 bg-[url(/bg_orange_2.jpg)] bg-cover bg-center bg-fixed bg-no-repeat">
+      <Navbar />
+      <div>
         {suiAutoConnectionStatus === "idle" ? (
           <Loader2 className="h-10 w-10 mx-auto animate-spin text-sky-400" />
         ) : (

@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { formatTrimmed, getExplorerUrlAddress } from "@/lib/helpers.ts";
-import { Loader2 } from "lucide-react";
+import { Loader2, UnplugIcon } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 
 export function WalletCard({
@@ -23,59 +23,53 @@ export function WalletCard({
   className = undefined,
 }) {
   return (
-    <Card className={cn("bg-slate-50/5 border-slate-700 shadow-lg overflow-hidden backdrop-blur-sm", className)}>
-      <CardHeader className="pb-2">
+    <Card className={cn("bg-white/50 rounded-2xl p-4 overflow-hidden shadow-none w-full gap-4", className)}>
+      <CardHeader className="p-0 flex flex-row justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center`}>
             <span className="text-lg">{icon}</span>
           </div>
-          <CardTitle className="text-lg text-white">{title}</CardTitle>
+          <CardTitle className="text-lg text-slate-800">{title}</CardTitle>
         </div>
+        <Button
+          variant="ghost"
+          className=" text-slate-500 hover:text-black"
+          onClick={disconnectWallet}
+        >
+          <UnplugIcon />
+        </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         {!isConnected ? (
           <>{notConnectedElement}</>
         ) : (
-          <div className="space-y-3">
+          <div className="flex flex-col gap-2">
             <div>
-              <div className="text-xs text-slate-400 mb-1">Connected:</div>
               <a
                 href={getExplorerUrlAddress(addressType, address)}
                 target={"_blank"}
                 className={
-                  "flex bg-slate-800 rounded-md px-3 py-2 text-sm text-slate-300 border border-slate-700 truncate"
+                  "flex bg-white/80 rounded-2xl outline-none px-4 py-2 truncate"
                 }
               >
-                {formatTrimmed(address, 16)}
+                {formatTrimmed(address, 11)}
               </a>
             </div>
 
             {extraElement}
 
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="text-xs text-slate-400 mb-1">Balance:</div>
-                <div className="flex items-center gap-2">
-                  <span className="text-white text-lg font-medium">{balance}</span>
-                  {loading && <Loader2 className="inline-flex h-4 w-4 animate-spin ml-1" />}
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <div className="text-gray-500 text-sm">Balance</div>
+                <div className="flex items-center">
+                  {loading ? <Loader2 className="inline-flex h-4 w-4 animate-spin mr-2" /> : <span className="text-gray-800 text-lg font-medium mr-2">{balance}</span>}
                   <span className={`${currencyColor}`}>{currency}</span>
+                  <span className="text-lg">{currencyIcon}</span>
                 </div>
-              </div>
-
-              <div className={`w-8 h-8 flex items-center justify-center`}>
-                <span className="text-lg">{currencyIcon}</span>
               </div>
             </div>
 
             {children}
-
-            <Button
-              variant="destructive"
-              className="w-full mt-2 bg-red-600 hover:bg-red-700"
-              onClick={disconnectWallet}
-            >
-              Disconnect
-            </Button>
           </div>
         )}
       </CardContent>
