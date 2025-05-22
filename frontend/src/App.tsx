@@ -1,27 +1,29 @@
-import './App.css';
-import Navbar from './components/Navbar';
-import StacksConnect from './components/StacksConnect';
-import SuiConnect from './components/SuiConnect';
-import BitcoinConnect from '@/components/BitcoinConnect';
+import "./App.css";
+import Navbar from "./components/Navbar";
+import { Route, Routes } from "react-router-dom";
+import Bridge from "@/pages/Bridge.tsx";
+import { ROUTES } from "@/lib/routes.ts";
+import Swap from "@/pages/Swap.tsx";
+import { useAutoConnectWallet } from "@mysten/dapp-kit";
+import { Loader2 } from "lucide-react";
+import { Staking } from "@/pages/Staking.tsx";
 
 function App() {
-  return (
-    <div className='min-h-screen bg-slate-50 dark:bg-slate-950'>
-      <Navbar />
-      <div className='container mx-auto p-4'>
-        <h1 className='text-3xl font-bold mb-6 text-slate-900 dark:text-slate-50'>Multi-Chain dApp Starter</h1>
+  const suiAutoConnectionStatus = useAutoConnectWallet();
 
-        <div className='grid md:grid-cols-3 gap-6'>
-          <div>
-            <BitcoinConnect />
-          </div>
-          <div>
-            <StacksConnect />
-          </div>
-          <div>
-            <SuiConnect />
-          </div>
-        </div>
+  return (
+    <div className="min-h-screen p-6 flex flex-col gap-10 bg-[url(/bg_orange_2.jpg)] bg-cover bg-center bg-fixed bg-no-repeat">
+      <Navbar />
+      <div>
+        {suiAutoConnectionStatus === "idle" ? (
+          <Loader2 className="h-10 w-10 mx-auto animate-spin text-sky-400" />
+        ) : (
+          <Routes>
+            <Route path={ROUTES.home} element={<Bridge />} />
+            <Route path={ROUTES.swap} element={<Swap />} />
+            <Route path={ROUTES.staking} element={<Staking />} />
+          </Routes>
+        )}
       </div>
     </div>
   );

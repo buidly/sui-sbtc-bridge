@@ -1,78 +1,81 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import Wallet, { AddressPurpose, request } from 'sats-connect';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import Wallet, { AddressPurpose } from "sats-connect";
+import { useApp, userSession } from "@/context/app.context";
+import { formatBalance } from "@/lib/helpers";
+import leatherLogo from "@/assets/images/leather_logo.svg";
+import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
+import xverseLogo from "@/assets/images/xverse_logo.jpeg";
+import { storageHelper } from "@/lib/storageHelper.ts";
+import { showConnect } from "@stacks/connect";
+import { WalletCard } from "@/components/base/WalletCard.tsx";
+import { useBalances } from "@/context/balances.context.tsx";
+import { SUI_NETWORK } from "@/api/sui.ts";
 
 function BitcoinConnect() {
-  const [btcAddress, setBtcAddress] = useState<string | null>(null);
+  const { btcAddressInfo, processConnectBtc, processConnectBtcLeather } = useApp();
 
-  const processConnect = (res) => {
-    if (res.status === 'error') {
-      console.error('Error connecting to wallet, details in terminal.');
-      console.error(res);
-      return;
-    }
-    const btcAddresses = res.result.addresses.filter((a) =>
-      [AddressPurpose.Payment].includes(a.purpose),
-    );
-    setBtcAddress(btcAddresses[0].address);
-  }
-
-  useEffect(() => {
-    const reconnect = async () => {
-      const res = await request('wallet_getAccount', null);
-
-      processConnect(res);
-    };
-
-    reconnect();
-  }, []);
-
-  const connectWallet = async () => {
-    const res = await Wallet.request('wallet_connect', {
-      message: 'Cool app wants to know your addresses!',
+  const connectWalletLeather = async () => {
+    showConnect({
+      userSession,
+      appDetails: {
+        name: "Sui sBTC Bridge",
+        icon: window.location.origin + "/vite.svg",
+      },
+      onFinish: () => {
+        processConnectBtcLeather();
+      },
+    });
+  };
+  const connectWalletOther = async () => {
+    const res = await Wallet.request("wallet_connect", {
+      message: "Cool app wants to know your addresses!",
       addresses: [AddressPurpose.Payment],
     });
 
-    processConnect(res);
+    processConnectBtc(res);
   };
 
   const disconnectWallet = async () => {
-    await Wallet.disconnect();
-    setBtcAddress(null);
+    if (storageHelper.getBtcWallet()?.type === "LEATHER" && storageHelper.getStacksWallet()?.type !== "USER") {
+      userSession.signUserOut();
+    }
+
+    if (storageHelper.getBtcWallet()?.type === "OTHER") {
+      await Wallet.disconnect();
+    }
+
+    processConnectBtc(null);
   };
 
+  const { btcBalance, loading } = useBalances();
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bitcoin Integration</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!btcAddress ? (
-          <Button
-            onClick={connectWallet}
-            variant='default'
-          >
-            Connect Bitcoin Wallet
+    <WalletCard
+      title="Bitcoin Wallet"
+      icon={<img src={bitcoinLogo} alt={"Bitcoin Logo"} className="h-6 w-6" />}
+      isConnected={!!btcAddressInfo}
+      notConnectedElement={
+        <div className={"flex flex-col gap-2 mb-0 w-full"}>
+          <Button onClick={connectWalletLeather} variant="default" className="bg-black hover:bg-black/80">
+            <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
           </Button>
-        ) : (
-          <div>
-              <p className='mb-2'>
-                <strong>Connected:</strong> {btcAddress?.substring(0, 10)}...
-                {btcAddress.substring(btcAddress.length - 10)}
-              </p>
-            <div className='flex gap-2 mt-4'>
-              <Button
-                onClick={disconnectWallet}
-                variant='destructive'
-              >
-                Disconnect
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {SUI_NETWORK === "mainnet" && (
+            <Button onClick={connectWalletOther} variant="default" className="bg-black hover:bg-black/80">
+              <img src={xverseLogo} alt={"XVerse Logo"} className="mr-1 h-4 w-4" /> Connect Other
+            </Button>
+          )}
+        </div>
+      }
+      address={btcAddressInfo?.address}
+      addressType="BITCOIN"
+      balance={formatBalance(btcBalance, 8)}
+      currency="BTC"
+      currencyColor="text-amber-500"
+      currencyIcon={<img src={bitcoinLogo} alt={"Bitcoin Logo"} className="ml-1 h-4 w-4" />}
+      disconnectWallet={disconnectWallet}
+      loading={loading}
+    />
   );
 }
 

@@ -1,0 +1,10 @@
+version: '3.4'
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=microservice
+    ports:
+      - 5432:5432
