@@ -5,10 +5,12 @@ import { useApp, userSession } from "@/context/app.context";
 import { formatBalance } from "@/lib/helpers";
 import leatherLogo from "@/assets/images/leather_logo.svg";
 import bitcoinLogo from "@/assets/images/bitcoin_logo.svg";
+import xverseLogo from "@/assets/images/xverse_logo.jpeg";
 import { storageHelper } from "@/lib/storageHelper.ts";
 import { showConnect } from "@stacks/connect";
 import { WalletCard } from "@/components/base/WalletCard.tsx";
 import { useBalances } from "@/context/balances.context.tsx";
+import { SUI_NETWORK } from "@/api/sui.ts";
 
 function BitcoinConnect() {
   const { btcAddressInfo, processConnectBtc, processConnectBtcLeather } = useApp();
@@ -58,9 +60,11 @@ function BitcoinConnect() {
           <Button onClick={connectWalletLeather} variant="default" className="bg-black hover:bg-black/80">
             <img src={leatherLogo} alt={"Leather Logo"} className="mr-1 h-4 w-4" /> Connect Leather
           </Button>
-          {/* <Button onClick={connectWalletOther} variant="default">
-            Other Wallet (Mainnet only)
-          </Button> */}
+          {SUI_NETWORK === "mainnet" && (
+            <Button onClick={connectWalletOther} variant="default" className="bg-black hover:bg-black/80">
+              <img src={xverseLogo} alt={"XVerse Logo"} className="mr-1 h-4 w-4" /> Connect Other
+            </Button>
+          )}
         </div>
       }
       address={btcAddressInfo?.address}

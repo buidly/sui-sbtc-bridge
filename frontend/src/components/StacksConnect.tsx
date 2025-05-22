@@ -169,15 +169,7 @@ function StacksConnect() {
           </div>
         </>
       }
-      // extraElement={
-      //   stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey
-      //     ? formElement
-      //     : stacksAddressInfo?.type === "GENERATED" && (
-      //       <div>
-      //         {/* <em className="text-sm text-slate-50">Authenticated</em> */}
-      //       </div>
-      //     )
-      // }
+      extraElement={stacksAddressInfo?.type === "GENERATED" && !stacksAddressInfo?.privateKey && formElement}
       address={stacksAddressInfo?.address}
       addressType="STACKS"
       balance={formatBalance(stacksBalances?.stxBalance, 6)}
@@ -191,11 +183,12 @@ function StacksConnect() {
         <div className="flex justify-between items-center">
           <div className="text-gray-500 text-sm">sBTC Balance</div>
           <div className="flex items-center">
-            <span className="text-gray-800 text-lg font-medium mr-2">{formatBalance(stacksBalances?.sbtcBalance, 8)}</span>
+            <span className="text-gray-800 text-lg font-medium mr-2">
+              {formatBalance(stacksBalances?.sbtcBalance, 8)}
+            </span>
             <span className="text-orange-400">sBTC</span>
             <span className="text-lg">
               <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-
             </span>
           </div>
         </div>

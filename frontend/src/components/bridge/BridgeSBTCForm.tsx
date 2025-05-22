@@ -192,14 +192,6 @@ export default function BridgeSBTCForm() {
         <CardDescription className="text-center text-slate-300">Send sBTC from Stacks to Sui</CardDescription>
       </CardHeader>
       <CardContent className="p-0 max-w-md mx-auto w-full">
-        {/* <div className="grid gap-3 text-slate-300">
-          <p className="mb-2 flex items-center">
-            <strong className="mr-1">sBTC Balance:</strong> {formatBalance(stacksBalances?.sbtcBalance, 8)}
-            <span className="text-orange-400 ml-1">sBTC</span>
-            <img src={sbtcLogo} alt={"sBTC Logo"} className="ml-1 h-4 w-4" />
-          </p>
-        </div> */}
-
         {!isGeneratedSubmitting && (
           <form onSubmit={handleSubmit}>
             <div className="grid gap-3 text-slate-300">
@@ -222,8 +214,8 @@ export default function BridgeSBTCForm() {
                       required
                     />
                   </div>
-                  <div className="flex flex-col gap-2 items-end-safe">
-                    <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg">
+                  <div className="flex flex-col gap-2">
+                    <div className="w-[150px] bg-white/80 rounded-2xl outline-none shadow-none border-none px-2 py-2 text-lg justify-items-center">
                       <div className="flex items-center gap-2">
                         <div className="relative">
                           <img src={sbtcLogo} alt={'bitcoin logo'} className="w-7 h-7" />
@@ -278,7 +270,7 @@ export default function BridgeSBTCForm() {
         {!bridgeStepInfo.btcTxId && (
           <div className="max-w-md mx-auto w-full flex justify-center">
             <button
-              className="text-gray-500 cursor-pointer"
+              className="text-gray-500 hover:text-gray-400 cursor-pointer"
               onClick={() => updateBridgeStepInfo(null)}
             >
               <ArrowLeft className="h-5 w-5 -mt-1 inline" /> Bridge Bitcoin
