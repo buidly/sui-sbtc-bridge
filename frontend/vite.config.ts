@@ -19,12 +19,12 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     cors: true,
-    allowedHosts: ["sui-sbtc-bridge.buidly.com", "localhost"], 
+    allowedHosts: ["sui-sbtc-bridge.buidly.com", "localhost", "demo.tideflow.app"], 
   },
   preview: {
     host: "0.0.0.0",
     port: 4173,
     strictPort: true,
-    allowedHosts: ["sui-sbtc-bridge.buidly.com", "localhost"],
+    allowedHosts: ["sui-sbtc-bridge.buidly.com", "localhost", "demo.tideflow.app"],
   },
 });
